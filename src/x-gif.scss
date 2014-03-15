@@ -1,3 +1,16 @@
+:host {
+  display: block;
+
+  &.full-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: blue;
+  }
+}
+
 #frames {
   position: relative;
 
@@ -17,6 +30,10 @@
     :host[exploded] & {
       position: static;
       opacity: 1;
+    }
+
+    :host.full-screen & {
+      height: 100%;
     }
   }
 

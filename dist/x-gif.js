@@ -192,7 +192,8 @@ var Gif = function (frames) {
 
   frames.forEach(function (frame) {
     this.offsets.push(this.length);
-    this.length += frame.delay;
+    console.log(frame.delay)
+    this.length += (frame.delay || 10);
   }, this);
 }
 
@@ -246,6 +247,7 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
+  console.log(this.gif.length)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {
@@ -347,7 +349,7 @@ StreamReader.prototype.isNext = function (array) {
   return true;
 };
 StreamReader.prototype.log = function (str) {
-  console.log(this.index + ": " + str);
+//  console.log(this.index + ": " + str);
 };
 StreamReader.prototype.error = function (str) {
   console.error(this.index + ": " + str);

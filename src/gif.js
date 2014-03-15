@@ -7,7 +7,8 @@ var Gif = function (frames) {
 
   frames.forEach(function (frame) {
     this.offsets.push(this.length);
-    this.length += frame.delay;
+    console.log(frame.delay)
+    this.length += (frame.delay || 10);
   }, this);
 }
 

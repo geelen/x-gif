@@ -1,3 +1,13 @@
+:host {
+  display: block; }
+  :host.full-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: blue; }
+
 #frames {
   position: relative; }
   #frames img {
@@ -14,6 +24,8 @@
     :host[exploded] #frames img {
       position: static;
       opacity: 1; }
+    :host.full-screen #frames img {
+      height: 100%; }
   #frames.frame-0 img:nth-child(n+2) {
     opacity: 0; }
   #frames.frame-1 img:nth-child(n+3) {
