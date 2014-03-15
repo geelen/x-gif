@@ -4,7 +4,9 @@ var Playback = require('./playback.js');
 
 var Strategies = {
   speed: function () {
-    this.playback.startSpeed(this.speed, this['n-times']);
+    this.playback.startSpeed(this.speed, this['n-times'], (function () {
+      this.fire('x-gif-stopped')
+    }).bind(this));
   },
   hardBpm: function () {
     this.playback.startHardBpm(this.bpm);

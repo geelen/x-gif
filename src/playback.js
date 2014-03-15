@@ -33,7 +33,7 @@ Playback.prototype.stop = function () {
   this.playing = false;
 }
 
-Playback.prototype.startSpeed = function (speed, nTimes) {
+Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
   console.log(nTimes)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
@@ -47,6 +47,7 @@ Playback.prototype.startSpeed = function (speed, nTimes) {
         if (this.playing) requestAnimationFrame(animationLoop);
       } else {
         this.setFrame(this.gif.frameAt(1.0));
+        if (endCb) endCb();
       }
     }).bind(this);
 
