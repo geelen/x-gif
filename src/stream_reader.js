@@ -31,7 +31,7 @@ StreamReader.prototype.isNext = function (array) {
   return true;
 };
 StreamReader.prototype.log = function (str) {
-//  console.log(this.index + ": " + str);
+  console.log(this.index + ": " + str);
 };
 StreamReader.prototype.error = function (str) {
   console.error(this.index + ": " + str);

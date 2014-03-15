@@ -9,6 +9,8 @@
     transform: translateZ(0); }
     #frames img:first-child {
       position: static; }
+    #frames img.disposal-restore {
+      background-color: white; }
     :host[exploded] #frames img {
       position: static;
       opacity: 1; }

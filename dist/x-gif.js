@@ -106,9 +106,11 @@ Exploder.prototype.explode = function (buffer) {
       // We _definitely_ have a frame. Now we're expecting an image
       var index = streamReader.index;
 
-      streamReader.skipBytes(4);
+      streamReader.skipBytes(3);
+      var disposalMethod = streamReader.readByte() >> 2;
+      streamReader.log("DISPOSAL " + disposalMethod);
       var delay = streamReader.readByte() + streamReader.readByte() * 256;
-      frames.push({ index: index, delay: delay });
+      frames.push({ index: index, delay: delay, disposal: disposalMethod });
       streamReader.log("FRAME DELAY " + delay);
       streamReader.skipBytes(2);
       expectingImage = true;
@@ -225,6 +227,7 @@ Playback.prototype.afterExploded = function (gif) {
   gif.frames.forEach(function (frame) {
     var image = new Image();
     image.src = frame.url;
+    if (frame.disposal == 2) image.className = 'disposal-restore';
     this.el.appendChild(image);
   }, this)
 
@@ -344,7 +347,7 @@ StreamReader.prototype.isNext = function (array) {
   return true;
 };
 StreamReader.prototype.log = function (str) {
-//  console.log(this.index + ": " + str);
+  console.log(this.index + ": " + str);
 };
 StreamReader.prototype.error = function (str) {
   console.error(this.index + ": " + str);

@@ -105,9 +105,11 @@ Exploder.prototype.explode = function (buffer) {
       // We _definitely_ have a frame. Now we're expecting an image
       var index = streamReader.index;
 
-      streamReader.skipBytes(4);
+      streamReader.skipBytes(3);
+      var disposalMethod = streamReader.readByte() >> 2;
+      streamReader.log("DISPOSAL " + disposalMethod);
       var delay = streamReader.readByte() + streamReader.readByte() * 256;
-      frames.push({ index: index, delay: delay });
+      frames.push({ index: index, delay: delay, disposal: disposalMethod });
       streamReader.log("FRAME DELAY " + delay);
       streamReader.skipBytes(2);
       expectingImage = true;

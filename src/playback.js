@@ -18,6 +18,7 @@ Playback.prototype.afterExploded = function (gif) {
   gif.frames.forEach(function (frame) {
     var image = new Image();
     image.src = frame.url;
+    if (frame.disposal == 2) image.className = 'disposal-restore';
     this.el.appendChild(image);
   }, this)
 
