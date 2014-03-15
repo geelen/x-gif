@@ -4,7 +4,7 @@ var Playback = require('./playback.js');
 
 var Strategies = {
   speed: function () {
-    this.playback.startSpeed(this.speed);
+    this.playback.startSpeed(this.speed, this['n-times']);
   },
   hardBpm: function () {
     this.playback.startHardBpm(this.bpm);

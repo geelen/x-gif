@@ -138,7 +138,7 @@ var Playback = require('./playback.js');
 
 var Strategies = {
   speed: function () {
-    this.playback.startSpeed(this.speed);
+    this.playback.startSpeed(this.speed, this['n-times']);
   },
   hardBpm: function () {
     this.playback.startHardBpm(this.bpm);
@@ -239,15 +239,21 @@ Playback.prototype.stop = function () {
   this.playing = false;
 }
 
-Playback.prototype.startSpeed = function (speed) {
+Playback.prototype.startSpeed = function (speed, nTimes) {
+  console.log(nTimes)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {
-      var duration = performance.now() - startTime;
-      var fraction = duration / gifLength % 1;
-      this.setFrame(this.gif.frameAt(fraction));
+      var duration = performance.now() - startTime,
+        loopCount = duration / gifLength,
+        fraction = loopCount % 1;
+      if (!nTimes || loopCount < nTimes) {
+        this.setFrame(this.gif.frameAt(fraction));
 
-      if (this.playing) requestAnimationFrame(animationLoop);
+        if (this.playing) requestAnimationFrame(animationLoop);
+      } else {
+        this.setFrame(this.gif.frameAt(1.0));
+      }
     }).bind(this);
 
   this.playing = true;
