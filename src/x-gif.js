@@ -1,13 +1,16 @@
 "use strict";
 
-var Playback = require('./playback.js')
+var Playback = require('./playback.js');
 
 Polymer('x-gif', {
-  file: "../gifs/nope.gif",
   ready: function () {
+    // Better than using a default attribute, since this
+    // triggers 'fileChanged' below.
+    this.file = this.file || "../gifs/nope.gif";
     console.log("READY")
   },
   fileChanged: function (oldVal, newVal) {
+    console.log("Setting gif to " + newVal)
     var playback = new Playback(this.$.frames, newVal, function () {
       console.warn("UGH. Callbacks FOR THE LOSE.");
       playback.startLoop(1.0);
