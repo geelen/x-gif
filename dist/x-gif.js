@@ -161,6 +161,8 @@ Polymer('x-gif', {
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = Strategies.noop.bind(this);
+    } else if (this.clock != null) {
+      this.playbackStrategy = Strategies.noop.bind(this);
     } else if (this['hard-bpm']) {
       this.playbackStrategy = Strategies.hardBpm.bind(this);
     } else if (this.bpm) {
@@ -174,6 +176,10 @@ Polymer('x-gif', {
   },
   srcChanged: function (oldVal, newVal) {
     this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy, this['ping-pong'] != null);
+  },
+  clock: function (beatNr, beatDuration, beatFraction) {
+//    console.log(beatNr, beatDuration, beatFraction);
+    this.playback.fromClock(beatNr, beatDuration, beatFraction);
   }
 // Hard to do this without promises
 //  speedChanged: function (oldVal, newVal) {
@@ -277,23 +283,6 @@ Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
   this.setFrame(subFraction, repeatCount);
 }
 
-Playback.prototype.startBpm = function (bpm) {
-  var beatLength = 60 * 1000 / bpm,
-    startTime = performance.now(),
-    animationLoop = (function () {
-      var duration = performance.now() - startTime,
-        beatNr = Math.floor(duration / beatLength),
-        beatFraction = (duration % beatLength) / beatLength;
-
-      this.fromClock(beatNr, beatLength, beatFraction);
-
-      if (this.playing) requestAnimationFrame(animationLoop);
-    }).bind(this);
-
-  this.playing = true;
-  animationLoop();
-}
-
 Playback.prototype.startHardBpm = function (bpm) {
   var beatLength = 60 * 1000 / bpm,
     startTime = performance.now(),
@@ -310,8 +299,22 @@ Playback.prototype.startHardBpm = function (bpm) {
   animationLoop();
 }
 
-Playback.prototype.startBpm;
-Playback.prototype.startBeats;
+Playback.prototype.startBpm = function (bpm) {
+  var beatLength = 60 * 1000 / bpm,
+    startTime = performance.now(),
+    animationLoop = (function () {
+      var duration = performance.now() - startTime,
+        beatNr = Math.floor(duration / beatLength),
+        beatFraction = (duration % beatLength) / beatLength;
+
+      this.fromClock(beatNr, beatLength, beatFraction);
+
+      if (this.playing) requestAnimationFrame(animationLoop);
+    }).bind(this);
+
+  this.playing = true;
+  animationLoop();
+}
 
 module.exports = Playback;
 

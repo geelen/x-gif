@@ -25,6 +25,8 @@ Polymer('x-gif', {
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = Strategies.noop.bind(this);
+    } else if (this.clock != null) {
+      this.playbackStrategy = Strategies.noop.bind(this);
     } else if (this['hard-bpm']) {
       this.playbackStrategy = Strategies.hardBpm.bind(this);
     } else if (this.bpm) {
@@ -38,6 +40,10 @@ Polymer('x-gif', {
   },
   srcChanged: function (oldVal, newVal) {
     this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy, this['ping-pong'] != null);
+  },
+  clock: function (beatNr, beatDuration, beatFraction) {
+//    console.log(beatNr, beatDuration, beatFraction);
+    this.playback.fromClock(beatNr, beatDuration, beatFraction);
   }
 // Hard to do this without promises
 //  speedChanged: function (oldVal, newVal) {

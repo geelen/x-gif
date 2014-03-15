@@ -66,23 +66,6 @@ Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
   this.setFrame(subFraction, repeatCount);
 }
 
-Playback.prototype.startBpm = function (bpm) {
-  var beatLength = 60 * 1000 / bpm,
-    startTime = performance.now(),
-    animationLoop = (function () {
-      var duration = performance.now() - startTime,
-        beatNr = Math.floor(duration / beatLength),
-        beatFraction = (duration % beatLength) / beatLength;
-
-      this.fromClock(beatNr, beatLength, beatFraction);
-
-      if (this.playing) requestAnimationFrame(animationLoop);
-    }).bind(this);
-
-  this.playing = true;
-  animationLoop();
-}
-
 Playback.prototype.startHardBpm = function (bpm) {
   var beatLength = 60 * 1000 / bpm,
     startTime = performance.now(),
@@ -99,7 +82,21 @@ Playback.prototype.startHardBpm = function (bpm) {
   animationLoop();
 }
 
-Playback.prototype.startBpm;
-Playback.prototype.startBeats;
+Playback.prototype.startBpm = function (bpm) {
+  var beatLength = 60 * 1000 / bpm,
+    startTime = performance.now(),
+    animationLoop = (function () {
+      var duration = performance.now() - startTime,
+        beatNr = Math.floor(duration / beatLength),
+        beatFraction = (duration % beatLength) / beatLength;
+
+      this.fromClock(beatNr, beatLength, beatFraction);
+
+      if (this.playing) requestAnimationFrame(animationLoop);
+    }).bind(this);
+
+  this.playing = true;
+  animationLoop();
+}
 
 module.exports = Playback;
