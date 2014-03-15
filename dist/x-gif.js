@@ -96,7 +96,7 @@ Exploder.prototype.explode = function (buffer) {
 
       while (!streamReader.isNext([0x00])) {
         var blockSize = streamReader.readByte();
-        streamReader.log("SKIPPING " + blockSize + " BYTES");
+//        streamReader.log("SKIPPING " + blockSize + " BYTES");
         streamReader.skipBytes(blockSize);
       }
       streamReader.log("DATA END");
@@ -302,7 +302,7 @@ StreamReader.prototype.isNext = function (array) {
   return true;
 };
 StreamReader.prototype.log = function (str) {
-//  console.log(this.index + ": " + str);
+  console.log(this.index + ": " + str);
 };
 StreamReader.prototype.error = function (str) {
   console.error(this.index + ": " + str);

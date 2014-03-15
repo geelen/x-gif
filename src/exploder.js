@@ -95,7 +95,7 @@ Exploder.prototype.explode = function (buffer) {
 
       while (!streamReader.isNext([0x00])) {
         var blockSize = streamReader.readByte();
-        streamReader.log("SKIPPING " + blockSize + " BYTES");
+//        streamReader.log("SKIPPING " + blockSize + " BYTES");
         streamReader.skipBytes(blockSize);
       }
       streamReader.log("DATA END");
