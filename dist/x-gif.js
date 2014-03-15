@@ -232,7 +232,7 @@ Playback.prototype.afterExploded = function (gif) {
 }
 
 Playback.prototype.setFrame = function (fraction, repeatCount) {
-  var frameNr = (this.pingPong && repeatCount % 2 > 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
+  var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
   // TODO: Fix when I upgrade sass
   this.el.className = "frame-" + frameNr;
 //  this.el.dataset['frame'] = frameNr;
