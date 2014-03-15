@@ -141,17 +141,24 @@ var Playback = require('./playback.js');
 Polymer('x-gif', {
   ready: function () {
     // Better than using a default attribute, since this
-    // triggers 'fileChanged' below.
-    this.file = this.file || "../gifs/nope.gif";
+    // triggers change detectors below.
+    this.src = this.src || "../gifs/nope.gif";
+    this.speed = this.speed || 1.0;
     console.log("READY")
   },
-  fileChanged: function (oldVal, newVal) {
+  srcChanged: function (oldVal, newVal) {
     console.log("Setting gif to " + newVal)
-    var playback = new Playback(this.$.frames, newVal, function () {
+    this.playback = new Playback(this.$.frames, newVal, (function () {
       console.warn("UGH. Callbacks FOR THE LOSE.");
-      playback.startSpeed(1.0);
-    });
+      console.log(this.speed);
+      this.playback.startSpeed(this.speed);
+    }).bind(this));
   }
+// Hard to do this without promises
+//  speedChanged: function (oldVal, newVal) {
+//    this.playback.stop();
+//    this.playback.startSpeed(this.speed);
+//  }
 })
 
 },{"./playback.js":4}],3:[function(require,module,exports){
@@ -209,6 +216,10 @@ Playback.prototype.afterExploded = function (gif) {
 Playback.prototype.setFrame = function (frameNr) {
   this.el.className = "frame-" + frameNr;
 //  this.el.dataset['frame'] = frameNr;
+}
+
+Playback.prototype.stop = function () {
+  this.playing = false;
 }
 
 Playback.prototype.startSpeed = function (speed) {

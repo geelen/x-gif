@@ -1,9 +1,4 @@
 <!doctype html>
-<!--
-Copyright 2013 The Polymer Authors. All rights reserved.
-Use of this source code is governed by a BSD-style
-license that can be found in the LICENSE file.
--->
 <html>
   <head>
     <title>Toggle Button</title>
@@ -12,14 +7,16 @@ license that can be found in the LICENSE file.
     <link rel="import" href="dist/x-gif.html">
     <link rel="stylesheet" href="bower_components/polymer-ui-base-css/base.css">
     <style>
-      .wide-button {
-        width: 100px;
-      }
+      body > * { display: inline-block; }
     </style>
   </head>
   <body class="polymer-ui-body-text" unresolved>
     <!--<polymer-ui-toggle-button></polymer-ui-toggle-button>-->
-    <img src="gifs/jump.gif"/>
-    <x-gif file="gifs/jump.gif"></x-gif>
+    <!--<img   src="gifs/explosion.gif"/>-->
+    <x-gif src="gifs/explosion.gif"></x-gif>
+    <x-gif src="gifs/explosion.gif" speed="1.5"></x-gif>
+    <x-gif src="gifs/explosion.gif" speed="2"></x-gif>
+    <x-gif src="gifs/explosion.gif" speed="0.5"></x-gif>
+    <x-gif src="gifs/explosion.gif" speed="0.33333"></x-gif>
   </body>
 </html>

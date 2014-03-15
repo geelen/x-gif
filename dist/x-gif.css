@@ -3,7 +3,10 @@
   #frames img {
     position: absolute;
     top: 0;
-    left: 0; }
+    left: 0;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0); }
     #frames img:first-child {
       position: static; }
   #frames.frame-0 img:nth-child(n+2) {

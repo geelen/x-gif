@@ -30,6 +30,10 @@ Playback.prototype.setFrame = function (frameNr) {
 //  this.el.dataset['frame'] = frameNr;
 }
 
+Playback.prototype.stop = function () {
+  this.playing = false;
+}
+
 Playback.prototype.startSpeed = function (speed) {
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),

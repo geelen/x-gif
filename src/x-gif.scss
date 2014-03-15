@@ -5,6 +5,7 @@
     position: absolute;
     top: 0;
     left: 0;
+    transform: translateZ(0);
 
     &:first-child {
       position: static;
