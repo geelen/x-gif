@@ -1,0 +1,28 @@
+{
+  "name": "x-gif",
+  "version": "0.0.0",
+  "description": "The GIF element the internet deserves",
+  "main": "dist/x-gif.html",
+  "readme": "README.md",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/geelen/djgif.git"
+  },
+  "author": "Glen Maddern",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/geelen/djgif/issues"
+  },
+  "devDependencies": {
+    "gulp": "~3.5.5",
+    "gulp-sass": "~0.2.2",
+    "gulp-concat": "~2.1.5",
+    "gulp-autoprefixer": "0.0.3",
+    "gulp-load-plugins": "~0.3.0",
+    "gulp-plumber": "~0.5.6",
+    "gulp-browserify": "~0.4.6"
+  }
+}
