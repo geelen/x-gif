@@ -207,11 +207,12 @@ Playback.prototype.afterExploded = function (gif) {
 }
 
 Playback.prototype.setFrame = function (frameNr) {
-  this.el.dataset['frame'] = frameNr;
+  this.el.className = "frame-" + frameNr;
+//  this.el.dataset['frame'] = frameNr;
 }
 
 Playback.prototype.startSpeed = function (speed) {
-  var gifLength = this.gif.length / speed,
+  var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {
       var duration = performance.now() - startTime;

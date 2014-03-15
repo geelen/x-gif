@@ -1,0 +1,21 @@
+#frames {
+  position: relative;
+
+  img {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    &:first-child {
+      position: static;
+    }
+  }
+
+  @for $i from 0 to 100 {
+    &.frame-#{$i} {
+      img:nth-child(n + #{2 + $i}) {
+        opacity: 0;
+      }
+    }
+  }
+}

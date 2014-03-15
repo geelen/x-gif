@@ -13,9 +13,17 @@ gulp.task('html', function () {
     .pipe(gulp.dest('dist'));
 })
 
-gulp.task('build', ['js', 'html']);
+gulp.task('css', function () {
+  gulp.src('src/x-gif.scss')
+    .pipe($.sass())
+    .pipe($.autoprefixer("last 2 versions", "> 1%"))
+    .pipe(gulp.dest('dist'));
+})
+
+gulp.task('build', ['js', 'html', 'css']);
 
 gulp.task('default', ['build'], function () {
   gulp.watch(['src/*.js'], ['js']);
   gulp.watch(['src/*.html'], ['html']);
+  gulp.watch(['src/*.scss'], ['css']);
 });
