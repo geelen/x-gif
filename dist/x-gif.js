@@ -185,6 +185,8 @@ Polymer('x-gif', {
 },{"./playback.js":4}],3:[function(require,module,exports){
 "use strict";
 
+var defaultFrameDelay = 10;
+
 var Gif = function (frames) {
   this.frames = frames;
   this.length = 0;
@@ -192,8 +194,7 @@ var Gif = function (frames) {
 
   frames.forEach(function (frame) {
     this.offsets.push(this.length);
-    console.log(frame.delay)
-    this.length += (frame.delay || 10);
+    this.length += (frame.delay || defaultFrameDelay);
   }, this);
 }
 
@@ -247,7 +248,6 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
-  console.log(this.gif.length)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {

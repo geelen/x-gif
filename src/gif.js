@@ -1,5 +1,7 @@
 "use strict";
 
+var defaultFrameDelay = 10;
+
 var Gif = function (frames) {
   this.frames = frames;
   this.length = 0;
@@ -7,8 +9,7 @@ var Gif = function (frames) {
 
   frames.forEach(function (frame) {
     this.offsets.push(this.length);
-    console.log(frame.delay)
-    this.length += (frame.delay || 10);
+    this.length += (frame.delay || defaultFrameDelay);
   }, this);
 }
 
