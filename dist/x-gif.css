@@ -9,6 +9,9 @@
     transform: translateZ(0); }
     #frames img:first-child {
       position: static; }
+  #frames.exploded img {
+    position: static;
+    opacity: 1; }
   #frames.frame-0 img:nth-child(n+2) {
     opacity: 0; }
   #frames.frame-1 img:nth-child(n+3) {

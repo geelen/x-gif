@@ -11,8 +11,6 @@ var Playback = function (el, file, cb) {
 
 Playback.prototype.afterExploded = function (gif) {
   console.warn("Callbacks will hurt you. I promise.")
-  console.log(gif)
-  console.log(this)
   this.gif = gif;
 
   this.el.innerHTML = "";
@@ -47,10 +45,21 @@ Playback.prototype.startSpeed = function (speed) {
 
   this.playing = true;
   animationLoop();
+}
 
-  console.log("OK")
+Playback.prototype.startBpm = function (bpm) {
+  var beatLength = 60 * 1000 / bpm,
+    startTime = performance.now(),
+    animationLoop = (function () {
+      var duration = performance.now() - startTime;
+      var fraction = duration / beatLength % 1;
+      this.setFrame(this.gif.frameAt(fraction));
 
-  console.log(this.gif);
+      if (this.playing) requestAnimationFrame(animationLoop);
+    }).bind(this);
+
+  this.playing = true;
+  animationLoop();
 }
 
 Playback.prototype.startBpm;

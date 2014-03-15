@@ -12,6 +12,11 @@
     }
   }
 
+  &.exploded img {
+    position: static;
+    opacity: 1;
+  }
+
   @for $i from 0 to 100 {
     &.frame-#{$i} {
       img:nth-child(n + #{2 + $i}) {

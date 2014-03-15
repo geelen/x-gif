@@ -125,10 +125,8 @@ Exploder.prototype.explode = function (buffer) {
     frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
     frame.url = URL.createObjectURL(frame.blob);
   }
-  console.log(frames);
 
   this.doneCallback(new Gif(frames));
-
 }
 
 module.exports = Exploder;
@@ -138,21 +136,36 @@ module.exports = Exploder;
 
 var Playback = require('./playback.js');
 
+var Strategies = {
+  speed: function () {
+    this.playback.startSpeed(this.speed);
+  },
+  bpm: function () {
+    this.playback.startBpm(this.bpm);
+  },
+  exploded: function () {
+    this.$.frames.classList.add('exploded')
+  }
+}
+
 Polymer('x-gif', {
   ready: function () {
     // Better than using a default attribute, since this
     // triggers change detectors below.
     this.src = this.src || "../gifs/nope.gif";
-    this.speed = this.speed || 1.0;
+    if (this.exploded) {
+      this.playbackStrategy = Strategies.exploded.bind(this);
+    } else if (this.bpm) {
+      this.playbackStrategy = Strategies.bpm.bind(this);
+    } else {
+      this.speed = this.speed || 1.0;
+      this.playbackStrategy = Strategies.speed.bind(this);
+    }
+
     console.log("READY")
   },
   srcChanged: function (oldVal, newVal) {
-    console.log("Setting gif to " + newVal)
-    this.playback = new Playback(this.$.frames, newVal, (function () {
-      console.warn("UGH. Callbacks FOR THE LOSE.");
-      console.log(this.speed);
-      this.playback.startSpeed(this.speed);
-    }).bind(this));
+    this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy);
   }
 // Hard to do this without promises
 //  speedChanged: function (oldVal, newVal) {
@@ -199,8 +212,6 @@ var Playback = function (el, file, cb) {
 
 Playback.prototype.afterExploded = function (gif) {
   console.warn("Callbacks will hurt you. I promise.")
-  console.log(gif)
-  console.log(this)
   this.gif = gif;
 
   this.el.innerHTML = "";
@@ -235,10 +246,21 @@ Playback.prototype.startSpeed = function (speed) {
 
   this.playing = true;
   animationLoop();
+}
 
-  console.log("OK")
+Playback.prototype.startBpm = function (bpm) {
+  var beatLength = 60 * 1000 / bpm,
+    startTime = performance.now(),
+    animationLoop = (function () {
+      var duration = performance.now() - startTime;
+      var fraction = duration / beatLength % 1;
+      this.setFrame(this.gif.frameAt(fraction));
 
-  console.log(this.gif);
+      if (this.playing) requestAnimationFrame(animationLoop);
+    }).bind(this);
+
+  this.playing = true;
+  animationLoop();
 }
 
 Playback.prototype.startBpm;

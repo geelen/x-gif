@@ -124,10 +124,8 @@ Exploder.prototype.explode = function (buffer) {
     frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
     frame.url = URL.createObjectURL(frame.blob);
   }
-  console.log(frames);
 
   this.doneCallback(new Gif(frames));
-
 }
 
 module.exports = Exploder;
