@@ -1,7 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 "use strict";
 
-var StreamReader = require('./stream_reader.js');
+var StreamReader = require('./stream_reader.js'),
+  Gif = require('./gif.js');
 
 var Exploder = function (file, cb) {
   this.file = file;
@@ -124,15 +125,15 @@ Exploder.prototype.explode = function (buffer) {
     frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
     frame.url = URL.createObjectURL(frame.blob);
   }
-  console.log(frames)
+  console.log(frames);
 
-  this.doneCallback(frames);
+  this.doneCallback(new Gif(frames));
 
 }
 
 module.exports = Exploder;
 
-},{"./stream_reader.js":4}],2:[function(require,module,exports){
+},{"./gif.js":3,"./stream_reader.js":5}],2:[function(require,module,exports){
 "use strict";
 
 var Playback = require('./playback.js');
@@ -148,39 +149,92 @@ Polymer('x-gif', {
     console.log("Setting gif to " + newVal)
     var playback = new Playback(this.$.frames, newVal, function () {
       console.warn("UGH. Callbacks FOR THE LOSE.");
-      playback.startLoop(1.0);
+      playback.startSpeed(1.0);
     });
   }
 })
 
-},{"./playback.js":3}],3:[function(require,module,exports){
+},{"./playback.js":4}],3:[function(require,module,exports){
+"use strict";
+
+var Gif = function (frames) {
+  this.frames = frames;
+  this.length = 0;
+  this.offsets = []
+
+  frames.forEach(function (frame) {
+    this.offsets.push(this.length);
+    this.length += frame.delay;
+  }, this);
+}
+
+Gif.prototype.frameAt = function (fraction) {
+  var offset = fraction * this.length;
+  for (var i = 1, l = this.offsets.length; i < l; i++) {
+    if (this.offsets[i] > offset) break;
+  }
+  return i - 1;
+}
+
+module.exports = Gif;
+
+},{}],4:[function(require,module,exports){
 "use strict";
 
 var Exploder = require('./exploder.js');
 
 var Playback = function (el, file, cb) {
-  this.exploder = new Exploder(file, function (frames) {
-    console.warn("Callbacks will hurt you. I promise.")
-    console.log(frames.length)
+  this.el = el;
+  this.cb = cb;
 
-    el.innerHTML = "";
-    frames.forEach(function (frame) {
-      var image = new Image();
-      image.src = frame.url;
-      el.appendChild(image);
-    })
-
-    cb();
-  });
+  new Exploder(file, this.afterExploded.bind(this));
 };
 
-Playback.prototype.startLoop = function (speed) {
-  console.log("OK")
+Playback.prototype.afterExploded = function (gif) {
+  console.warn("Callbacks will hurt you. I promise.")
+  console.log(gif)
+  console.log(this)
+  this.gif = gif;
+
+  this.el.innerHTML = "";
+  gif.frames.forEach(function (frame) {
+    var image = new Image();
+    image.src = frame.url;
+    this.el.appendChild(image);
+  }, this)
+
+  this.cb();
 }
+
+Playback.prototype.setFrame = function (frameNr) {
+  this.el.dataset['frame'] = frameNr;
+}
+
+Playback.prototype.startSpeed = function (speed) {
+  var gifLength = this.gif.length / speed,
+    startTime = performance.now(),
+    animationLoop = (function () {
+      var duration = performance.now() - startTime;
+      var fraction = duration / gifLength % 1;
+      this.setFrame(this.gif.frameAt(fraction));
+
+      if (this.playing) requestAnimationFrame(animationLoop);
+    }).bind(this);
+
+  this.playing = true;
+  animationLoop();
+
+  console.log("OK")
+
+  console.log(this.gif);
+}
+
+Playback.prototype.startBpm;
+Playback.prototype.startBeats;
 
 module.exports = Playback;
 
-},{"./exploder.js":1}],4:[function(require,module,exports){
+},{"./exploder.js":1}],5:[function(require,module,exports){
 "use strict";
 
 var StreamReader = function (arrayBuffer) {

@@ -13,7 +13,7 @@ Polymer('x-gif', {
     console.log("Setting gif to " + newVal)
     var playback = new Playback(this.$.frames, newVal, function () {
       console.warn("UGH. Callbacks FOR THE LOSE.");
-      playback.startLoop(1.0);
+      playback.startSpeed(1.0);
     });
   }
 })
