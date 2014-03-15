@@ -37,7 +37,7 @@ Polymer('x-gif', {
     console.log("READY")
   },
   srcChanged: function (oldVal, newVal) {
-    this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy);
+    this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy, this['ping-pong'] != null);
   }
 // Hard to do this without promises
 //  speedChanged: function (oldVal, newVal) {

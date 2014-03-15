@@ -171,7 +171,7 @@ Polymer('x-gif', {
     console.log("READY")
   },
   srcChanged: function (oldVal, newVal) {
-    this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy);
+    this.playback = new Playback(this.$.frames, newVal, this.playbackStrategy, this['ping-pong'] != null);
   }
 // Hard to do this without promises
 //  speedChanged: function (oldVal, newVal) {
@@ -209,9 +209,10 @@ module.exports = Gif;
 
 var Exploder = require('./exploder.js');
 
-var Playback = function (el, file, cb) {
+var Playback = function (el, file, cb, pingPong) {
   this.el = el;
   this.cb = cb;
+  this.pingPong = pingPong;
 
   new Exploder(file, this.afterExploded.bind(this));
 };
@@ -230,7 +231,8 @@ Playback.prototype.afterExploded = function (gif) {
   this.cb();
 }
 
-Playback.prototype.setFrame = function (frameNr) {
+Playback.prototype.setFrame = function (fraction, repeatCount) {
+  var frameNr = (this.pingPong && repeatCount % 2 > 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
   // TODO: Fix when I upgrade sass
   this.el.className = "frame-" + frameNr;
 //  this.el.dataset['frame'] = frameNr;
@@ -245,14 +247,14 @@ Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
     startTime = performance.now(),
     animationLoop = (function () {
       var duration = performance.now() - startTime,
-        loopCount = duration / gifLength,
-        fraction = loopCount % 1;
-      if (!nTimes || loopCount < nTimes) {
-        this.setFrame(this.gif.frameAt(fraction));
+        repeatCount = duration / gifLength,
+        fraction = repeatCount % 1;
+      if (!nTimes || repeatCount < nTimes) {
+        this.setFrame(fraction, repeatCount);
 
         if (this.playing) requestAnimationFrame(animationLoop);
       } else {
-        this.setFrame(this.gif.frameAt(1.0));
+        this.setFrame(1.0, repeatCount);
         if (endCb) endCb();
       }
     }).bind(this);
@@ -265,8 +267,9 @@ Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
   var speedup = 2,
     lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
     subBeat = beatNr % lengthInBeats,
+    repeatCount = beatNr / lengthInBeats,
     subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;
-  this.setFrame(this.gif.frameAt(subFraction))
+  this.setFrame(subFraction, repeatCount);
 }
 
 Playback.prototype.startBpm = function (bpm) {
@@ -290,9 +293,10 @@ Playback.prototype.startHardBpm = function (bpm) {
   var beatLength = 60 * 1000 / bpm,
     startTime = performance.now(),
     animationLoop = (function () {
-      var duration = performance.now() - startTime;
-      var fraction = duration / beatLength % 1;
-      this.setFrame(this.gif.frameAt(fraction));
+      var duration = performance.now() - startTime,
+        repeatCount = duration / beatLength,
+        fraction = repeatCount % 1;
+      this.setFrame(fraction, repeatCount);
 
       if (this.playing) requestAnimationFrame(animationLoop);
     }).bind(this);
