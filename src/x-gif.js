@@ -6,6 +6,9 @@ var Strategies = {
   speed: function () {
     this.playback.startSpeed(this.speed);
   },
+  hardBpm: function () {
+    this.playback.startHardBpm(this.bpm);
+  },
   bpm: function () {
     this.playback.startBpm(this.bpm);
   },
@@ -21,6 +24,8 @@ Polymer('x-gif', {
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded) {
       this.playbackStrategy = Strategies.exploded.bind(this);
+    } else if (this.bpm) {
+      this.playbackStrategy = Strategies.hardBpm.bind(this);
     } else if (this.bpm) {
       this.playbackStrategy = Strategies.bpm.bind(this);
     } else {
