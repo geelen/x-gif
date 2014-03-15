@@ -10,11 +10,11 @@
     &:first-child {
       position: static;
     }
-  }
 
-  &.exploded img {
-    position: static;
-    opacity: 1;
+    :host[exploded] & {
+      position: static;
+      opacity: 1;
+    }
   }
 
   @for $i from 0 to 100 {

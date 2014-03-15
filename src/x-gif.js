@@ -14,8 +14,7 @@ var Strategies = {
   bpm: function () {
     this.playback.startBpm(this.bpm);
   },
-  exploded: function () {
-    this.$.frames.classList.add('exploded')
+  noop: function () {
   }
 }
 
@@ -25,7 +24,7 @@ Polymer('x-gif', {
     // triggers change detectors below.
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
-      this.playbackStrategy = Strategies.exploded.bind(this);
+      this.playbackStrategy = Strategies.noop.bind(this);
     } else if (this['hard-bpm']) {
       this.playbackStrategy = Strategies.hardBpm.bind(this);
     } else if (this.bpm) {
