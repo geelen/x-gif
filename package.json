@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "gulp": "~3.5.5",
-    "gulp-sass": "~0.2.2",
+    "gulp-sass": "~0.7.0",
     "gulp-concat": "~2.1.5",
     "gulp-autoprefixer": "0.0.3",
     "gulp-load-plugins": "~0.3.0",

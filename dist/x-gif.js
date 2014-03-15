@@ -143,7 +143,7 @@ var Strategies = {
     }).bind(this));
   },
   hardBpm: function () {
-    this.playback.startHardBpm(this.bpm);
+    this.playback.startHardBpm(this['hard-bpm']);
   },
   bpm: function () {
     this.playback.startBpm(this.bpm);
@@ -158,9 +158,9 @@ Polymer('x-gif', {
     // Better than using a default attribute, since this
     // triggers change detectors below.
     this.src = this.src || "../gifs/nope.gif";
-    if (this.exploded) {
+    if (this.exploded != null) {
       this.playbackStrategy = Strategies.exploded.bind(this);
-    } else if (this.bpm) {
+    } else if (this['hard-bpm']) {
       this.playbackStrategy = Strategies.hardBpm.bind(this);
     } else if (this.bpm) {
       this.playbackStrategy = Strategies.bpm.bind(this);
@@ -242,7 +242,6 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
-  console.log(nTimes)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {

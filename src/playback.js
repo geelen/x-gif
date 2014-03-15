@@ -34,7 +34,6 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
-  console.log(nTimes)
   var gifLength = 10 * this.gif.length / speed,
     startTime = performance.now(),
     animationLoop = (function () {
