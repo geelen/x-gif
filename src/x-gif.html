@@ -1,7 +1,18 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<polymer-element name="x-gif">
+<polymer-element name="x-gif" attributes="file">
   <template>
-    <span>Hello from <b>my-element</b>. This is my Shadow DOM.</span>
+    <img src="{{ file }}"/>
   </template>
+  <script>
+    Polymer('x-gif', {
+      file: "../gifs/nope.gif",
+      ready: function () {
+        console.log("READY")
+      },
+      fileChanged: function (oldVal, newVal) {
+        console.log(oldVal, newVal)
+      }
+    })
+  </script>
 </polymer-element>
