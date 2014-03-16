@@ -220,12 +220,12 @@
     position: static;
     opacity: 1; }
 
-:host[full-screen] {
+:host[fill] {
   display: block;
   height: 100%; }
-  :host[full-screen] #frames {
+  :host[fill] #frames {
     display: block; }
-  :host[full-screen] .frame {
+  :host[fill] .frame {
     width: 100%;
     height: 100%;
     -webkit-background-size: cover;

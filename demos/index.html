@@ -3,54 +3,20 @@
   <head>
     <title>Toggle Button</title>
     <script src="../bower_components/platform/platform.js"></script>
-    <link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
     <link rel="import" href="../dist/x-gif.html">
     <style>
     </style>
   </head>
   <body unresolved>
-    <x-gif src="gifs/pulse.gif" class="full-screen" clock></x-gif>
-    <audio src="audio/lose_yourself_to_dance.mp3" controls></audio>
-    <polymer-ajax auto url="audio/lose_yourself_to_dance.json"></polymer-ajax>
-
+    <h1>Click a gif to stop or start it</h1>
+    <x-gif src="gifs/pulse.gif"></x-gif>
+    <x-gif stopped src="gifs/pulse.gif"></x-gif>
     <script>
-      var bluetoothDelay = -0.15;
       window.addEventListener('polymer-ready', function(e) {
-        var xGif = document.querySelector('x-gif'),
-          audio = document.querySelector('audio'),
-          metadata = document.querySelector('polymer-ajax');
-
-        metadata.addEventListener('polymer-response', function () {
-          audio.play();
-        });
-        audio.addEventListener('playing', function () {
-          var beats = metadata.response.response.songs[0].analysis.beats,
-            beatIndex = 0;
-          console.log(beats[0])
-          while (beats[0].start > 0) {
-            beats.unshift({
-              start: beats[0].start - beats[0].duration,
-              duration: beats[0].duration,
-              confidence: 0
-            })
-          }
-
-          animationLoop = function () {
-            requestAnimationFrame(animationLoop);
-
-            if (beats.length > beatIndex) {
-              var currentTime = audio.currentTime + bluetoothDelay;
-              while (beatIndex < beats.length && currentTime > beats[beatIndex].start) {
-                beatIndex++;
-              }
-              var beat = beats[beatIndex - 1];
-
-              var sinceLastBeat = currentTime - beat.start,
-                beatFraction = sinceLastBeat / beat.duration;
-              xGif.onClock(beatIndex, beat.duration * 1000, beatFraction);
-            }
-          }
-          animationLoop();
+        document.querySelectorAll('x-gif').array().forEach(function (el) {
+          el.addEventListener('click', function () {
+            el.stopped = (el.stopped == null) ? true : null;
+          })
         })
       });
     </script>

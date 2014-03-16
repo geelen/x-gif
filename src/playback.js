@@ -25,7 +25,8 @@ var Playback = function (element, file, opts) {
   this.element = element;
   this.onReady = opts.onReady;
   this.pingPong = opts.pingPong;
-  this.fullScreen = opts.fullScreen;
+  this.fill = opts.fill;
+  this.stopped = opts.stopped;
 
   new Exploder(file, (function (gif) {
     // Once we have the GIF data, add things to the DOM
@@ -33,8 +34,7 @@ var Playback = function (element, file, opts) {
     this.gif = gif;
 
     this.element.innerHTML = "";
-    console.log(this.fullScreen);
-    var createFrameElement = (this.fullScreen) ? createDiv : createImage;
+    var createFrameElement = (this.fill) ? createDiv : createImage;
     gif.frames.map(createFrameElement)
       .forEach(this.element.appendChild, this.element);
 
@@ -48,28 +48,35 @@ Playback.prototype.setFrame = function (fraction, repeatCount) {
   this.element.dataset['frame'] = frameNr;
 }
 
+Playback.prototype.start = function () {
+  console.log("START")
+  this.stopped = false;
+  if (this.animationLoop) this.animationLoop();
+}
+
 Playback.prototype.stop = function () {
-  this.playing = false;
+  console.log("STOP")
+  this.stopped = true;
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
   var gifLength = 10 * this.gif.length / speed,
-    startTime = performance.now(),
-    animationLoop = (function () {
-      var duration = performance.now() - startTime,
-        repeatCount = duration / gifLength,
-        fraction = repeatCount % 1;
-      if (!nTimes || repeatCount < nTimes) {
-        this.setFrame(fraction, repeatCount);
+    startTime = performance.now();
+  this.animationLoop = (function () {
+    var duration = performance.now() - startTime,
+      repeatCount = duration / gifLength,
+      fraction = repeatCount % 1;
+    if (!nTimes || repeatCount < nTimes) {
+      this.setFrame(fraction, repeatCount);
 
-        requestAnimationFrame(animationLoop);
-      } else {
-        this.setFrame(1.0, repeatCount);
-        if (endCb) endCb();
-      }
-    }).bind(this);
+      if (!this.stopped) requestAnimationFrame(this.animationLoop);
+    } else {
+      this.setFrame(1.0, repeatCount);
+      if (endCb) endCb();
+    }
+  }).bind(this);
 
-  animationLoop();
+  if (!this.stopped) this.start();
 }
 
 Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {

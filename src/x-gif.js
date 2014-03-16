@@ -37,12 +37,25 @@ var XGif = function () {
 
   this.srcChanged = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
+    console.log("GO TIME")
     this.playback = new Playback(this.$.frames, this.src, {
       onReady: playbackStrategy,
       pingPong: this['ping-pong'] != null,
-      fullScreen: this['full-screen'] != null
+      fill: this.fill != null,
+      stopped: this.stopped != null
     });
   };
+
+  this.stoppedChanged = function (oldVal, newVal) {
+    var nowStop = newVal != null;
+    if (this.playback && nowStop && !this.playback.stopped) {
+      console.log("TIME TO STOP")
+      this.playback.stop();
+    } else if (this.playback && !nowStop && this.playback.stopped) {
+      console.log("TIME TO START")
+      this.playback.start();
+    }
+  }
 
   this.onClock = function (beatNr, beatDuration, beatFraction) {
     this.playback.fromClock(beatNr, beatDuration, beatFraction);
