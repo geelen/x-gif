@@ -31,6 +31,7 @@ var Playback = function (element, file, opts) {
   new Exploder(file, (function (gif) {
     // Once we have the GIF data, add things to the DOM
     console.warn("Callbacks will hurt you. I promise.")
+    console.log("Received " + gif.frames.length + " frames of gif " + file)
     this.gif = gif;
 
     this.element.innerHTML = "";
@@ -45,10 +46,15 @@ var Playback = function (element, file, opts) {
 };
 
 Playback.prototype.scaleToFill = function () {
-  var xScale = this.element.parentElement.offsetWidth / this.element.offsetWidth,
-    yScale = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+  console.log("Scaling")
+  if (!(this.element.offsetWidth && this.element.offsetHeight)) {
+    requestAnimationFrame(this.scaleToFill.bind(this));
+  } else {
+    var xScale = this.element.parentElement.offsetWidth / this.element.offsetWidth,
+      yScale = this.element.parentElement.offsetHeight / this.element.offsetHeight;
 
-  this.element.style.webkitTransform = "scale(" + Math.max(xScale, yScale) + ")";
+    this.element.style.webkitTransform = "scale(" + 1.1 * Math.max(xScale, yScale) + ")";
+  }
 }
 
 Playback.prototype.setFrame = function (fraction, repeatCount) {
@@ -59,6 +65,7 @@ Playback.prototype.setFrame = function (fraction, repeatCount) {
 Playback.prototype.start = function () {
   console.log("START")
   this.stopped = false;
+  this.startTime = performance.now();
   if (this.animationLoop) this.animationLoop();
 }
 
@@ -68,10 +75,9 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
-  var gifLength = 10 * this.gif.length / speed,
-    startTime = performance.now();
+  var gifLength = 10 * this.gif.length / speed;
   this.animationLoop = (function () {
-    var duration = performance.now() - startTime,
+    var duration = performance.now() - this.startTime,
       repeatCount = duration / gifLength,
       fraction = repeatCount % 1;
     if (!nTimes || repeatCount < nTimes) {
@@ -97,36 +103,32 @@ Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
 }
 
 Playback.prototype.startHardBpm = function (bpm) {
-  var beatLength = 60 * 1000 / bpm,
-    startTime = performance.now(),
-    animationLoop = (function () {
-      var duration = performance.now() - startTime,
-        repeatCount = duration / beatLength,
-        fraction = repeatCount % 1;
-      this.setFrame(fraction, repeatCount);
+  var beatLength = 60 * 1000 / bpm;
+  this.animationLoop = (function () {
+    var duration = performance.now() - this.startTime,
+      repeatCount = duration / beatLength,
+      fraction = repeatCount % 1;
+    this.setFrame(fraction, repeatCount);
 
-      if (this.playing) requestAnimationFrame(animationLoop);
-    }).bind(this);
+    if (this.playing) requestAnimationFrame(animationLoop);
+  }).bind(this);
 
-  this.playing = true;
-  animationLoop();
+  if (!this.stopped) this.start();
 }
 
 Playback.prototype.startBpm = function (bpm) {
-  var beatLength = 60 * 1000 / bpm,
-    startTime = performance.now(),
-    animationLoop = (function () {
-      var duration = performance.now() - startTime,
-        beatNr = Math.floor(duration / beatLength),
-        beatFraction = (duration % beatLength) / beatLength;
+  var beatLength = 60 * 1000 / bpm;
+  this.animationLoop = (function () {
+    var duration = performance.now() - this.startTime,
+      beatNr = Math.floor(duration / beatLength),
+      beatFraction = (duration % beatLength) / beatLength;
 
-      this.fromClock(beatNr, beatLength, beatFraction);
+    this.fromClock(beatNr, beatLength, beatFraction);
 
-      if (this.playing) requestAnimationFrame(animationLoop);
-    }).bind(this);
+    if (this.playing) requestAnimationFrame(animationLoop);
+  }).bind(this);
 
-  this.playing = true;
-  animationLoop();
+  if (!this.stopped) this.start();
 }
 
 module.exports = Playback;
