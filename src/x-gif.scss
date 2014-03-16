@@ -38,8 +38,9 @@
     }
   }
 
+  // TODO: https://github.com/hcatlin/libsass/issues/309
   @for $i from 0 to 100 {
-    &.frame-#{$i} {
+    &#{"[data-frame=\"" + $i + "\"]"} {
       img:nth-child(n + #{2 + $i}) {
         opacity: 0;
       }

@@ -9,7 +9,7 @@
     </style>
   </head>
   <body unresolved>
-    <x-gif src="gifs/explosion.gif" clock ping-pong></x-gif>
+    <x-gif src="gifs/pulse.gif" class="full-screen" clock></x-gif>
     <audio src="audio/lose_yourself_to_dance.mp3" controls></audio>
     <polymer-ajax auto url="audio/lose_yourself_to_dance.json"></polymer-ajax>
 
@@ -43,11 +43,11 @@
               while (beatIndex < beats.length && currentTime > beats[beatIndex].start) {
                 beatIndex++;
               }
-              var beat = beats[beatIndex - 1] || beats[0];
+              var beat = beats[beatIndex - 1];
 
               var sinceLastBeat = currentTime - beat.start,
                 beatFraction = sinceLastBeat / beat.duration;
-              xGif.clock(beatIndex, beat.duration * 1000, Math.abs(beatFraction) % 1);
+              xGif.onClock(beatIndex, beat.duration * 1000, beatFraction);
             }
           }
           animationLoop();

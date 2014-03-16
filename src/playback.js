@@ -2,34 +2,33 @@
 
 var Exploder = require('./exploder.js');
 
-var Playback = function (el, file, cb, pingPong) {
-  this.el = el;
-  this.cb = cb;
-  this.pingPong = pingPong;
+var Playback = function (element, file, opts) {
+  this.element = element;
+  this.onReady = opts.onReady;
+  this.pingPong = opts.pingPong;
 
   new Exploder(file, this.afterExploded.bind(this));
 };
 
+// Once we have the GIF data, add things to the DOM
 Playback.prototype.afterExploded = function (gif) {
   console.warn("Callbacks will hurt you. I promise.")
   this.gif = gif;
 
-  this.el.innerHTML = "";
+  this.element.innerHTML = "";
   gif.frames.forEach(function (frame) {
     var image = new Image();
     image.src = frame.url;
     if (frame.disposal == 2) image.className = 'disposal-restore';
-    this.el.appendChild(image);
+    this.element.appendChild(image);
   }, this)
 
-  this.cb();
+  this.onReady();
 }
 
 Playback.prototype.setFrame = function (fraction, repeatCount) {
   var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
-  // TODO: Fix when I upgrade sass
-  this.el.className = "frame-" + frameNr;
-//  this.el.dataset['frame'] = frameNr;
+  this.element.dataset['frame'] = frameNr;
 }
 
 Playback.prototype.stop = function () {
@@ -46,14 +45,13 @@ Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
       if (!nTimes || repeatCount < nTimes) {
         this.setFrame(fraction, repeatCount);
 
-        if (this.playing) requestAnimationFrame(animationLoop);
+        requestAnimationFrame(animationLoop);
       } else {
         this.setFrame(1.0, repeatCount);
         if (endCb) endCb();
       }
     }).bind(this);
 
-  this.playing = true;
   animationLoop();
 }
 
