@@ -37,21 +37,19 @@
 
 // Full Screen overrides
 :host([fill]) {
-  display: block;
   width: 100%;
   height: 100%;
 
-  #frames {
-    display: block;
+  .frames-wrapper {
     width: 100%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
   }
 
-  .frame {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: 50% 50%;
+  #frames {
+    transform-origin: 50% 50%;
   }
 }

@@ -34,14 +34,22 @@ var Playback = function (element, file, opts) {
     this.gif = gif;
 
     this.element.innerHTML = "";
-    var createFrameElement = (this.fill) ? createDiv : createImage;
+    var createFrameElement = createImage;//(this.fill) ? createDiv : createImage;
     gif.frames.map(createFrameElement)
       .forEach(this.element.appendChild, this.element);
+
+    if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
 
     this.onReady();
   }).bind(this));
 };
 
+Playback.prototype.scaleToFill = function () {
+  var xScale = this.element.parentElement.offsetWidth / this.element.offsetWidth,
+    yScale = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+
+  this.element.style.webkitTransform = "scale(" + Math.max(xScale, yScale) + ")";
+}
 
 Playback.prototype.setFrame = function (fraction, repeatCount) {
   var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);

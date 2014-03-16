@@ -221,17 +221,25 @@
     opacity: 1; }
 
 :host([fill]) {
-  display: block;
   width: 100%;
   height: 100%; }
-  :host([fill]) #frames {
-    display: block;
-    width: 100%;
-    height: 100%; }
-  :host([fill]) .frame {
-    position: absolute;
+  :host([fill]) .frames-wrapper {
     width: 100%;
     height: 100%;
-    -webkit-background-size: cover;
-    background-size: cover;
-    background-position: 50% 50%; }
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    overflow: hidden; }
+  :host([fill]) #frames {
+    -webkit-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    transform-origin: 50% 50%; }
