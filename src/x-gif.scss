@@ -1,49 +1,53 @@
 :host {
-  display: block;
-
-  &.full-screen {
-    width: 300vw;
-    top: 0;
-    margin-left: -100vw;
-    height: 100vh;
-    overflow: hidden;
-    text-align: center;
-  }
+  display: inline-block;
 }
 
 #frames {
   display: inline-block;
   position: relative;
 
-  img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: translateZ(0);
-
-    &:first-child {
-      position: static;
-    }
-    &.disposal-restore {
-      background-color: white;
-    }
-
-    :host[exploded] & {
-      position: static;
-      opacity: 1;
-    }
-
-    :host.full-screen & {
-      height: 100%;
-    }
-  }
-
   // TODO: https://github.com/hcatlin/libsass/issues/309
   @for $i from 0 to 100 {
     &#{"[data-frame=\"" + $i + "\"]"} {
-      img:nth-child(n + #{2 + $i}) {
+      .frame:nth-child(n + #{2 + $i}) {
         opacity: 0;
       }
     }
+  }
+}
+
+.frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateZ(0);
+
+  &:first-child {
+    position: static;
+  }
+  &.disposal-restore {
+    background-color: white;
+  }
+
+  :host[exploded] & {
+    position: static;
+    opacity: 1;
+  }
+}
+
+// Full Screen overrides
+:host[full-screen] {
+  display: block;
+  height: 100%;
+
+  #frames {
+    display: block;
+  }
+
+  .frame {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: 50% 50%;
   }
 }

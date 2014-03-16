@@ -39,7 +39,8 @@ var XGif = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
     this.playback = new Playback(this.$.frames, this.src, {
       onReady: playbackStrategy,
-      pingPong: this['ping-pong'] != null
+      pingPong: this['ping-pong'] != null,
+      fullScreen: this['full-screen'] != null
     });
   };
 

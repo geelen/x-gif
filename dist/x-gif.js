@@ -175,7 +175,8 @@ var XGif = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
     this.playback = new Playback(this.$.frames, this.src, {
       onReady: playbackStrategy,
-      pingPong: this['ping-pong'] != null
+      pingPong: this['ping-pong'] != null,
+      fullScreen: this['full-screen'] != null
     });
   };
 
@@ -217,29 +218,46 @@ module.exports = Gif;
 
 var Exploder = require('./exploder.js');
 
+// Private functions for setup
+function addClasses(element, frame) {
+  element.classList.add('frame');
+  if (frame.disposal == 2) element.classList.add('disposal-restore');
+}
+var createImage = function (frame) {
+    var image = new Image();
+    image.src = frame.url;
+    addClasses(image, frame);
+    return image;
+  },
+  createDiv = function (frame) {
+    var div = document.createElement("div");
+    div.style.backgroundImage = "url(" + frame.url + ")";
+    addClasses(div, frame);
+    return div;
+  };
+
 var Playback = function (element, file, opts) {
+  // Set up out instance variables
   this.element = element;
   this.onReady = opts.onReady;
   this.pingPong = opts.pingPong;
+  this.fullScreen = opts.fullScreen;
 
-  new Exploder(file, this.afterExploded.bind(this));
+  new Exploder(file, (function (gif) {
+    // Once we have the GIF data, add things to the DOM
+    console.warn("Callbacks will hurt you. I promise.")
+    this.gif = gif;
+
+    this.element.innerHTML = "";
+    console.log(this.fullScreen);
+    var createFrameElement = (this.fullScreen) ? createDiv : createImage;
+    gif.frames.map(createFrameElement)
+      .forEach(this.element.appendChild, this.element);
+
+    this.onReady();
+  }).bind(this));
 };
 
-// Once we have the GIF data, add things to the DOM
-Playback.prototype.afterExploded = function (gif) {
-  console.warn("Callbacks will hurt you. I promise.")
-  this.gif = gif;
-
-  this.element.innerHTML = "";
-  gif.frames.forEach(function (frame) {
-    var image = new Image();
-    image.src = frame.url;
-    if (frame.disposal == 2) image.className = 'disposal-restore';
-    this.element.appendChild(image);
-  }, this)
-
-  this.onReady();
-}
 
 Playback.prototype.setFrame = function (fraction, repeatCount) {
   var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
