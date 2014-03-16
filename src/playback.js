@@ -110,7 +110,7 @@ Playback.prototype.startHardBpm = function (bpm) {
       fraction = repeatCount % 1;
     this.setFrame(fraction, repeatCount);
 
-    if (this.playing) requestAnimationFrame(animationLoop);
+    if (!this.stopped) requestAnimationFrame(animationLoop);
   }).bind(this);
 
   if (!this.stopped) this.start();
@@ -125,7 +125,7 @@ Playback.prototype.startBpm = function (bpm) {
 
     this.fromClock(beatNr, beatLength, beatFraction);
 
-    if (this.playing) requestAnimationFrame(animationLoop);
+    if (!this.stopped) requestAnimationFrame(animationLoop);
   }).bind(this);
 
   if (!this.stopped) this.start();
