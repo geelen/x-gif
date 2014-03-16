@@ -8,17 +8,6 @@
     </style>
   </head>
   <body unresolved>
-    <h1>Click a gif to stop or start it</h1>
     <x-gif src="gifs/pulse.gif"></x-gif>
-    <x-gif stopped src="gifs/pulse.gif"></x-gif>
-    <script>
-      window.addEventListener('polymer-ready', function(e) {
-        document.querySelectorAll('x-gif').array().forEach(function (el) {
-          el.addEventListener('click', function () {
-            el.stopped = (el.stopped == null) ? true : null;
-          })
-        })
-      });
-    </script>
   </body>
 </html>
