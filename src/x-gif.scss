@@ -8,7 +8,7 @@
 
   // TODO: https://github.com/hcatlin/libsass/issues/309
   @for $i from 0 to 100 {
-    &#{"[data-frame=\"" + $i + "\"]"} {
+    &[data-frame="#{$i}"] {
       .frame:nth-child(n + #{2 + $i}) {
         opacity: 0;
       }
@@ -29,22 +29,26 @@
     background-color: white;
   }
 
-  :host[exploded] & {
+  :host([exploded]) & {
     position: static;
     opacity: 1;
   }
 }
 
 // Full Screen overrides
-:host[fill] {
+:host([fill]) {
   display: block;
+  width: 100%;
   height: 100%;
 
   #frames {
     display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .frame {
+    position: absolute;
     width: 100%;
     height: 100%;
     background-size: cover;

@@ -15,7 +15,7 @@ gulp.task('html', function () {
 
 gulp.task('css', function () {
   gulp.src('src/x-gif.scss')
-    .pipe($.sass())
+    .pipe($.rubySass())
     .pipe($.autoprefixer("last 2 versions", "> 1%"))
     .pipe(gulp.dest('dist'));
 })

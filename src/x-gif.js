@@ -38,7 +38,7 @@ var XGif = function () {
   this.srcChanged = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
     console.log("GO TIME")
-    console.log(this.fill)
+    console.log(this.fill != null)
     this.playback = new Playback(this.$.frames, this.src, {
       onReady: playbackStrategy,
       pingPong: this['ping-pong'] != null,
