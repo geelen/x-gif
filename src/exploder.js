@@ -34,6 +34,7 @@ Exploder.prototype.explode = function (buffer) {
   if (streamReader.peekBit(1)) {
     streamReader.log("GLOBAL COLOR TABLE")
     var colorTableSize = streamReader.readByte() & 0x07;
+    streamReader.log("GLOBAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
     streamReader.skipBytes(2);
     streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
   } else {
@@ -83,6 +84,7 @@ Exploder.prototype.explode = function (buffer) {
       if (streamReader.peekBit(1)) {
         streamReader.log("LOCAL COLOR TABLE");
         var colorTableSize = streamReader.readByte() & 0x07;
+        streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
         streamReader.skipBytes(2);
         streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
       } else {
@@ -114,7 +116,17 @@ Exploder.prototype.explode = function (buffer) {
       streamReader.skipBytes(2);
       expectingImage = true;
     } else {
-      spinning = false;
+      var maybeTheEnd = streamReader.index;
+      while (!streamReader.finished() && !streamReader.isNext([0x21, 0xF9, 0x04])) {
+        streamReader.readByte();
+      }
+      if (streamReader.finished()) {
+        streamReader.index = maybeTheEnd;
+        streamReader.log("WE END");
+        spinning = false;
+      } else {
+        streamReader.log("UNKNOWN DATA FROM " + maybeTheEnd);
+      }
     }
   }
   var endOfFrames = streamReader.index;

@@ -3,30 +3,33 @@
   <head>
     <title>Toggle Button</title>
     <script src="../bower_components/platform/platform.js"></script>
-    <link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
     <link rel="import" href="../dist/x-gif.html">
     <style>
     </style>
   </head>
   <body unresolved>
-    <x-gif src="gifs/pulse.gif" full-screen clock></x-gif>
+    <x-gif src="gifs/pulse.gif" full-screen sync></x-gif>
     <audio src="audio/lose_yourself_to_dance.mp3" controls></audio>
-    <polymer-ajax auto url="audio/lose_yourself_to_dance.json"></polymer-ajax>
 
     <script>
       var bluetoothDelay = 0;//-0.15;
       window.addEventListener('polymer-ready', function(e) {
         var xGif = document.querySelector('x-gif'),
           audio = document.querySelector('audio'),
-          metadata = document.querySelector('polymer-ajax');
+          metadata;
 
-        metadata.addEventListener('polymer-response', function () {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'audio/lose_yourself_to_dance.json', true);
+        xhr.responseType = 'json';
+        xhr.onload = function () {
+          console.log(this);
+          metadata = this.response;
           audio.play();
-        });
+        }
+        xhr.send();
         audio.addEventListener('playing', function () {
-          var beats = metadata.response.response.songs[0].analysis.beats,
+          var beats = metadata.response.songs[0].analysis.beats,
             beatIndex = 0;
-          console.log(beats[0])
           while (beats[0].start > 0) {
             beats.unshift({
               start: beats[0].start - beats[0].duration,
@@ -47,7 +50,7 @@
 
               var sinceLastBeat = currentTime - beat.start,
                 beatFraction = sinceLastBeat / beat.duration;
-              xGif.onClock(beatIndex, beat.duration * 1000, beatFraction);
+              xGif.clock(beatIndex, beat.duration * 1000 / audio.playbackRate, beatFraction);
             }
           }
           animationLoop();

@@ -23,7 +23,7 @@ var XGif = function () {
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = 'noop'
-    } else if (this.clock != null) {
+    } else if (this.sync != null) {
       this.playbackStrategy = 'noop';
     } else if (this['hard-bpm']) {
       this.playbackStrategy = 'hardBpm';
@@ -63,8 +63,8 @@ var XGif = function () {
     }
   }
 
-  this.onClock = function (beatNr, beatDuration, beatFraction) {
-    this.playback.fromClock(beatNr, beatDuration, beatFraction);
+  this.clock = function (beatNr, beatDuration, beatFraction) {
+    if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
 
   this.relayout = function () {

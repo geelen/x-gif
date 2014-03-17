@@ -87,7 +87,7 @@ Playback.prototype.startSpeed = function (speed, nTimes) {
 }
 
 Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
-  var speedup = 2,
+  var speedup = 1.5,
     lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
     subBeat = beatNr % lengthInBeats,
     repeatCount = beatNr / lengthInBeats,

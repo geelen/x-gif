@@ -35,6 +35,7 @@ Exploder.prototype.explode = function (buffer) {
   if (streamReader.peekBit(1)) {
     streamReader.log("GLOBAL COLOR TABLE")
     var colorTableSize = streamReader.readByte() & 0x07;
+    streamReader.log("GLOBAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
     streamReader.skipBytes(2);
     streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
   } else {
@@ -84,6 +85,7 @@ Exploder.prototype.explode = function (buffer) {
       if (streamReader.peekBit(1)) {
         streamReader.log("LOCAL COLOR TABLE");
         var colorTableSize = streamReader.readByte() & 0x07;
+        streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
         streamReader.skipBytes(2);
         streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
       } else {
@@ -115,7 +117,17 @@ Exploder.prototype.explode = function (buffer) {
       streamReader.skipBytes(2);
       expectingImage = true;
     } else {
-      spinning = false;
+      var maybeTheEnd = streamReader.index;
+      while (!streamReader.finished() && !streamReader.isNext([0x21, 0xF9, 0x04])) {
+        streamReader.readByte();
+      }
+      if (streamReader.finished()) {
+        streamReader.index = maybeTheEnd;
+        streamReader.log("WE END");
+        spinning = false;
+      } else {
+        streamReader.log("UNKNOWN DATA FROM " + maybeTheEnd);
+      }
     }
   }
   var endOfFrames = streamReader.index;
@@ -159,7 +171,7 @@ var XGif = function () {
     this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = 'noop'
-    } else if (this.clock != null) {
+    } else if (this.sync != null) {
       this.playbackStrategy = 'noop';
     } else if (this['hard-bpm']) {
       this.playbackStrategy = 'hardBpm';
@@ -199,8 +211,8 @@ var XGif = function () {
     }
   }
 
-  this.onClock = function (beatNr, beatDuration, beatFraction) {
-    this.playback.fromClock(beatNr, beatDuration, beatFraction);
+  this.clock = function (beatNr, beatDuration, beatFraction) {
+    if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
 
   this.relayout = function () {
@@ -326,7 +338,7 @@ Playback.prototype.startSpeed = function (speed, nTimes) {
 }
 
 Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
-  var speedup = 2,
+  var speedup = 1.5,
     lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
     subBeat = beatNr % lengthInBeats,
     repeatCount = beatNr / lengthInBeats,
@@ -371,8 +383,12 @@ module.exports = Playback;
 var StreamReader = function (arrayBuffer) {
   this.data = new Uint8Array(arrayBuffer);
   this.index = 0;
+  this.log("TOTAL LENGTH: " + this.data.length);
 }
 
+StreamReader.prototype.finished = function () {
+  return this.index >= this.data.length;
+}
 StreamReader.prototype.readByte = function () {
   return this.data[this.index++];
 };

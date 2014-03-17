@@ -3,8 +3,12 @@
 var StreamReader = function (arrayBuffer) {
   this.data = new Uint8Array(arrayBuffer);
   this.index = 0;
+  this.log("TOTAL LENGTH: " + this.data.length);
 }
 
+StreamReader.prototype.finished = function () {
+  return this.index >= this.data.length;
+}
 StreamReader.prototype.readByte = function () {
   return this.data[this.index++];
 };
