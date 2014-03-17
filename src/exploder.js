@@ -1,7 +1,7 @@
 "use strict";
 
 var StreamReader = require('./stream_reader.js'),
-  Gif = require('./gif.js');
+  Gif = require('./gif.sjs');
 
 var Exploder = function (file, cb) {
   this.file = file;

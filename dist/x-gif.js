@@ -2,7 +2,7 @@
 "use strict";
 
 var StreamReader = require('./stream_reader.js'),
-  Gif = require('./gif.js');
+  Gif = require('./gif.sjs');
 
 var Exploder = function (file, cb) {
   this.file = file;
@@ -145,7 +145,7 @@ Exploder.prototype.explode = function (buffer) {
 
 module.exports = Exploder;
 
-},{"./gif.js":3,"./stream_reader.js":5}],2:[function(require,module,exports){
+},{"./gif.sjs":3,"./stream_reader.js":5}],2:[function(require,module,exports){
 "use strict";
 
 var Playback = require('./playback.js');
@@ -223,30 +223,27 @@ var XGif = function () {
 Polymer('x-gif', new XGif());
 
 },{"./playback.js":4}],3:[function(require,module,exports){
-"use strict";
-
-var defaultFrameDelay = 10;
-
-var Gif = function (frames) {
-  this.frames = frames;
-  this.length = 0;
-  this.offsets = []
-
-  frames.forEach(function (frame) {
-    this.offsets.push(this.length);
-    this.length += (frame.delay || defaultFrameDelay);
-  }, this);
-}
-
-Gif.prototype.frameAt = function (fraction) {
-  var offset = fraction * this.length;
-  for (var i = 1, l = this.offsets.length; i < l; i++) {
-    if (this.offsets[i] > offset) break;
-  }
-  return i - 1;
-}
-
-module.exports = Gif;
+'use strict';
+;
+var defaultFrameDelay$359 = 10;
+var Gif$360 = function (frames$361) {
+    this.frames = frames$361;
+    this.length = 0;
+    this.offsets = [];
+    frames$361.forEach(function (frame$364) {
+        this.offsets.push(this.length);
+        this.length += frame$364.delay || defaultFrameDelay$359;
+    }.bind(this));
+};
+Gif$360.prototype.frameAt = function (fraction$365) {
+    var offset$366 = fraction$365 * this.length;
+    for (var i$367 = 1, l$368 = this.offsets.length; i$367 < l$368; i$367++) {
+        if (this.offsets[i$367] > offset$366)
+            break;
+    }
+    return i$367 - 1;
+};
+module.exports = Gif$360;
 
 },{}],4:[function(require,module,exports){
 "use strict";

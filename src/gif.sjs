@@ -1,5 +1,7 @@
 "use strict";
 
+import macros from './macros.sjs';
+
 var defaultFrameDelay = 10;
 
 var Gif = function (frames) {
@@ -7,10 +9,10 @@ var Gif = function (frames) {
   this.length = 0;
   this.offsets = []
 
-  frames.forEach(function (frame) {
+  frames.forEach((frame) => {
     this.offsets.push(this.length);
     this.length += (frame.delay || defaultFrameDelay);
-  }, this);
+  });
 }
 
 Gif.prototype.frameAt = function (fraction) {
