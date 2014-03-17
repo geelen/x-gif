@@ -47,6 +47,11 @@ var XGif = function () {
     });
   };
 
+  this.speedChanged = function (oldVal, newVal) {
+    console.log("SPEED CHANGED")
+    if (this.playback) this.playback.speed = newVal;
+  }
+
   this.stoppedChanged = function (oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
@@ -61,6 +66,10 @@ var XGif = function () {
   this.onClock = function (beatNr, beatDuration, beatFraction) {
     this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
+
+  this.relayout = function () {
+    if (this.fill != null) this.playback.scaleToFill();
+  }
 }
 
 Polymer('x-gif', new XGif());

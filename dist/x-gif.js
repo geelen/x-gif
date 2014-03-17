@@ -183,6 +183,11 @@ var XGif = function () {
     });
   };
 
+  this.speedChanged = function (oldVal, newVal) {
+    console.log("SPEED CHANGED")
+    if (this.playback) this.playback.speed = newVal;
+  }
+
   this.stoppedChanged = function (oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
@@ -197,6 +202,10 @@ var XGif = function () {
   this.onClock = function (beatNr, beatDuration, beatFraction) {
     this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
+
+  this.relayout = function () {
+    if (this.fill != null) this.playback.scaleToFill();
+  }
 }
 
 Polymer('x-gif', new XGif());
@@ -277,6 +286,7 @@ var Playback = function (element, file, opts) {
 
 Playback.prototype.scaleToFill = function () {
   console.log("Scaling")
+  console.log([this.element.parentElement.offsetWidth, this.element.parentElement.offsetHeight])
   if (!(this.element.offsetWidth && this.element.offsetHeight)) {
     requestAnimationFrame(this.scaleToFill.bind(this));
   } else {
@@ -305,9 +315,10 @@ Playback.prototype.stop = function () {
 }
 
 Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
-  var gifLength = 10 * this.gif.length / speed;
+  this.speed = speed;
   this.animationLoop = (function () {
-    var duration = performance.now() - this.startTime,
+    var gifLength = 10 * this.gif.length / this.speed,
+      duration = performance.now() - this.startTime,
       repeatCount = duration / gifLength,
       fraction = repeatCount % 1;
     if (!nTimes || repeatCount < nTimes) {

@@ -10,5 +10,14 @@
   </head>
   <body unresolved>
     <x-gif src="gifs/explosion.gif" fill ping-pong></x-gif>
+    <script>
+      window.addEventListener('polymer-ready', function () {
+        window.addEventListener('resize', function () {
+          [].forEach.call(document.querySelectorAll('x-gif'), function (elem) {
+            elem.relayout();
+          });
+        })
+      })
+    </script>
   </body>
 </html>
