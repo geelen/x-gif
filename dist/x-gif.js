@@ -175,7 +175,7 @@ var XGif = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
     console.log("GO TIME")
     console.log(this.fill != null)
-    this.playback = new Playback(this.$.frames, this.src, {
+    this.playback = new Playback(this, this.$.frames, this.src, {
       onReady: playbackStrategy,
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,
@@ -251,16 +251,11 @@ var createImage = function (frame) {
     image.src = frame.url;
     addClasses(image, frame);
     return image;
-  },
-  createDiv = function (frame) {
-    var div = document.createElement("div");
-    div.style.backgroundImage = "url(" + frame.url + ")";
-    addClasses(div, frame);
-    return div;
   };
 
-var Playback = function (element, file, opts) {
+var Playback = function (xgif, element, file, opts) {
   // Set up out instance variables
+  this.xgif = xgif;
   this.element = element;
   this.onReady = opts.onReady;
   this.pingPong = opts.pingPong;
@@ -285,8 +280,6 @@ var Playback = function (element, file, opts) {
 };
 
 Playback.prototype.scaleToFill = function () {
-  console.log("Scaling")
-  console.log([this.element.parentElement.offsetWidth, this.element.parentElement.offsetHeight])
   if (!(this.element.offsetWidth && this.element.offsetHeight)) {
     requestAnimationFrame(this.scaleToFill.bind(this));
   } else {
@@ -303,18 +296,16 @@ Playback.prototype.setFrame = function (fraction, repeatCount) {
 }
 
 Playback.prototype.start = function () {
-  console.log("START")
   this.stopped = false;
   this.startTime = performance.now();
   if (this.animationLoop) this.animationLoop();
 }
 
 Playback.prototype.stop = function () {
-  console.log("STOP")
   this.stopped = true;
 }
 
-Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
+Playback.prototype.startSpeed = function (speed, nTimes) {
   this.speed = speed;
   this.animationLoop = (function () {
     var gifLength = 10 * this.gif.length / this.speed,
@@ -327,7 +318,7 @@ Playback.prototype.startSpeed = function (speed, nTimes, endCb) {
       if (!this.stopped) requestAnimationFrame(this.animationLoop);
     } else {
       this.setFrame(1.0, repeatCount);
-      if (endCb) endCb();
+      this.xgif.fire('x-gif-finished');
     }
   }).bind(this);
 
