@@ -79,7 +79,7 @@ Playback.prototype.startSpeed = function (speed, nTimes) {
 
       if (!this.stopped) requestAnimationFrame(this.animationLoop);
     } else {
-      this.setFrame(1.0, repeatCount);
+      this.setFrame(nTimes % 1 || 1.0, repeatCount);
       this.xgif.fire('x-gif-finished');
     }
   }
