@@ -1,6 +1,6 @@
 "use strict";
 
-var Playback = require('./playback.js');
+var Playback = require('./playback.sjs');
 
 var XGif = function () {
   var Strategies = {

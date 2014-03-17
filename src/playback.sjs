@@ -1,5 +1,6 @@
 "use strict";
 
+import macros from './macros.sjs';
 var Exploder = require('./exploder.js');
 
 // Private functions for setup
@@ -23,7 +24,7 @@ var Playback = function (xgif, element, file, opts) {
   this.fill = opts.fill;
   this.stopped = opts.stopped;
 
-  new Exploder(file, (function (gif) {
+  new Exploder(file, (gif) => {
     // Once we have the GIF data, add things to the DOM
     console.warn("Callbacks will hurt you. I promise.")
     console.log("Received " + gif.frames.length + " frames of gif " + file)
@@ -37,7 +38,7 @@ var Playback = function (xgif, element, file, opts) {
     if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
 
     this.onReady();
-  }).bind(this));
+  });
 };
 
 Playback.prototype.scaleToFill = function () {
@@ -68,7 +69,7 @@ Playback.prototype.stop = function () {
 
 Playback.prototype.startSpeed = function (speed, nTimes) {
   this.speed = speed;
-  this.animationLoop = (function () {
+  this.animationLoop = () => {
     var gifLength = 10 * this.gif.length / this.speed,
       duration = performance.now() - this.startTime,
       repeatCount = duration / gifLength,
@@ -81,7 +82,7 @@ Playback.prototype.startSpeed = function (speed, nTimes) {
       this.setFrame(1.0, repeatCount);
       this.xgif.fire('x-gif-finished');
     }
-  }).bind(this);
+  }
 
   if (!this.stopped) this.start();
 }
@@ -97,29 +98,29 @@ Playback.prototype.fromClock = function (beatNr, beatDuration, beatFraction) {
 
 Playback.prototype.startHardBpm = function (bpm) {
   var beatLength = 60 * 1000 / bpm;
-  this.animationLoop = (function () {
+  this.animationLoop = () => {
     var duration = performance.now() - this.startTime,
       repeatCount = duration / beatLength,
       fraction = repeatCount % 1;
     this.setFrame(fraction, repeatCount);
 
-    if (!this.stopped) requestAnimationFrame(animationLoop);
-  }).bind(this);
+    if (!this.stopped) requestAnimationFrame(this.animationLoop);
+  }
 
   if (!this.stopped) this.start();
 }
 
 Playback.prototype.startBpm = function (bpm) {
   var beatLength = 60 * 1000 / bpm;
-  this.animationLoop = (function () {
+  this.animationLoop = () => {
     var duration = performance.now() - this.startTime,
       beatNr = Math.floor(duration / beatLength),
       beatFraction = (duration % beatLength) / beatLength;
 
     this.fromClock(beatNr, beatLength, beatFraction);
 
-    if (!this.stopped) requestAnimationFrame(animationLoop);
-  }).bind(this);
+    if (!this.stopped) requestAnimationFrame(this.animationLoop);
+  }
 
   if (!this.stopped) this.start();
 }

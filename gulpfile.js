@@ -34,7 +34,7 @@ gulp.task('copy', function () {
 gulp.task('build', ['js', 'html', 'css', 'copy']);
 
 gulp.task('default', ['build'], function () {
-  gulp.watch(['src/*.{js,sjs}'], ['js']);
+  gulp.watch(['src/*.*js'], ['js']);
   gulp.watch(['src/*.html'], ['html']);
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
