@@ -29,7 +29,7 @@ This does the following:
 
 **BPM** breaks the GIF across 1 or more 'beats' (depending on how long the GIF is), where each beat is 1/`bpm` minutes long.
 
-## Satus
+## Status
 
 * **Polymer element - DONE!**
 * Angular directive - TODO
