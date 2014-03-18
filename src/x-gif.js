@@ -63,6 +63,11 @@ var XGif = function () {
     }
   }
 
+  this.togglePingPong = function () {
+    this['ping-pong'] = (this['ping-pong'] != null) ? null : true;
+    if (this.playback) this.playback.pingPong = this['ping-pong'] != null;
+  }
+
   this.clock = function (beatNr, beatDuration, beatFraction) {
     if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
