@@ -5,13 +5,16 @@
     <script src="../bower_components/platform/platform.js"></script>
     <link rel="import" href="../dist/x-gif.html">
     <style>
+      body { margin: 0; background-color: black; height: 100%; }
     </style>
   </head>
   <body unresolved>
-    <x-gif src="gifs/pulse.gif" full-screen sync></x-gif>
-    <audio src="audio/lose_yourself_to_dance.mp3" controls></audio>
+    <x-gif src="gifs/pulse.gif" fill sync></x-gif>
+    <audio src="audio/lose_yourself_to_dance.mp3"></audio>
 
     <script>
+      "use strict";
+
       var bluetoothDelay = 0;//-0.15;
       window.addEventListener('polymer-ready', function(e) {
         var xGif = document.querySelector('x-gif'),
@@ -38,7 +41,7 @@
             })
           }
 
-          animationLoop = function () {
+          var animationLoop = function () {
             requestAnimationFrame(animationLoop);
 
             if (beats.length > beatIndex) {
