@@ -10,7 +10,7 @@
   </head>
   <body unresolved>
     <x-gif src="gifs/pulse.gif" fill sync></x-gif>
-    <audio src="audio/lose_yourself_to_dance.mp3"></audio>
+    <audio src="http://freemusicarchive.org/music/download/f8d72a2044cf7e0c91698190b8f86199110bb989"></audio>
 
     <script>
       "use strict";
@@ -22,7 +22,7 @@
           metadata;
 
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'audio/lose_yourself_to_dance.json', true);
+        xhr.open('GET', 'http://djgif-echonest-proxy.herokuapp.com/search?artist=rushus&title=modal%20blues', true);
         xhr.responseType = 'json';
         xhr.onload = function () {
           console.log(this);
