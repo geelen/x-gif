@@ -9,20 +9,20 @@
     </style>
   </head>
   <body unresolved>
-    <x-gif src="gifs/pulse.gif" fill sync></x-gif>
-    <audio src="http://freemusicarchive.org/music/download/f8d72a2044cf7e0c91698190b8f86199110bb989"></audio>
+    <x-gif src="gifs/pulse.gif" fill sync />
+    <audio src="cc_audio/encom_part_ii.ogg"></audio>
 
     <script>
       "use strict";
 
-      var bluetoothDelay = 0;//-0.15;
+      var synchOffset = -0.1;
       window.addEventListener('polymer-ready', function(e) {
         var xGif = document.querySelector('x-gif'),
           audio = document.querySelector('audio'),
           metadata;
 
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://djgif-echonest-proxy.herokuapp.com/search?artist=rushus&title=modal%20blues', true);
+        xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
         xhr.responseType = 'json';
         xhr.onload = function () {
           console.log(this);
@@ -31,7 +31,7 @@
         }
         xhr.send();
         audio.addEventListener('playing', function () {
-          var beats = metadata.response.songs[0].analysis.beats,
+          var beats = metadata.response.track.analysis.beats,
             beatIndex = 0;
           while (beats[0].start > 0) {
             beats.unshift({
@@ -45,7 +45,7 @@
             requestAnimationFrame(animationLoop);
 
             if (beats.length > beatIndex) {
-              var currentTime = audio.currentTime + bluetoothDelay;
+              var currentTime = audio.currentTime + synchOffset;
               while (beatIndex < beats.length && currentTime > beats[beatIndex].start) {
                 beatIndex++;
               }
