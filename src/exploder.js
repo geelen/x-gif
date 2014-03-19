@@ -26,7 +26,7 @@ Exploder.prototype.explode = function (buffer) {
 
   // Ensure this is an animated GIF
   if (streamReader.readAscii(6) != "GIF89a") {
-    deferred.reject();
+//    deferred.reject();
     return;
   }
 
