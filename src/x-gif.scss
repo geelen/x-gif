@@ -6,11 +6,13 @@
   display: inline-block;
   position: relative;
 
-  // TODO: https://github.com/hcatlin/libsass/issues/309
   @for $i from 0 to 100 {
     &[data-frame="#{$i}"] {
       .frame:nth-child(n + #{2 + $i}) {
         opacity: 0;
+      }
+      .frame.disposal-restore:nth-child(#{1 + $i}) {
+        opacity: 1;
       }
     }
   }
@@ -26,7 +28,7 @@
     position: static;
   }
   &.disposal-restore {
-    background-color: white;
+    opacity: 0;
   }
 
   :host([exploded]) & {
