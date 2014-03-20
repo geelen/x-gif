@@ -4,6 +4,8 @@ _The GIF tag the internet deserves_
 
 ## Usage
 
+**&lt;x-gif&gt;** is a web component for flexible GIF playback. Because GIFs are cool, and it's fun to mess around with them. Right now it's only defined as a Polymer element, but wrappers for other popular component frameworks are coming.
+
 ```html
 <x-gif src="probably_cats.gif"></x-gif>
 ```
@@ -50,6 +52,15 @@ Just like `bpm` but locks all GIFs to one _beat_, regardless of how long they we
 ```
 
 Stops the `requestAnimationFrame` loop inside the GIF. You can add or remove the `stopped` attribute and it will stop or start. Obvs.
+```
+
+### Sync
+
+```html
+<x-gif src="mr_t_works_it.gif" sync></x-gif>
+```
+
+Defers playback to an external clock, such as beat data from an audio stream to make rad synchronised GIFs & music. [See an example](http://geelen.github.io/x-gif/demos/audio.html).
 
 ## Status
 
