@@ -1,6 +1,9 @@
 <!doctype html>
 <html>
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>&lt;x-gif&gt;</title>
   <script src="angular.min.js"></script>
   <script src="dist/platform.js"></script>
@@ -92,7 +95,10 @@
     <h3>Synced to Audio</h3>
     <figure>
       <div ng-show="gif.metadata">
-        <audio src="demos/cc_audio/encom_part_ii.ogg" controls preload></audio>
+        <audio controls preload>
+          <source src="demos/cc_audio/encom_part_ii.ogg" type="audio/ogg">
+          <source src="demos/cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+        </audio>
         <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
                                                                                                           ng-click="changeSpeed(-0.1)">-</a>
         </p>

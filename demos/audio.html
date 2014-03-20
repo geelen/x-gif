@@ -14,7 +14,10 @@
 </head>
 <body unresolved>
 <x-gif fill sync></x-gif>
-<audio src="cc_audio/encom_part_ii.ogg" loop></audio>
+<audio loop>
+  <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
+  <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+</audio>
 
 <script>
   "use strict";
@@ -41,10 +44,8 @@
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
-    xhr.responseType = 'json';
     xhr.onload = function () {
-      console.log(this);
-      metadata = this.response;
+      metadata = JSON.parse(this.response);
       audio.play();
     }
     xhr.send();

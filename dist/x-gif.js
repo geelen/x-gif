@@ -2,7 +2,8 @@
 "use strict";
 
 var StreamReader = require('./stream_reader.js'),
-  Gif = require('./gif.sjs');
+  Gif = require('./gif.sjs'),
+  url = (URL && URL.createObjectURL) ? URL : webkitURL;
 
 var Exploder = function (file, cb) {
   this.file = file;
@@ -137,7 +138,7 @@ Exploder.prototype.explode = function (buffer) {
     var frame = frames[i];
     var nextIndex = (i < frames.length - 1) ? frames[i + 1].index : endOfFrames;
     frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
-    frame.url = URL.createObjectURL(frame.blob);
+    frame.url = url.createObjectURL(frame.blob);
   }
 
   this.doneCallback(new Gif(frames));
@@ -230,128 +231,128 @@ Polymer('x-gif', new XGif());
 },{"./playback.sjs":4}],3:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$1158 = 10;
-var Gif$1159 = function (frames$1160) {
-    this.frames = frames$1160;
+var defaultFrameDelay$2466 = 10;
+var Gif$2467 = function (frames$2468) {
+    this.frames = frames$2468;
     this.length = 0;
     this.offsets = [];
-    frames$1160.forEach(function (frame$1163) {
+    frames$2468.forEach(function (frame$2471) {
         this.offsets.push(this.length);
-        this.length += frame$1163.delay || defaultFrameDelay$1158;
+        this.length += frame$2471.delay || defaultFrameDelay$2466;
     }.bind(this));
 };
-Gif$1159.prototype.frameAt = function (fraction$1164) {
-    var offset$1165 = fraction$1164 * this.length;
-    for (var i$1166 = 1, l$1167 = this.offsets.length; i$1166 < l$1167; i$1166++) {
-        if (this.offsets[i$1166] > offset$1165)
+Gif$2467.prototype.frameAt = function (fraction$2472) {
+    var offset$2473 = fraction$2472 * this.length;
+    for (var i$2474 = 1, l$2475 = this.offsets.length; i$2474 < l$2475; i$2474++) {
+        if (this.offsets[i$2474] > offset$2473)
             break;
     }
-    return i$1166 - 1;
+    return i$2474 - 1;
 };
-module.exports = Gif$1159;
+module.exports = Gif$2467;
 
 },{}],4:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$1048 = require('./exploder.js');
+var Exploder$2356 = require('./exploder.js');
 // Private functions for setup
-function addClasses$1049(element$1052, frame$1053) {
-    element$1052.classList.add('frame');
-    if (frame$1053.disposal == 2)
-        element$1052.classList.add('disposal-restore');
+function addClasses$2357(element$2360, frame$2361) {
+    element$2360.classList.add('frame');
+    if (frame$2361.disposal == 2)
+        element$2360.classList.add('disposal-restore');
 }
-var createImage$1050 = function (frame$1054) {
-    var image$1055 = new Image();
-    image$1055.src = frame$1054.url;
-    addClasses$1049(image$1055, frame$1054);
-    return image$1055;
+var createImage$2358 = function (frame$2362) {
+    var image$2363 = new Image();
+    image$2363.src = frame$2362.url;
+    addClasses$2357(image$2363, frame$2362);
+    return image$2363;
 };
-var Playback$1051 = function (xgif$1056, element$1057, file$1058, opts$1059) {
+var Playback$2359 = function (xgif$2364, element$2365, file$2366, opts$2367) {
     // Set up out instance variables
-    this.xgif = xgif$1056;
-    this.element = element$1057;
-    this.onReady = opts$1059.onReady;
-    this.pingPong = opts$1059.pingPong;
-    this.fill = opts$1059.fill;
-    this.stopped = opts$1059.stopped;
-    new Exploder$1048(file$1058, function (gif$1061) {
+    this.xgif = xgif$2364;
+    this.element = element$2365;
+    this.onReady = opts$2367.onReady;
+    this.pingPong = opts$2367.pingPong;
+    this.fill = opts$2367.fill;
+    this.stopped = opts$2367.stopped;
+    new Exploder$2356(file$2366, function (gif$2369) {
         // Once we have the GIF data, add things to the DOM
         console.warn('Callbacks will hurt you. I promise.');
-        console.log('Received ' + gif$1061.frames.length + ' frames of gif ' + file$1058);
-        this.gif = gif$1061;
+        console.log('Received ' + gif$2369.frames.length + ' frames of gif ' + file$2366);
+        this.gif = gif$2369;
         this.element.innerHTML = '';
-        var createFrameElement$1062 = createImage$1050;
+        var createFrameElement$2370 = createImage$2358;
         //(this.fill) ? createDiv : createImage;
-        gif$1061.frames.map(createFrameElement$1062).forEach(this.element.appendChild, this.element);
+        gif$2369.frames.map(createFrameElement$2370).forEach(this.element.appendChild, this.element);
         if (this.fill)
             requestAnimationFrame(this.scaleToFill.bind(this));
         this.onReady();
     }.bind(this));
 };
-Playback$1051.prototype.scaleToFill = function () {
+Playback$2359.prototype.scaleToFill = function () {
     if (!(this.element.offsetWidth && this.element.offsetHeight)) {
         requestAnimationFrame(this.scaleToFill.bind(this));
     } else {
-        var xScale$1063 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$1064 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$1063, yScale$1064) + ')';
+        var xScale$2371 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$2372 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$2371, yScale$2372) + ')';
     }
 };
-Playback$1051.prototype.setFrame = function (fraction$1065, repeatCount$1066) {
-    var frameNr$1067 = this.pingPong && repeatCount$1066 % 2 >= 1 ? this.gif.frameAt(1 - fraction$1065) : this.gif.frameAt(fraction$1065);
-    this.element.dataset['frame'] = frameNr$1067;
+Playback$2359.prototype.setFrame = function (fraction$2373, repeatCount$2374) {
+    var frameNr$2375 = this.pingPong && repeatCount$2374 % 2 >= 1 ? this.gif.frameAt(1 - fraction$2373) : this.gif.frameAt(fraction$2373);
+    this.element.dataset['frame'] = frameNr$2375;
 };
-Playback$1051.prototype.start = function () {
+Playback$2359.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$1051.prototype.stop = function () {
+Playback$2359.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$1051.prototype.startSpeed = function (speed$1068, nTimes$1069) {
-    this.speed = speed$1068;
+Playback$2359.prototype.startSpeed = function (speed$2376, nTimes$2377) {
+    this.speed = speed$2376;
     this.animationLoop = function () {
-        var gifLength$1071 = 10 * this.gif.length / this.speed, duration$1072 = performance.now() - this.startTime, repeatCount$1073 = duration$1072 / gifLength$1071, fraction$1074 = repeatCount$1073 % 1;
-        if (!nTimes$1069 || repeatCount$1073 < nTimes$1069) {
-            this.setFrame(fraction$1074, repeatCount$1073);
+        var gifLength$2379 = 10 * this.gif.length / this.speed, duration$2380 = performance.now() - this.startTime, repeatCount$2381 = duration$2380 / gifLength$2379, fraction$2382 = repeatCount$2381 % 1;
+        if (!nTimes$2377 || repeatCount$2381 < nTimes$2377) {
+            this.setFrame(fraction$2382, repeatCount$2381);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$1069 % 1 || 1, repeatCount$1073);
+            this.setFrame(nTimes$2377 % 1 || 1, repeatCount$2381);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$1051.prototype.fromClock = function (beatNr$1075, beatDuration$1076, beatFraction$1077) {
-    var speedup$1078 = 1.5, lengthInBeats$1079 = Math.max(1, Math.round(1 / speedup$1078 * 10 * this.gif.length / beatDuration$1076)), subBeat$1080 = beatNr$1075 % lengthInBeats$1079, repeatCount$1081 = beatNr$1075 / lengthInBeats$1079, subFraction$1082 = beatFraction$1077 / lengthInBeats$1079 + subBeat$1080 / lengthInBeats$1079;
-    this.setFrame(subFraction$1082, repeatCount$1081);
+Playback$2359.prototype.fromClock = function (beatNr$2383, beatDuration$2384, beatFraction$2385) {
+    var speedup$2386 = 1.5, lengthInBeats$2387 = Math.max(1, Math.round(1 / speedup$2386 * 10 * this.gif.length / beatDuration$2384)), subBeat$2388 = beatNr$2383 % lengthInBeats$2387, repeatCount$2389 = beatNr$2383 / lengthInBeats$2387, subFraction$2390 = beatFraction$2385 / lengthInBeats$2387 + subBeat$2388 / lengthInBeats$2387;
+    this.setFrame(subFraction$2390, repeatCount$2389);
 };
-Playback$1051.prototype.startHardBpm = function (bpm$1083) {
-    var beatLength$1084 = 60 * 1000 / bpm$1083;
+Playback$2359.prototype.startHardBpm = function (bpm$2391) {
+    var beatLength$2392 = 60 * 1000 / bpm$2391;
     this.animationLoop = function () {
-        var duration$1086 = performance.now() - this.startTime, repeatCount$1087 = duration$1086 / beatLength$1084, fraction$1088 = repeatCount$1087 % 1;
-        this.setFrame(fraction$1088, repeatCount$1087);
+        var duration$2394 = performance.now() - this.startTime, repeatCount$2395 = duration$2394 / beatLength$2392, fraction$2396 = repeatCount$2395 % 1;
+        this.setFrame(fraction$2396, repeatCount$2395);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$1051.prototype.startBpm = function (bpm$1089) {
-    var beatLength$1090 = 60 * 1000 / bpm$1089;
+Playback$2359.prototype.startBpm = function (bpm$2397) {
+    var beatLength$2398 = 60 * 1000 / bpm$2397;
     this.animationLoop = function () {
-        var duration$1092 = performance.now() - this.startTime, beatNr$1093 = Math.floor(duration$1092 / beatLength$1090), beatFraction$1094 = duration$1092 % beatLength$1090 / beatLength$1090;
-        this.fromClock(beatNr$1093, beatLength$1090, beatFraction$1094);
+        var duration$2400 = performance.now() - this.startTime, beatNr$2401 = Math.floor(duration$2400 / beatLength$2398), beatFraction$2402 = duration$2400 % beatLength$2398 / beatLength$2398;
+        this.fromClock(beatNr$2401, beatLength$2398, beatFraction$2402);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$1051;
+module.exports = Playback$2359;
 
 },{"./exploder.js":1}],5:[function(require,module,exports){
 "use strict";

@@ -1,7 +1,8 @@
 "use strict";
 
 var StreamReader = require('./stream_reader.js'),
-  Gif = require('./gif.sjs');
+  Gif = require('./gif.sjs'),
+  url = (URL && URL.createObjectURL) ? URL : webkitURL;
 
 var Exploder = function (file, cb) {
   this.file = file;
@@ -136,7 +137,7 @@ Exploder.prototype.explode = function (buffer) {
     var frame = frames[i];
     var nextIndex = (i < frames.length - 1) ? frames[i + 1].index : endOfFrames;
     frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
-    frame.url = URL.createObjectURL(frame.blob);
+    frame.url = url.createObjectURL(frame.blob);
   }
 
   this.doneCallback(new Gif(frames));
