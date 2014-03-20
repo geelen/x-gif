@@ -136,15 +136,15 @@
   angular.module('x-gif-demo', [])
     .run(function ($rootScope, $sce, $location, $http) {
       $rootScope.gifs = [
-        "http://i.imgur.com/YlxOOI7.gif",
-        "http://i.imgur.com/m25uYzq.gif",
-        "http://i.imgur.com/RY2vTBQ.gif",
         "http://i.imgur.com/iKXH4E2.gif",
+        "http://i.imgur.com/RY2vTBQ.gif",
+        "http://i.imgur.com/YlxOOI7.gif",
         "http://i.imgur.com/5KSc0px.gif",
+        "http://i.imgur.com/m25uYzq.gif",
         "http://i.imgur.com/ifR7csn.gif"
       ];
       $rootScope.gif = {
-        url: $rootScope.gifs[Math.floor(Math.random() * $rootScope.gifs.length)],
+        url: $rootScope.gifs[0],
         speed: 2,
         playbackRate: 1
       };
