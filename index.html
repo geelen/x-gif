@@ -7,11 +7,34 @@
   <link rel="import" href="dist/x-gif.html">
   <link rel="stylesheet" href="foundation.min.css"/>
   <style>
-    header { text-align: center; }
-    body { margin: 0; background-color: #f9f9f9; height: 100%; }
-    nav { position: sticky; }
-    figure { text-align: center; }
-    pre { font-weight: bold; margin-top: 8px; }
+    body {
+      margin: 0;
+      background-color: #f9f9f9;
+      height: 100%;
+      text-align: center;
+      padding-bottom: 24px;
+    }
+
+    h3 {
+      margin-top: 2em;
+    }
+
+    body[unresolved] {
+      opacity: 0;
+    }
+
+    pre {
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .me {
+      height: 72px;
+      width: 72px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px white, 0 0 0 3px black;
+      margin: 16px;
+    }
   </style>
 </head>
 <body unresolved ng-app="x-gif-demo">
@@ -19,7 +42,8 @@
   <div class="column medium-9 medium-centered large-8">
     <header>
       <h1>&lt;x-gif&gt;</h1>
-      <h4>The GIF format the internet deserves</h4>
+      <h4>The GIF tag the internet deserves</h4>
+      <h6><a href="https://github.com/geelen/x-gif" target="_blank">View source on GitHub</a></h6>
     </header>
     <hr/>
     <nav>
@@ -33,13 +57,16 @@
         <input type="text" ng-model="gif.url"/>
       </label>
     </nav>
+
     <h3>Normal playback</h3>
+    <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an issue on GitHub</a> with the URL of the image</p>
     <figure>
       <x-gif ng-src="{{ trustedUrl() }}"></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}"&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
     </figure>
+
     <h3>Ping-pong</h3>
     <figure>
       <x-gif ng-src="{{ trustedUrl() }}" ping-pong></x-gif>
@@ -47,6 +74,7 @@
         <pre>&lt;x-gif src="{{ trustedUrl() }}" ping-pong&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
     </figure>
+
     <h3>Speed</h3>
     <figure>
       <label>
@@ -57,11 +85,39 @@
         <pre>&lt;x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
     </figure>
+
+    <h3>Synced to Audio</h3>
+    <figure>
+      <div ng-show="gif.metadata">
+        <audio src="demos/cc_audio/encom_part_ii.ogg" controls preload></audio>
+        <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
+                                                                                                          ng-click="changeSpeed(-0.1)">-</a>
+        </p>
+      </div>
+      <div ng-hide="gif.metadata">Loading beat data...</div>
+      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>
+        <p>
+          Audio: Encom Part II by Daft Punk. CC0 1.0 Universal. Source:
+          <a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a>
+        </p>
+      </figcaption>
+    </figure>
+
+    <hr/>
+
+    <footer>
+      <h5>Made with <3 by</h5>
+      <img class="me" src="http://i.imgur.com/x577Tga.jpg" alt=""/>
+      <br/>
+      <a target="_blank" href="https://twitter.com/glenmaddern">@glenmaddern</a>
+    </footer>
   </div>
 </div>
 <script type="text/javascript" charset="utf-8">
   angular.module('x-gif-demo', [])
-    .run(function ($rootScope, $sce, $location) {
+    .run(function ($rootScope, $sce, $location, $http) {
       $rootScope.gifs = [
         "http://i.imgur.com/YlxOOI7.gif",
         "http://i.imgur.com/m25uYzq.gif",
@@ -73,8 +129,17 @@
       ];
       $rootScope.gif = {
         url: $rootScope.gifs[Math.floor(Math.random() * $rootScope.gifs.length)],
-        speed: 2
+        speed: 2,
+        playbackRate: 1
       };
+      $rootScope.changeSpeed = function (delta) {
+        audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
+        $rootScope.gif.playbackRate = audio.playbackRate;
+      }
+
+      $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
+        $rootScope.gif.metadata = response.data;
+      })
       $rootScope.trustedUrl = function () {
         return $sce.trustAsResourceUrl($rootScope.gif.url);
       }
@@ -85,7 +150,41 @@
       $rootScope.$watch('gif.url', function (e) {
         if (e) $rootScope.loc.path(e);
       })
-    })
+
+      var synchOffset = -0.1,
+        audio = document.querySelector('audio'),
+        xGif = document.querySelector('#synced');
+
+      audio.addEventListener('playing', function () {
+        var beats = $rootScope.gif.metadata.response.track.analysis.beats,
+          beatIndex = 0;
+        while (beats[0].start > 0) {
+          beats.unshift({
+            start: beats[0].start - beats[0].duration,
+            duration: beats[0].duration,
+            confidence: 0
+          })
+        }
+
+        var animationLoop = function () {
+          requestAnimationFrame(animationLoop);
+
+          if (beats.length > beatIndex) {
+            var currentTime = audio.currentTime + synchOffset;
+            while (beatIndex < beats.length && currentTime > beats[beatIndex].start) {
+              beatIndex++;
+            }
+            var beat = beats[beatIndex - 1];
+
+            var sinceLastBeat = currentTime - beat.start,
+              beatFraction = sinceLastBeat / beat.duration;
+            xGif.clock(beatIndex, beat.duration * 1000 / audio.playbackRate, beatFraction);
+          }
+        }
+        animationLoop();
+      });
+    });
+
 </script>
 </body>
 </html>

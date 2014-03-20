@@ -1,6 +1,6 @@
 # &lt;x-gif&gt;
 
-_The GIF format the internet deserves_
+_The GIF tag the internet deserves_
 
 ## Usage
 
@@ -15,7 +15,7 @@ This does the following:
 * Stacks the frames one on top of the other
 * Starts a `requestAnimationFrame` loop to play back the gif at its natural frame rate
 
-**[Here's a demo! It just might work in your browser!](http://geelen.github.io/x-gif/demos/basic.html)**
+**[Here's a demo! It just might work in your browser!](http://geelen.github.io)**
 
 ## Options
 
