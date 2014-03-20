@@ -35,6 +35,10 @@
       box-shadow: 0 0 0 2px white, 0 0 0 3px black;
       margin: 16px;
     }
+
+    footer {
+      margin-bottom: 30px;
+    }
   </style>
 </head>
 <body unresolved ng-app="x-gif-demo">
@@ -46,17 +50,16 @@
       <h6><a href="https://github.com/geelen/x-gif" target="_blank">View source on GitHub</a></h6>
     </header>
     <hr/>
-    <nav>
-      <dl class="sub-nav">
-        <dt>Examples:</dt>
-        <dd ng-repeat="url in gifs" ng-class="{active: gif.url == url}"><a ng-href="#{{ url }}"> {{ $index + 1 }} </a>
-        </dd>
-      </dl>
-      <label>
-        Or choose your own. Be sure to choose a server with permissive CORS headers, e.g. imgur
-        <input type="text" ng-model="gif.url"/>
-      </label>
-    </nav>
+
+    <dl class="sub-nav">
+      <dt>Examples:</dt>
+      <dd ng-repeat="url in gifs" ng-class="{active: gif.url == url}"><a ng-href="#{{ url }}"> {{ $index + 1 }} </a>
+      </dd>
+    </dl>
+    <label>
+      Or choose your own. Be sure to choose a server with permissive CORS headers, e.g. imgur
+      <input type="text" ng-model="gif.url"/>
+    </label>
 
     <h3>Normal playback</h3>
     <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an issue on GitHub</a> with the URL of the image</p>
@@ -109,6 +112,15 @@
         <h5><a href="demos/audio.html">See a full screen demo</a></h5>
       </figcaption>
     </figure>
+
+    <h3>Stop-start</h3>
+    <pre>&lt;x-gif src="{{ trustedUrl() }}" stopped&gt;&lt;/x-gif&gt;</pre>
+    <h5><a href="demos/stoppable.html">See demo</a></h5>
+
+    <h3>Exploded</h3>
+    <pre>&lt;x-gif src="{{ trustedUrl() }}" exploded&gt;&lt;/x-gif&gt;</pre>
+    <p>Explode the gif into its component frames (handy for debugging)</p>
+    <h5><a href="demos/exploded.html">See demo</a></h5>
 
     <hr/>
 
