@@ -4,7 +4,7 @@ _The GIF tag the internet deserves_
 
 ## Usage
 
-**&lt;x-gif&gt;** is a web component for flexible GIF playback. Because GIFs are cool, and it's fun to mess around with them. Right now it's only defined as a Polymer element, but wrappers for other popular component frameworks are coming.
+**&lt;x-gif&gt;** is a web component for flexible GIF playback. Speed them up, slow them down, play them in reverse, synch multiple beats to a rhythm, synch them to audio, whatever you like.
 
 ```html
 <x-gif src="probably_cats.gif"></x-gif>
