@@ -35,7 +35,7 @@
       gifNr = 0,
       changeGif = function () {
         setTimeout(changeGif, 10000);
-        xGif.src = gifs[gifNr++];
+        xGif.src = gifs[gifNr++ % gifs.length];
       };
     changeGif();
 

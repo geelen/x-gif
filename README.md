@@ -17,7 +17,7 @@ This does the following:
 * Stacks the frames one on top of the other
 * Starts a `requestAnimationFrame` loop to play back the gif at its natural frame rate
 
-**[Here's a demo! It just might work in your browser!](http://geelen.github.io)**
+**[Here's a demo! It just might work in your browser!](http://geelen.github.io/x-gif)**
 
 ## Options
 
@@ -61,6 +61,8 @@ Stops the `requestAnimationFrame` loop inside the GIF. You can add or remove the
 ```
 
 Defers playback to an external clock, such as beat data from an audio stream to make rad synchronised GIFs & music. [See an example](http://geelen.github.io/x-gif/demos/audio.html).
+
+**[Check out the rest of the demos](http://geelen.github.io/x-gif)**
 
 ## Status
 
