@@ -6,11 +6,22 @@ _The GIF tag the internet deserves_
 
 **&lt;x-gif&gt;** is a web component for flexible GIF playback. Speed them up, slow them down, play them in reverse, synch multiple beats to a rhythm, synch them to audio, whatever you like.
 
-```html
-<x-gif src="probably_cats.gif"></x-gif>
-```
+1. Import Polymer
+  ```html
+  <script src="bower_components/platform/platform.js"></script>
+  ```
 
-This does the following:
+2. Import X-Gif
+  ```html
+  <link rel="import" href="bower_components/x-gif/dist/x-gif.html">
+  ```
+
+3. Enjoy limitless GIF possibilities
+  ```html
+  <x-gif src="probably_cats.gif"></x-gif>
+  ```
+
+What does it do?
 
 * AJAX fetches the GIF as a binary stream
 * Slices the GIF into frames like a total boss
@@ -70,3 +81,15 @@ Defers playback to an external clock, such as beat data from an audio stream to 
 * Angular directive - TODO
 * React component - TODO
 * Ember component - TODO
+
+## Contributing
+
+1. Fork it!
+2. Create your feature branch: `git checkout -b my-new-feature`
+3. Commit your changes: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin my-new-feature`
+5. Submit a pull request :D
+
+## License
+
+[MIT License](http://opensource.org/licenses/MIT)
