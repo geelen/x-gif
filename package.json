@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/geelen/djgif.git"
+    "url": "git://github.com/geelen/x-gif.git"
   },
   "author": "Glen Maddern",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/geelen/djgif/issues"
+    "url": "https://github.com/geelen/x-gif/issues"
   },
   "devDependencies": {
     "gulp": "~3.5.5",
