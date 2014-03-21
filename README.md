@@ -63,7 +63,7 @@ Just like `bpm` but locks all GIFs to one _beat_, regardless of how long they we
 ```
 
 Stops the `requestAnimationFrame` loop inside the GIF. You can add or remove the `stopped` attribute and it will stop or start. Obvs.
-```
+
 
 ### Sync
 
