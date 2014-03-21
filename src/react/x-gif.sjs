@@ -1,5 +1,10 @@
 "use strict";
 
+import
+macros
+from
+'../macros.sjs';
+
 var R = React.DOM;
 
 var XGif = React.createClass({displayName: 'XGif',
@@ -7,8 +12,8 @@ var XGif = React.createClass({displayName: 'XGif',
   render: function () {
     if (Math.random() > 0.9) this.count++;
     return R.div({className: "frames-wrapper"},
-      R.div({id:"frames", 'data-frame-id': this.count},
-        R.p(null, "The count is " + this.count)
+      R.div({id: "frames", 'data-frame-id': this.count},
+        R.img({src: this.props.src})
       )
     )
   }
@@ -23,7 +28,7 @@ var ExampleApplication = React.createClass({displayName: 'ExampleApplication',
   }
 });
 
-var animate = function () {
+var animate = () => {
   requestAnimationFrame(animate);
   React.renderComponent(ExampleApplication(null), document.querySelector('main'));
 }

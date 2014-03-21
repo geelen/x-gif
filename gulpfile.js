@@ -2,7 +2,10 @@ var gulp = require('gulp'),
   $ = require('gulp-load-plugins')();
 
 gulp.task('js', function () {
-  gulp.src('src/x-gif.js')
+  gulp.src(
+      ['src/x-gif.js', 'src/react/x-gif.js'],
+      {base: 'src/'}
+    )
     .pipe($.plumber())
     .pipe($.browserify({
       transform: ['sweetify']
@@ -31,10 +34,15 @@ gulp.task('copy', function () {
 
 })
 
+// Clean
+gulp.task('clean', function () {
+  return gulp.src(['dist/**/*'], {read: false}).pipe($.clean());
+});
+
 gulp.task('build', ['js', 'html', 'css', 'copy']);
 
 gulp.task('default', ['build'], function () {
-  gulp.watch(['src/*.*js'], ['js']);
+  gulp.watch(['src/**/*.*js'], ['js']);
   gulp.watch(['src/*.html'], ['html']);
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
