@@ -1,19 +1,30 @@
-/**
- * @jsx React.DOM
- */
-var XGif = React.createClass({
+"use strict";
+
+var R = React.DOM;
+
+var XGif = React.createClass({displayName: 'XGif',
+  count: 0,
   render: function () {
-    return <img src={this.props.src} />;
+    if (Math.random() > 0.9) this.count++;
+    return R.div({className: "frames-wrapper"},
+      R.div({id:"frames", 'data-frame-id': this.count},
+        R.p(null, "The count is " + this.count)
+      )
+    )
   }
 });
 
-var ExampleApplication = React.createClass({
+var ExampleApplication = React.createClass({displayName: 'ExampleApplication',
   render: function () {
-    return  <div id="content">
-              <h1>React, man. Boy, I dunno. {console.log('wut')}</h1>
-              <XGif src="demos/gifs/pulse.gif" />
-            </div>;
+    return R.div({id: "content"},
+      R.h1(null, "Dropping JSX is a bit better?"),
+      XGif({src: "demos/gifs/pulse.gif"})
+    );
   }
 });
 
-React.renderComponent(<ExampleApplication />, document.querySelector('main'));
+var animate = function () {
+  requestAnimationFrame(animate);
+  React.renderComponent(ExampleApplication(null), document.querySelector('main'));
+}
+animate();
