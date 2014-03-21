@@ -1,6 +1,7 @@
 "use strict";
 
-var Playback = require('./playback.sjs');
+var Playback = require('./playback.sjs'),
+  DirectDomUpdater = require('./direct_dom_updater.sjs');
 
 var XGif = function () {
   var Strategies = {
@@ -38,8 +39,8 @@ var XGif = function () {
   this.srcChanged = function () {
     var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
     console.log("GO TIME")
-    console.log(this.fill != null)
-    this.playback = new Playback(this, this.$.frames, this.src, {
+    var domUpdater = new DirectDomUpdater(this.$.frames);
+    this.playback = new Playback(this, domUpdater, this.src, {
       onReady: playbackStrategy,
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,

@@ -3,22 +3,10 @@
 import macros from './macros.sjs';
 var Exploder = require('./exploder.js');
 
-// Private functions for setup
-function addClasses(element, frame) {
-  element.classList.add('frame');
-  if (frame.disposal == 2) element.classList.add('disposal-restore');
-}
-var createImage = function (frame) {
-    var image = new Image();
-    image.src = frame.url;
-    addClasses(image, frame);
-    return image;
-  };
-
-var Playback = function (xgif, element, file, opts) {
+var Playback = function (xgif, domUpdater, file, opts) {
   // Set up out instance variables
   this.xgif = xgif;
-  this.element = element;
+  this.domUpdater = domUpdater;
   this.onReady = opts.onReady;
   this.pingPong = opts.pingPong;
   this.fill = opts.fill;
@@ -30,31 +18,15 @@ var Playback = function (xgif, element, file, opts) {
     console.log("Received " + gif.frames.length + " frames of gif " + file)
     this.gif = gif;
 
-    this.element.innerHTML = "";
-    var createFrameElement = createImage;//(this.fill) ? createDiv : createImage;
-    gif.frames.map(createFrameElement)
-      .forEach(this.element.appendChild, this.element);
-
-    if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
+    this.domUpdater.initNewGif(gif);
 
     this.onReady();
   });
 };
 
-Playback.prototype.scaleToFill = function () {
-  if (!(this.element.offsetWidth && this.element.offsetHeight)) {
-    requestAnimationFrame(this.scaleToFill.bind(this));
-  } else {
-    var xScale = this.element.parentElement.offsetWidth / this.element.offsetWidth,
-      yScale = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-
-    this.element.style.webkitTransform = "scale(" + 1.1 * Math.max(xScale, yScale) + ")";
-  }
-}
-
 Playback.prototype.setFrame = function (fraction, repeatCount) {
   var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
-  this.element.dataset['frame'] = frameNr;
+  this.domUpdater.setFrame(frameNr);
 }
 
 Playback.prototype.start = function () {
