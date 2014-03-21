@@ -5,17 +5,42 @@ macros
 from
 '../macros.sjs';
 
-var R = React.DOM;
+var R = React.DOM,
+  Playback = require('../playback.sjs'),
+  frameNr = 0;
 
 var XGif = React.createClass({displayName: 'XGif',
   count: 0,
+  fire: function () {
+    console.log("TODO: translate to REACT event")
+  },
+  initNewGif: function (gif) {
+    this.gif = gif;
+  },
   render: function () {
-    if (Math.random() > 0.9) this.count++;
-    return R.div({className: "frames-wrapper"},
-      R.div({id: "frames", 'data-frame-id': this.count},
-        R.img({src: this.props.src})
+    if (!this.playback) {
+      this.playback = new Playback(this, this, this.props.src, {
+        onReady: () => {
+          console.log("OK NOW WHAT");
+        },
+        pingPong: false,
+        fill: false,
+        stopped: false
+      });
+    }
+    if (!this.gif) {
+      return R.h1(null, "Loading...");
+    } else {
+      return R.div({className: "frames-wrapper"},
+        R.div(
+          {id: "frames", 'data-frame-id': frameNr},
+          this.gif.frames.map((frame, i) => {
+            var frameClass = 'frame' + (frame.disposal == 2) ? ' disposal-restore' : '';
+            return R.img({key: i, className: frameClass, src: frame.url});
+          })
+        )
       )
-    )
+    }
   }
 });
 
