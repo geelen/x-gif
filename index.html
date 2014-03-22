@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>&lt;x-gif&gt;</title>
-  <script src="angular.min.js"></script>
+  <script src="demos/angular.min.js"></script>
   <script src="dist/platform.js"></script>
   <link rel="import" href="dist/x-gif.html">
-  <link rel="stylesheet" href="foundation.min.css"/>
+  <link rel="stylesheet" href="demos/foundation.min.css"/>
   <style>
     body {
       margin: 0;
@@ -44,7 +44,7 @@
     }
   </style>
 </head>
-<body unresolved ng-app="x-gif-demo">
+<body unresolved ng-app="x-gif-demo" ng-controller="DemoCtrl">
 <div class="row">
   <div class="column medium-9 medium-centered large-8">
     <header>
@@ -140,8 +140,8 @@
 </div>
 <script type="text/javascript" charset="utf-8">
   angular.module('x-gif-demo', [])
-    .run(function ($rootScope, $sce, $location, $http) {
-      $rootScope.gifs = [
+    .controller('DemoCtrl', function ($scope, $sce, $location, $http) {
+      $scope.gifs = [
         "http://i.imgur.com/iKXH4E2.gif",
         "http://i.imgur.com/RY2vTBQ.gif",
         "http://i.imgur.com/YlxOOI7.gif",
@@ -149,65 +149,35 @@
         "http://i.imgur.com/m25uYzq.gif",
         "http://i.imgur.com/ifR7csn.gif"
       ];
-      $rootScope.gif = {
-        url: $rootScope.gifs[0],
+      $scope.gif = {
+        url: $scope.gifs[0],
         speed: 2,
         playbackRate: 1
       };
-      $rootScope.changeSpeed = function (delta) {
+      $scope.changeSpeed = function (delta) {
         audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
-        $rootScope.gif.playbackRate = audio.playbackRate;
+        $scope.gif.playbackRate = audio.playbackRate;
       }
 
       $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
-        $rootScope.gif.metadata = response.data;
+        $scope.gif.metadata = response.data;
+        setupAudioSynching(document.querySelector('audio'),
+          document.querySelector('#synced'),
+          $scope.gif.metadata)
       })
-      $rootScope.trustedUrl = function () {
-        return $sce.trustAsResourceUrl($rootScope.gif.url);
+      $scope.trustedUrl = function () {
+        return $sce.trustAsResourceUrl($scope.gif.url);
       }
-      $rootScope.loc = $location;
-      $rootScope.$watch('loc.path()', function (e) {
-        if (e) $rootScope.gif.url = e.slice(1);
+      $scope.loc = $location;
+      $scope.$watch('loc.path()', function (e) {
+        if (e) $scope.gif.url = e.slice(1);
       })
-      $rootScope.$watch('gif.url', function (e) {
-        if (e) $rootScope.loc.path(e);
+      $scope.$watch('gif.url', function (e) {
+        if (e) $scope.loc.path(e);
       })
-
-      var synchOffset = -0.1,
-        audio = document.querySelector('audio'),
-        xGif = document.querySelector('#synced');
-
-      audio.addEventListener('playing', function () {
-        var beats = $rootScope.gif.metadata.response.track.analysis.beats,
-          beatIndex = 0;
-        while (beats[0].start > 0) {
-          beats.unshift({
-            start: beats[0].start - beats[0].duration,
-            duration: beats[0].duration,
-            confidence: 0
-          })
-        }
-
-        var animationLoop = function () {
-          requestAnimationFrame(animationLoop);
-
-          if (beats.length > beatIndex) {
-            var currentTime = audio.currentTime + synchOffset;
-            while (beatIndex < beats.length && currentTime > beats[beatIndex].start) {
-              beatIndex++;
-            }
-            var beat = beats[beatIndex - 1];
-
-            var sinceLastBeat = currentTime - beat.start,
-              beatFraction = sinceLastBeat / beat.duration;
-            xGif.clock(beatIndex, beat.duration * 1000 / audio.playbackRate, beatFraction);
-          }
-        }
-        animationLoop();
-      });
     });
-
 </script>
+<script src="demos/synched_playback.js"></script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
