@@ -1,34 +1,34 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 ;
-var DirectDomUpdater$10620 = function (element$10621) {
-    this.element = element$10621;
+var DirectDomUpdater$1457 = function (element$1458) {
+    this.element = element$1458;
 };
-DirectDomUpdater$10620.prototype.initNewGif = function (gif$10622, fill$10623) {
+DirectDomUpdater$1457.prototype.initNewGif = function (gif$1459, fill$1460) {
     this.element.innerHTML = '';
-    gif$10622.frames.map(function (frame$10626) {
-        var image$10627 = new Image();
-        image$10627.src = frame$10626.url;
-        image$10627.classList.add('frame');
-        if (frame$10626.disposal == 2)
-            image$10627.classList.add('disposal-restore');
-        this.element.appendChild(image$10627);
+    gif$1459.frames.map(function (frame$1463) {
+        var image$1464 = new Image();
+        image$1464.src = frame$1463.url;
+        image$1464.classList.add('frame');
+        if (frame$1463.disposal == 2)
+            image$1464.classList.add('disposal-restore');
+        this.element.appendChild(image$1464);
     }.bind(this));
-    if (fill$10623)
+    if (fill$1460)
         requestAnimationFrame(this.scaleToFill.bind(this));
 };
-DirectDomUpdater$10620.prototype.scaleToFill = function () {
+DirectDomUpdater$1457.prototype.scaleToFill = function () {
     if (!(this.element.offsetWidth && this.element.offsetHeight)) {
         requestAnimationFrame(this.scaleToFill.bind(this));
     } else {
-        var xScale$10628 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$10629 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$10628, yScale$10629) + ')';
+        var xScale$1465 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$1466 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$1465, yScale$1466) + ')';
     }
 };
-DirectDomUpdater$10620.prototype.setFrame = function (frameNr$10630) {
-    this.element.dataset['frame'] = frameNr$10630;
+DirectDomUpdater$1457.prototype.setFrame = function (frameNr$1467) {
+    this.element.dataset['frame'] = frameNr$1467;
 };
-module.exports = DirectDomUpdater$10620;
+module.exports = DirectDomUpdater$1457;
 
 },{}],2:[function(require,module,exports){
 "use strict";
@@ -264,103 +264,103 @@ Polymer('x-gif', new XGif());
 },{"./direct_dom_updater.sjs":1,"./playback.sjs":5}],4:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$10694 = 10;
-var Gif$10695 = function (frames$10696) {
-    this.frames = frames$10696;
+var defaultFrameDelay$1604 = 10;
+var Gif$1605 = function (frames$1606) {
+    this.frames = frames$1606;
     this.length = 0;
     this.offsets = [];
-    frames$10696.forEach(function (frame$10699) {
+    frames$1606.forEach(function (frame$1609) {
         this.offsets.push(this.length);
-        this.length += frame$10699.delay || defaultFrameDelay$10694;
+        this.length += frame$1609.delay || defaultFrameDelay$1604;
     }.bind(this));
 };
-Gif$10695.prototype.frameAt = function (fraction$10700) {
-    var offset$10701 = fraction$10700 * this.length;
-    for (var i$10702 = 1, l$10703 = this.offsets.length; i$10702 < l$10703; i$10702++) {
-        if (this.offsets[i$10702] > offset$10701)
+Gif$1605.prototype.frameAt = function (fraction$1610) {
+    var offset$1611 = fraction$1610 * this.length;
+    for (var i$1612 = 1, l$1613 = this.offsets.length; i$1612 < l$1613; i$1612++) {
+        if (this.offsets[i$1612] > offset$1611)
             break;
     }
-    return i$10702 - 1;
+    return i$1612 - 1;
 };
-module.exports = Gif$10695;
+module.exports = Gif$1605;
 
 },{}],5:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$10534 = require('./exploder.js');
-var Playback$10535 = function (xgif$10536, domUpdater$10537, file$10538, opts$10539) {
+var Exploder$1371 = require('./exploder.js');
+var Playback$1372 = function (xgif$1373, domUpdater$1374, file$1375, opts$1376) {
     // Set up out instance variables
-    this.xgif = xgif$10536;
-    this.domUpdater = domUpdater$10537;
-    this.onReady = opts$10539.onReady;
-    this.pingPong = opts$10539.pingPong;
-    this.fill = opts$10539.fill;
-    this.stopped = opts$10539.stopped;
-    new Exploder$10534(file$10538, function (gif$10541) {
+    this.xgif = xgif$1373;
+    this.domUpdater = domUpdater$1374;
+    this.onReady = opts$1376.onReady;
+    this.pingPong = opts$1376.pingPong;
+    this.fill = opts$1376.fill;
+    this.stopped = opts$1376.stopped;
+    new Exploder$1371(file$1375, function (gif$1378) {
         // Once we have the GIF data, add things to the DOM
         console.warn('Callbacks will hurt you. I promise.');
-        console.log('Received ' + gif$10541.frames.length + ' frames of gif ' + file$10538);
-        this.gif = gif$10541;
-        this.domUpdater.initNewGif(gif$10541);
+        console.log('Received ' + gif$1378.frames.length + ' frames of gif ' + file$1375);
+        this.gif = gif$1378;
+        this.domUpdater.initNewGif(gif$1378);
         this.onReady();
     }.bind(this));
 };
-Playback$10535.prototype.setFrame = function (fraction$10542, repeatCount$10543) {
-    var frameNr$10544 = this.pingPong && repeatCount$10543 % 2 >= 1 ? this.gif.frameAt(1 - fraction$10542) : this.gif.frameAt(fraction$10542);
-    this.domUpdater.setFrame(frameNr$10544);
+Playback$1372.prototype.setFrame = function (fraction$1379, repeatCount$1380) {
+    var frameNr$1381 = this.pingPong && repeatCount$1380 % 2 >= 1 ? this.gif.frameAt(1 - fraction$1379) : this.gif.frameAt(fraction$1379);
+    this.domUpdater.setFrame(frameNr$1381);
 };
-Playback$10535.prototype.start = function () {
+Playback$1372.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$10535.prototype.stop = function () {
+Playback$1372.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$10535.prototype.startSpeed = function (speed$10545, nTimes$10546) {
-    this.speed = speed$10545;
+Playback$1372.prototype.startSpeed = function (speed$1382, nTimes$1383) {
+    this.speed = speed$1382;
     this.animationLoop = function () {
-        var gifLength$10548 = 10 * this.gif.length / this.speed, duration$10549 = performance.now() - this.startTime, repeatCount$10550 = duration$10549 / gifLength$10548, fraction$10551 = repeatCount$10550 % 1;
-        if (!nTimes$10546 || repeatCount$10550 < nTimes$10546) {
-            this.setFrame(fraction$10551, repeatCount$10550);
+        var gifLength$1385 = 10 * this.gif.length / this.speed, duration$1386 = performance.now() - this.startTime, repeatCount$1387 = duration$1386 / gifLength$1385, fraction$1388 = repeatCount$1387 % 1;
+        if (!nTimes$1383 || repeatCount$1387 < nTimes$1383) {
+            this.setFrame(fraction$1388, repeatCount$1387);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$10546 % 1 || 1, repeatCount$10550);
+            this.setFrame(nTimes$1383 % 1 || 1, repeatCount$1387);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$10535.prototype.fromClock = function (beatNr$10552, beatDuration$10553, beatFraction$10554) {
-    var speedup$10555 = 1.5, lengthInBeats$10556 = Math.max(1, Math.round(1 / speedup$10555 * 10 * this.gif.length / beatDuration$10553)), subBeat$10557 = beatNr$10552 % lengthInBeats$10556, repeatCount$10558 = beatNr$10552 / lengthInBeats$10556, subFraction$10559 = beatFraction$10554 / lengthInBeats$10556 + subBeat$10557 / lengthInBeats$10556;
-    this.setFrame(subFraction$10559, repeatCount$10558);
+Playback$1372.prototype.fromClock = function (beatNr$1389, beatDuration$1390, beatFraction$1391) {
+    var speedup$1392 = 1.5, lengthInBeats$1393 = Math.max(1, Math.round(1 / speedup$1392 * 10 * this.gif.length / beatDuration$1390)), subBeat$1394 = beatNr$1389 % lengthInBeats$1393, repeatCount$1395 = beatNr$1389 / lengthInBeats$1393, subFraction$1396 = beatFraction$1391 / lengthInBeats$1393 + subBeat$1394 / lengthInBeats$1393;
+    this.setFrame(subFraction$1396, repeatCount$1395);
 };
-Playback$10535.prototype.startHardBpm = function (bpm$10560) {
-    var beatLength$10561 = 60 * 1000 / bpm$10560;
+Playback$1372.prototype.startHardBpm = function (bpm$1397) {
+    var beatLength$1398 = 60 * 1000 / bpm$1397;
     this.animationLoop = function () {
-        var duration$10563 = performance.now() - this.startTime, repeatCount$10564 = duration$10563 / beatLength$10561, fraction$10565 = repeatCount$10564 % 1;
-        this.setFrame(fraction$10565, repeatCount$10564);
+        var duration$1400 = performance.now() - this.startTime, repeatCount$1401 = duration$1400 / beatLength$1398, fraction$1402 = repeatCount$1401 % 1;
+        this.setFrame(fraction$1402, repeatCount$1401);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$10535.prototype.startBpm = function (bpm$10566) {
-    var beatLength$10567 = 60 * 1000 / bpm$10566;
+Playback$1372.prototype.startBpm = function (bpm$1403) {
+    var beatLength$1404 = 60 * 1000 / bpm$1403;
     this.animationLoop = function () {
-        var duration$10569 = performance.now() - this.startTime, beatNr$10570 = Math.floor(duration$10569 / beatLength$10567), beatFraction$10571 = duration$10569 % beatLength$10567 / beatLength$10567;
-        this.fromClock(beatNr$10570, beatLength$10567, beatFraction$10571);
+        var duration$1406 = performance.now() - this.startTime, beatNr$1407 = Math.floor(duration$1406 / beatLength$1404), beatFraction$1408 = duration$1406 % beatLength$1404 / beatLength$1404;
+        this.fromClock(beatNr$1407, beatLength$1404, beatFraction$1408);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$10535;
+module.exports = Playback$1372;
 
 },{"./exploder.js":2}],6:[function(require,module,exports){
 "use strict";

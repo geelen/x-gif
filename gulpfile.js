@@ -41,9 +41,20 @@ gulp.task('clean', function () {
 
 gulp.task('build', ['js', 'html', 'css', 'copy']);
 
-gulp.task('default', ['build'], function () {
+gulp.task('default', ['build', 'connect'], function () {
   gulp.watch(['src/**/*.*js'], ['js']);
   gulp.watch(['src/*.html'], ['html']);
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
+
+  gulp.watch(['index.html', 'dist/**.*'], function (event) {
+    return gulp.src(event.path)
+      .pipe($.connect.reload());
+  });
 });
+
+gulp.task('connect', $.connect.server({
+  root: [__dirname],
+  port: 1983,
+  livereload: {port: 2983}
+}));
