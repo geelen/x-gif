@@ -1,4 +1,4 @@
-:host {
+:host, .react-x-gif {
   display: inline-block; }
 
 #frames {
@@ -416,14 +416,16 @@
     position: static; }
   .frame.disposal-restore {
     opacity: 0; }
-  :host([exploded]) .frame {
+  :host([exploded]) .frame, .react-x-gif[exploded] .frame {
     position: static;
     opacity: 1; }
 
-:host([fill]) {
+:host([fill]),
+.react-x-gif[fill] {
   width: 100%;
   height: 100%; }
-  :host([fill]) .frames-wrapper {
+  :host([fill]) .frames-wrapper,
+  .react-x-gif[fill] .frames-wrapper {
     width: 100%;
     height: 100%;
     display: -webkit-box;
@@ -439,7 +441,8 @@
     -ms-flex-align: center;
     align-items: center;
     overflow: hidden; }
-  :host([fill]) #frames {
+  :host([fill]) #frames,
+  .react-x-gif[fill] #frames {
     -webkit-transform-origin: 50% 50%;
     -ms-transform-origin: 50% 50%;
     transform-origin: 50% 50%; }

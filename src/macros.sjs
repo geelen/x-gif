@@ -16,4 +16,25 @@ macro => {
   }
 }
 
+macro H1 {
+  rule {} => {
+    React.DOM.h1
+  }
+}
+
+macro DIV {
+  rule {} => {
+    React.DOM.div
+  }
+}
+
+macro IMG {
+  rule {} => {
+    React.DOM.img
+  }
+}
+
 export =>
+export H1
+export DIV
+export IMG

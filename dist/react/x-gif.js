@@ -155,156 +155,172 @@ var x = require('./react/x-gif.sjs');
 },{"./react/x-gif.sjs":5}],3:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$840 = 10;
-var Gif$841 = function (frames$842) {
-    this.frames = frames$842;
+var defaultFrameDelay$18405 = 10;
+var Gif$18406 = function (frames$18407) {
+    this.frames = frames$18407;
     this.length = 0;
     this.offsets = [];
-    frames$842.forEach(function (frame$845) {
+    frames$18407.forEach(function (frame$18410) {
         this.offsets.push(this.length);
-        this.length += frame$845.delay || defaultFrameDelay$840;
+        this.length += frame$18410.delay || defaultFrameDelay$18405;
     }.bind(this));
 };
-Gif$841.prototype.frameAt = function (fraction$846) {
-    var offset$847 = fraction$846 * this.length;
-    for (var i$848 = 1, l$849 = this.offsets.length; i$848 < l$849; i$848++) {
-        if (this.offsets[i$848] > offset$847)
+Gif$18406.prototype.frameAt = function (fraction$18411) {
+    var offset$18412 = fraction$18411 * this.length;
+    for (var i$18413 = 1, l$18414 = this.offsets.length; i$18413 < l$18414; i$18413++) {
+        if (this.offsets[i$18413] > offset$18412)
             break;
     }
-    return i$848 - 1;
+    return i$18413 - 1;
 };
-module.exports = Gif$841;
+module.exports = Gif$18406;
 
 },{}],4:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$739 = require('./exploder.js');
-var Playback$740 = function (xgif$741, domUpdater$742, file$743, opts$744) {
+var Exploder$18226 = require('./exploder.js');
+var Playback$18227 = function (xgif$18228, domUpdater$18229, file$18230, opts$18231) {
     // Set up out instance variables
-    this.xgif = xgif$741;
-    this.domUpdater = domUpdater$742;
-    this.onReady = opts$744.onReady;
-    this.pingPong = opts$744.pingPong;
-    this.fill = opts$744.fill;
-    this.stopped = opts$744.stopped;
-    new Exploder$739(file$743, function (gif$746) {
+    this.xgif = xgif$18228;
+    this.domUpdater = domUpdater$18229;
+    this.onReady = opts$18231.onReady;
+    this.pingPong = opts$18231.pingPong;
+    this.fill = opts$18231.fill;
+    this.stopped = opts$18231.stopped;
+    new Exploder$18226(file$18230, function (gif$18233) {
         // Once we have the GIF data, add things to the DOM
         console.warn('Callbacks will hurt you. I promise.');
-        console.log('Received ' + gif$746.frames.length + ' frames of gif ' + file$743);
-        this.gif = gif$746;
-        this.domUpdater.initNewGif(gif$746);
+        console.log('Received ' + gif$18233.frames.length + ' frames of gif ' + file$18230);
+        this.gif = gif$18233;
+        this.domUpdater.initNewGif(gif$18233);
         this.onReady();
     }.bind(this));
 };
-Playback$740.prototype.setFrame = function (fraction$747, repeatCount$748) {
-    var frameNr$749 = this.pingPong && repeatCount$748 % 2 >= 1 ? this.gif.frameAt(1 - fraction$747) : this.gif.frameAt(fraction$747);
-    this.domUpdater.setFrame(frameNr$749);
+Playback$18227.prototype.setFrame = function (fraction$18234, repeatCount$18235) {
+    var frameNr$18236 = this.pingPong && repeatCount$18235 % 2 >= 1 ? this.gif.frameAt(1 - fraction$18234) : this.gif.frameAt(fraction$18234);
+    this.domUpdater.setFrame(frameNr$18236);
 };
-Playback$740.prototype.start = function () {
+Playback$18227.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$740.prototype.stop = function () {
+Playback$18227.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$740.prototype.startSpeed = function (speed$750, nTimes$751) {
-    this.speed = speed$750;
+Playback$18227.prototype.startSpeed = function (speed$18237, nTimes$18238) {
+    this.speed = speed$18237;
     this.animationLoop = function () {
-        var gifLength$753 = 10 * this.gif.length / this.speed, duration$754 = performance.now() - this.startTime, repeatCount$755 = duration$754 / gifLength$753, fraction$756 = repeatCount$755 % 1;
-        if (!nTimes$751 || repeatCount$755 < nTimes$751) {
-            this.setFrame(fraction$756, repeatCount$755);
+        var gifLength$18240 = 10 * this.gif.length / this.speed, duration$18241 = performance.now() - this.startTime, repeatCount$18242 = duration$18241 / gifLength$18240, fraction$18243 = repeatCount$18242 % 1;
+        if (!nTimes$18238 || repeatCount$18242 < nTimes$18238) {
+            this.setFrame(fraction$18243, repeatCount$18242);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$751 % 1 || 1, repeatCount$755);
+            this.setFrame(nTimes$18238 % 1 || 1, repeatCount$18242);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$740.prototype.fromClock = function (beatNr$757, beatDuration$758, beatFraction$759) {
-    var speedup$760 = 1.5, lengthInBeats$761 = Math.max(1, Math.round(1 / speedup$760 * 10 * this.gif.length / beatDuration$758)), subBeat$762 = beatNr$757 % lengthInBeats$761, repeatCount$763 = beatNr$757 / lengthInBeats$761, subFraction$764 = beatFraction$759 / lengthInBeats$761 + subBeat$762 / lengthInBeats$761;
-    this.setFrame(subFraction$764, repeatCount$763);
+Playback$18227.prototype.fromClock = function (beatNr$18244, beatDuration$18245, beatFraction$18246) {
+    var speedup$18247 = 1.5, lengthInBeats$18248 = Math.max(1, Math.round(1 / speedup$18247 * 10 * this.gif.length / beatDuration$18245)), subBeat$18249 = beatNr$18244 % lengthInBeats$18248, repeatCount$18250 = beatNr$18244 / lengthInBeats$18248, subFraction$18251 = beatFraction$18246 / lengthInBeats$18248 + subBeat$18249 / lengthInBeats$18248;
+    this.setFrame(subFraction$18251, repeatCount$18250);
 };
-Playback$740.prototype.startHardBpm = function (bpm$765) {
-    var beatLength$766 = 60 * 1000 / bpm$765;
+Playback$18227.prototype.startHardBpm = function (bpm$18252) {
+    var beatLength$18253 = 60 * 1000 / bpm$18252;
     this.animationLoop = function () {
-        var duration$768 = performance.now() - this.startTime, repeatCount$769 = duration$768 / beatLength$766, fraction$770 = repeatCount$769 % 1;
-        this.setFrame(fraction$770, repeatCount$769);
+        var duration$18255 = performance.now() - this.startTime, repeatCount$18256 = duration$18255 / beatLength$18253, fraction$18257 = repeatCount$18256 % 1;
+        this.setFrame(fraction$18257, repeatCount$18256);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$740.prototype.startBpm = function (bpm$771) {
-    var beatLength$772 = 60 * 1000 / bpm$771;
+Playback$18227.prototype.startBpm = function (bpm$18258) {
+    var beatLength$18259 = 60 * 1000 / bpm$18258;
     this.animationLoop = function () {
-        var duration$774 = performance.now() - this.startTime, beatNr$775 = Math.floor(duration$774 / beatLength$772), beatFraction$776 = duration$774 % beatLength$772 / beatLength$772;
-        this.fromClock(beatNr$775, beatLength$772, beatFraction$776);
+        var duration$18261 = performance.now() - this.startTime, beatNr$18262 = Math.floor(duration$18261 / beatLength$18259), beatFraction$18263 = duration$18261 % beatLength$18259 / beatLength$18259;
+        this.fromClock(beatNr$18262, beatLength$18259, beatFraction$18263);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$740;
+module.exports = Playback$18227;
 
 },{"./exploder.js":1}],5:[function(require,module,exports){
 'use strict';
 ;
-var R$636 = React.DOM, Playback$637 = require('../playback.sjs'), frameNr$638 = 0;
-var XGif$639 = React.createClass({
+var Playback$18037 = require('../playback.sjs');
+// Meets the api for the DomUpdater that Playback expects
+// but React works totally differently.
+var GifState$18038 = function () {
+    this.initNewGif = function (gif$18045) {
+        this.gif = gif$18045;
+    }.bind(this);
+    this.setFrame = function (frameNr$18046) {
+        this.frameNr = frameNr$18046;
+    }.bind(this);
+};
+var XGif$18039 = React.createClass({
         displayName: 'XGif',
-        count: 0,
         fire: function () {
             console.log('TODO: translate to REACT event');
         },
-        initNewGif: function (gif$643) {
-            this.gif = gif$643;
-        },
         render: function () {
             if (!this.playback) {
-                this.playback = new Playback$637(this, this, this.props.src, {
+                // Just do this once (surely there's a better callback?)
+                this.gifState = new GifState$18038();
+                this.playback = new Playback$18037(this, this.gifState, this.props.src, {
                     onReady: function () {
-                        console.log('OK NOW WHAT');
+                        if (this.props.speed) {
+                            this.playback.startSpeed(this.props.speed, this.props['n-times']);
+                        }
                     }.bind(this),
-                    pingPong: false,
+                    pingPong: this.props.pingPong,
                     fill: false,
                     stopped: false
                 });
             }
-            if (!this.gif) {
-                return R$636.h1(null, 'Loading...');
+            if (!this.gifState.gif) {
+                return React.DOM.h1(null, 'Loading...');
             } else {
-                return R$636.div({ className: 'frames-wrapper' }, R$636.div({
+                return React.DOM.div({ className: 'react-x-gif frames-wrapper' }, React.DOM.div({
                     id: 'frames',
-                    'data-frame-id': frameNr$638
-                }, this.gif.frames.map(function (frame$647, i$648) {
-                    var frameClass$649 = 'frame' + (frame$647.disposal == 2) ? ' disposal-restore' : '';
-                    return R$636.img({
-                        key: i$648,
-                        className: frameClass$649,
-                        src: frame$647.url
+                    'data-frame': this.gifState.frameNr
+                }, this.gifState.gif.frames.map(function (frame$18054, i$18055) {
+                    var frameClass$18056 = 'frame' + (frame$18054.disposal == 2 ? ' disposal-restore' : '');
+                    return React.DOM.img({
+                        key: i$18055,
+                        className: frameClass$18056,
+                        src: frame$18054.url
                     });
                 }.bind(this))));
             }
         }
     });
-var ExampleApplication$640 = React.createClass({
+var ExampleApplication$18040 = React.createClass({
         displayName: 'ExampleApplication',
         render: function () {
-            return R$636.div({ id: 'content' }, R$636.h1(null, 'Dropping JSX is a bit better?'), XGif$639({ src: 'demos/gifs/pulse.gif' }));
+            return React.DOM.div({ id: 'content' }, XGif$18039({
+                src: 'demos/gifs/pulse.gif',
+                speed: 0.5
+            }));
         }
     });
-var animate$642 = function () {
-        requestAnimationFrame(animate$642);
-        React.renderComponent(ExampleApplication$640(null), document.querySelector('main'));
+// Requires a React animation loop, which constantly checks if the frame
+// has changed. There's another animation loop inside Playback, which
+// ain't great.
+var animate$18042 = function () {
+        requestAnimationFrame(animate$18042);
+        React.renderComponent(ExampleApplication$18040(null), document.querySelector('main'));
     }.bind(this);
-animate$642();
+animate$18042();
 
 },{"../playback.sjs":4}],6:[function(require,module,exports){
 "use strict";

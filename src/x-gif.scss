@@ -1,4 +1,4 @@
-:host {
+:host, .react-x-gif {
   display: inline-block;
 }
 
@@ -31,14 +31,16 @@
     opacity: 0;
   }
 
-  :host([exploded]) & {
+  :host([exploded]) &,
+  .react-x-gif[exploded] & {
     position: static;
     opacity: 1;
   }
 }
 
 // Full Screen overrides
-:host([fill]) {
+:host([fill]),
+.react-x-gif[fill] {
   width: 100%;
   height: 100%;
 
