@@ -155,6 +155,7 @@
         speed: 2,
         playbackRate: 1
       };
+      var audio = document.querySelector('audio');
       $scope.changeSpeed = function (delta) {
         audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
         $scope.gif.playbackRate = audio.playbackRate;
@@ -162,7 +163,7 @@
 
       $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
         $scope.gif.metadata = response.data;
-        setupAudioSynching(document.querySelector('audio'),
+        setupAudioSynching(audio,
           document.querySelector('#synced'),
           $scope.gif.metadata)
       })
