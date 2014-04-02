@@ -15,11 +15,11 @@ var Exploder = function (file, cb) {
 
 Exploder.prototype.loadAndExplode = function () {
   var loader = new XMLHttpRequest(),
-    exploder = this.explode.bind(this),
-  source = Rx.Observable.fromEvent(loader, 'load');
+    source = Rx.Observable.fromEvent(loader, 'load');
+
   loader.open('GET', this.file, true);
   loader.responseType = 'arraybuffer';
-  source.subscribe((e) => this.explode.call(this, e.target.response));
+  source.subscribe((e) => this.explode(e.target.response));
   loader.send();
 }
 
