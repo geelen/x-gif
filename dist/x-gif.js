@@ -10398,154 +10398,163 @@ module.exports = Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./rx":10}],15:[function(require,module,exports){
-"use strict";
-
-var StreamReader = require('./stream_reader.js'),
-  Gif = require('./gif.sjs'),
-  Rx = require('rx'),
-  url = (URL && URL.createObjectURL) ? URL : webkitURL;
-
-var Exploder = function (file, cb) {
-  this.file = file;
-  this.doneCallback = cb;
-  this.loadAndExplode();
+'use strict';
+;
+var StreamReader$6274 = require('./stream_reader.js'), Gif$6275 = require('./gif.sjs'), Rx$6276 = require('rx'), url$6277 = URL && URL.createObjectURL ? URL : webkitURL;
+var Exploder$6278 = function (file$6279, cb$6280) {
+    this.file = file$6279;
+    this.doneCallback = cb$6280;
+    this.loadAndExplode();
 };
-
-Exploder.prototype.loadAndExplode = function () {
-  var loader = new XMLHttpRequest(),
-    exploder = this.explode.bind(this),
-  source = Rx.Observable.fromEvent(loader, 'load');
-  loader.open('GET', this.file, true);
-  loader.responseType = 'arraybuffer';
-  source.subscribe(function (e) {
-    exploder(e.target.response);
-  });
-  loader.send();
-}
-
-Exploder.prototype.explode = function (buffer) {
-  var frames = [],
-    streamReader = new StreamReader(buffer);
-
-  // Ensure this is an animated GIF
-  if (streamReader.readAscii(6) != "GIF89a") {
-//    deferred.reject();
-    return;
-  }
-
-  streamReader.skipBytes(4); // Height & Width
-  if (streamReader.peekBit(1)) {
-    streamReader.log("GLOBAL COLOR TABLE")
-    var colorTableSize = streamReader.readByte() & 0x07;
-    streamReader.log("GLOBAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
-    streamReader.skipBytes(2);
-    streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
-  } else {
-    streamReader.log("NO GLOBAL COLOR TABLE")
-  }
-  // WE HAVE ENOUGH FOR THE GIF HEADER!
-  var gifHeader = buffer.slice(0, streamReader.index);
-
-  var spinning = true, expectingImage = false;
-  while (spinning) {
-
-    if (streamReader.isNext([0x21, 0xFF])) {
-      streamReader.log("APPLICATION EXTENSION")
-      streamReader.skipBytes(2);
-      var blockSize = streamReader.readByte();
-      streamReader.log(streamReader.readAscii(blockSize));
-
-      if (streamReader.isNext([0x03, 0x01])) {
-        // we cool
-        streamReader.skipBytes(5)
-      } else {
-        streamReader.log("A weird application extension. Skip until we have 2 NULL bytes");
-        while (!(streamReader.readByte() === 0 && streamReader.peekByte() === 0));
-        streamReader.log("OK moving on")
-        streamReader.skipBytes(1);
-      }
-    } else if (streamReader.isNext([0x21, 0xFE])) {
-      streamReader.log("COMMENT EXTENSION")
-      streamReader.skipBytes(2);
-
-      while (!streamReader.isNext([0x00])) {
-        var blockSize = streamReader.readByte();
-        streamReader.log(streamReader.readAscii(blockSize));
-      }
-      streamReader.skipBytes(1); //NULL terminator
-
-    } else if (streamReader.isNext([0x2c])) {
-      streamReader.log("IMAGE DESCRIPTOR!");
-      if (!expectingImage) {
-        // This is a bare image, not prefaced with a Graphics Control Extension
-        // so we should treat it as a frame.
-        frames.push({ index: streamReader.index, delay: 0 });
-      }
-      expectingImage = false;
-
-      streamReader.skipBytes(9);
-      if (streamReader.peekBit(1)) {
-        streamReader.log("LOCAL COLOR TABLE");
-        var colorTableSize = streamReader.readByte() & 0x07;
-        streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
-        streamReader.skipBytes(2);
-        streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
-      } else {
-        streamReader.log("NO LOCAL TABLE PHEW");
-        streamReader.skipBytes(1);
-      }
-
-      streamReader.log("MIN CODE SIZE " + streamReader.readByte());
-      streamReader.log("DATA START");
-
-      while (!streamReader.isNext([0x00])) {
-        var blockSize = streamReader.readByte();
-//        streamReader.log("SKIPPING " + blockSize + " BYTES");
-        streamReader.skipBytes(blockSize);
-      }
-      streamReader.log("DATA END");
-      streamReader.skipBytes(1); //NULL terminator
-    } else if (streamReader.isNext([0x21, 0xF9, 0x04])) {
-      streamReader.log("GRAPHICS CONTROL EXTENSION!");
-      // We _definitely_ have a frame. Now we're expecting an image
-      var index = streamReader.index;
-
-      streamReader.skipBytes(3);
-      var disposalMethod = streamReader.readByte() >> 2;
-      streamReader.log("DISPOSAL " + disposalMethod);
-      var delay = streamReader.readByte() + streamReader.readByte() * 256;
-      frames.push({ index: index, delay: delay, disposal: disposalMethod });
-      streamReader.log("FRAME DELAY " + delay);
-      streamReader.skipBytes(2);
-      expectingImage = true;
-    } else {
-      var maybeTheEnd = streamReader.index;
-      while (!streamReader.finished() && !streamReader.isNext([0x21, 0xF9, 0x04])) {
-        streamReader.readByte();
-      }
-      if (streamReader.finished()) {
-        streamReader.index = maybeTheEnd;
-        streamReader.log("WE END");
-        spinning = false;
-      } else {
-        streamReader.log("UNKNOWN DATA FROM " + maybeTheEnd);
-      }
+Exploder$6278.prototype.loadAndExplode = function () {
+    var loader$6281 = new XMLHttpRequest(), exploder$6282 = this.explode.bind(this), source$6283 = Rx$6276.Observable.fromEvent(loader$6281, 'load');
+    loader$6281.open('GET', this.file, true);
+    loader$6281.responseType = 'arraybuffer';
+    source$6283.subscribe(function (e$6286) {
+        return this.explode.call(this, e$6286.target.response);
+    }.bind(this));
+    loader$6281.send();
+};
+Exploder$6278.prototype.explode = function (buffer$6287) {
+    var frames$6288 = [], streamReader$6289 = new StreamReader$6274(buffer$6287);
+    // Ensure this is an animated GIF
+    if (streamReader$6289.readAscii(6) != 'GIF89a') {
+        //    deferred.reject();
+        return;
     }
-  }
-  var endOfFrames = streamReader.index;
-
-  var gifFooter = buffer.slice(-1); //last bit is all we need
-  for (var i = 0; i < frames.length; i++) {
-    var frame = frames[i];
-    var nextIndex = (i < frames.length - 1) ? frames[i + 1].index : endOfFrames;
-    frame.blob = new Blob([ gifHeader, buffer.slice(frame.index, nextIndex), gifFooter ], {type: 'image/gif'});
-    frame.url = url.createObjectURL(frame.blob);
-  }
-
-  this.doneCallback(new Gif(frames));
-}
-
-module.exports = Exploder;
+    streamReader$6289.skipBytes(4);
+    // Height & Width
+    if (streamReader$6289.peekBit(1)) {
+        streamReader$6289.log('GLOBAL COLOR TABLE');
+        var colorTableSize$6296 = streamReader$6289.readByte() & 7;
+        streamReader$6289.log('GLOBAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$6296 + 1) + ' BYTES');
+        streamReader$6289.skipBytes(2);
+        streamReader$6289.skipBytes(3 * Math.pow(2, colorTableSize$6296 + 1));
+    } else {
+        streamReader$6289.log('NO GLOBAL COLOR TABLE');
+    }
+    // WE HAVE ENOUGH FOR THE GIF HEADER!
+    var gifHeader$6290 = buffer$6287.slice(0, streamReader$6289.index);
+    var spinning$6291 = true, expectingImage$6292 = false;
+    while (spinning$6291) {
+        if (streamReader$6289.isNext([
+                33,
+                255
+            ])) {
+            streamReader$6289.log('APPLICATION EXTENSION');
+            streamReader$6289.skipBytes(2);
+            var blockSize$6297 = streamReader$6289.readByte();
+            streamReader$6289.log(streamReader$6289.readAscii(blockSize$6297));
+            if (streamReader$6289.isNext([
+                    3,
+                    1
+                ])) {
+                // we cool
+                streamReader$6289.skipBytes(5);
+            } else {
+                streamReader$6289.log('A weird application extension. Skip until we have 2 NULL bytes');
+                while (!(streamReader$6289.readByte() === 0 && streamReader$6289.peekByte() === 0));
+                streamReader$6289.log('OK moving on');
+                streamReader$6289.skipBytes(1);
+            }
+        } else if (streamReader$6289.isNext([
+                33,
+                254
+            ])) {
+            streamReader$6289.log('COMMENT EXTENSION');
+            streamReader$6289.skipBytes(2);
+            while (!streamReader$6289.isNext([0])) {
+                var blockSize$6297 = streamReader$6289.readByte();
+                streamReader$6289.log(streamReader$6289.readAscii(blockSize$6297));
+            }
+            streamReader$6289.skipBytes(1);
+        }    //NULL terminator
+        else if (streamReader$6289.isNext([44])) {
+            streamReader$6289.log('IMAGE DESCRIPTOR!');
+            if (!expectingImage$6292) {
+                // This is a bare image, not prefaced with a Graphics Control Extension
+                // so we should treat it as a frame.
+                frames$6288.push({
+                    index: streamReader$6289.index,
+                    delay: 0
+                });
+            }
+            expectingImage$6292 = false;
+            streamReader$6289.skipBytes(9);
+            if (streamReader$6289.peekBit(1)) {
+                streamReader$6289.log('LOCAL COLOR TABLE');
+                var colorTableSize$6296 = streamReader$6289.readByte() & 7;
+                streamReader$6289.log('LOCAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$6296 + 1) + ' BYTES');
+                streamReader$6289.skipBytes(2);
+                streamReader$6289.skipBytes(3 * Math.pow(2, colorTableSize$6296 + 1));
+            } else {
+                streamReader$6289.log('NO LOCAL TABLE PHEW');
+                streamReader$6289.skipBytes(1);
+            }
+            streamReader$6289.log('MIN CODE SIZE ' + streamReader$6289.readByte());
+            streamReader$6289.log('DATA START');
+            while (!streamReader$6289.isNext([0])) {
+                var blockSize$6297 = streamReader$6289.readByte();
+                //        streamReader.log("SKIPPING " + blockSize + " BYTES");
+                streamReader$6289.skipBytes(blockSize$6297);
+            }
+            streamReader$6289.log('DATA END');
+            streamReader$6289.skipBytes(1);
+        }    //NULL terminator
+        else if (streamReader$6289.isNext([
+                33,
+                249,
+                4
+            ])) {
+            streamReader$6289.log('GRAPHICS CONTROL EXTENSION!');
+            // We _definitely_ have a frame. Now we're expecting an image
+            var index$6298 = streamReader$6289.index;
+            streamReader$6289.skipBytes(3);
+            var disposalMethod$6299 = streamReader$6289.readByte() >> 2;
+            streamReader$6289.log('DISPOSAL ' + disposalMethod$6299);
+            var delay$6300 = streamReader$6289.readByte() + streamReader$6289.readByte() * 256;
+            frames$6288.push({
+                index: index$6298,
+                delay: delay$6300,
+                disposal: disposalMethod$6299
+            });
+            streamReader$6289.log('FRAME DELAY ' + delay$6300);
+            streamReader$6289.skipBytes(2);
+            expectingImage$6292 = true;
+        } else {
+            var maybeTheEnd$6301 = streamReader$6289.index;
+            while (!streamReader$6289.finished() && !streamReader$6289.isNext([
+                    33,
+                    249,
+                    4
+                ])) {
+                streamReader$6289.readByte();
+            }
+            if (streamReader$6289.finished()) {
+                streamReader$6289.index = maybeTheEnd$6301;
+                streamReader$6289.log('WE END');
+                spinning$6291 = false;
+            } else {
+                streamReader$6289.log('UNKNOWN DATA FROM ' + maybeTheEnd$6301);
+            }
+        }
+    }
+    var endOfFrames$6293 = streamReader$6289.index;
+    var gifFooter$6294 = buffer$6287.slice(-1);
+    //last bit is all we need
+    for (var i$6295 = 0; i$6295 < frames$6288.length; i$6295++) {
+        var frame$6302 = frames$6288[i$6295];
+        var nextIndex$6303 = i$6295 < frames$6288.length - 1 ? frames$6288[i$6295 + 1].index : endOfFrames$6293;
+        frame$6302.blob = new Blob([
+            gifHeader$6290,
+            buffer$6287.slice(frame$6302.index, nextIndex$6303),
+            gifFooter$6294
+        ], { type: 'image/gif' });
+        frame$6302.url = url$6277.createObjectURL(frame$6302.blob);
+    }
+    this.doneCallback(new Gif$6275(frames$6288));
+};
+module.exports = Exploder$6278;
 
 },{"./gif.sjs":17,"./stream_reader.js":19,"rx":11}],16:[function(require,module,exports){
 "use strict";
@@ -10632,130 +10641,130 @@ Polymer('x-gif', new XGif());
 },{"./playback.sjs":18}],17:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$3120 = 10;
-var Gif$3121 = function (frames$3122) {
-    this.frames = frames$3122;
+var defaultFrameDelay$6370 = 10;
+var Gif$6371 = function (frames$6372) {
+    this.frames = frames$6372;
     this.length = 0;
     this.offsets = [];
-    frames$3122.forEach(function (frame$3125) {
+    frames$6372.forEach(function (frame$6375) {
         this.offsets.push(this.length);
-        this.length += frame$3125.delay || defaultFrameDelay$3120;
+        this.length += frame$6375.delay || defaultFrameDelay$6370;
     }.bind(this));
 };
-Gif$3121.prototype.frameAt = function (fraction$3126) {
-    var offset$3127 = fraction$3126 * this.length;
-    for (var i$3128 = 1, l$3129 = this.offsets.length; i$3128 < l$3129; i$3128++) {
-        if (this.offsets[i$3128] > offset$3127)
+Gif$6371.prototype.frameAt = function (fraction$6376) {
+    var offset$6377 = fraction$6376 * this.length;
+    for (var i$6378 = 1, l$6379 = this.offsets.length; i$6378 < l$6379; i$6378++) {
+        if (this.offsets[i$6378] > offset$6377)
             break;
     }
-    return i$3128 - 1;
+    return i$6378 - 1;
 };
-module.exports = Gif$3121;
+module.exports = Gif$6371;
 
 },{}],18:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$3010 = require('./exploder.js');
+var Exploder$6141 = require('./exploder.sjs');
 // Private functions for setup
-function addClasses$3011(element$3014, frame$3015) {
-    element$3014.classList.add('frame');
-    if (frame$3015.disposal == 2)
-        element$3014.classList.add('disposal-restore');
+function addClasses$6142(element$6145, frame$6146) {
+    element$6145.classList.add('frame');
+    if (frame$6146.disposal == 2)
+        element$6145.classList.add('disposal-restore');
 }
-var createImage$3012 = function (frame$3016) {
-    var image$3017 = new Image();
-    image$3017.src = frame$3016.url;
-    addClasses$3011(image$3017, frame$3016);
-    return image$3017;
+var createImage$6143 = function (frame$6147) {
+    var image$6148 = new Image();
+    image$6148.src = frame$6147.url;
+    addClasses$6142(image$6148, frame$6147);
+    return image$6148;
 };
-var Playback$3013 = function (xgif$3018, element$3019, file$3020, opts$3021) {
+var Playback$6144 = function (xgif$6149, element$6150, file$6151, opts$6152) {
     // Set up out instance variables
-    this.xgif = xgif$3018;
-    this.element = element$3019;
-    this.onReady = opts$3021.onReady;
-    this.pingPong = opts$3021.pingPong;
-    this.fill = opts$3021.fill;
-    this.stopped = opts$3021.stopped;
-    new Exploder$3010(file$3020, function (gif$3023) {
+    this.xgif = xgif$6149;
+    this.element = element$6150;
+    this.onReady = opts$6152.onReady;
+    this.pingPong = opts$6152.pingPong;
+    this.fill = opts$6152.fill;
+    this.stopped = opts$6152.stopped;
+    new Exploder$6141(file$6151, function (gif$6154) {
         // Once we have the GIF data, add things to the DOM
         console.warn('Callbacks will hurt you. I promise.');
-        console.log('Received ' + gif$3023.frames.length + ' frames of gif ' + file$3020);
-        this.gif = gif$3023;
+        console.log('Received ' + gif$6154.frames.length + ' frames of gif ' + file$6151);
+        this.gif = gif$6154;
         this.element.innerHTML = '';
-        var createFrameElement$3024 = createImage$3012;
+        var createFrameElement$6155 = createImage$6143;
         //(this.fill) ? createDiv : createImage;
-        gif$3023.frames.map(createFrameElement$3024).forEach(this.element.appendChild, this.element);
+        gif$6154.frames.map(createFrameElement$6155).forEach(this.element.appendChild, this.element);
         if (this.fill)
             requestAnimationFrame(this.scaleToFill.bind(this));
         this.onReady();
     }.bind(this));
 };
-Playback$3013.prototype.scaleToFill = function () {
+Playback$6144.prototype.scaleToFill = function () {
     if (!(this.element.offsetWidth && this.element.offsetHeight)) {
         requestAnimationFrame(this.scaleToFill.bind(this));
     } else {
-        var xScale$3025 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$3026 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$3025, yScale$3026) + ')';
+        var xScale$6156 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$6157 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$6156, yScale$6157) + ')';
     }
 };
-Playback$3013.prototype.setFrame = function (fraction$3027, repeatCount$3028) {
-    var frameNr$3029 = this.pingPong && repeatCount$3028 % 2 >= 1 ? this.gif.frameAt(1 - fraction$3027) : this.gif.frameAt(fraction$3027);
-    this.element.dataset['frame'] = frameNr$3029;
+Playback$6144.prototype.setFrame = function (fraction$6158, repeatCount$6159) {
+    var frameNr$6160 = this.pingPong && repeatCount$6159 % 2 >= 1 ? this.gif.frameAt(1 - fraction$6158) : this.gif.frameAt(fraction$6158);
+    this.element.dataset['frame'] = frameNr$6160;
 };
-Playback$3013.prototype.start = function () {
+Playback$6144.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$3013.prototype.stop = function () {
+Playback$6144.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$3013.prototype.startSpeed = function (speed$3030, nTimes$3031) {
-    this.speed = speed$3030;
+Playback$6144.prototype.startSpeed = function (speed$6161, nTimes$6162) {
+    this.speed = speed$6161;
     this.animationLoop = function () {
-        var gifLength$3033 = 10 * this.gif.length / this.speed, duration$3034 = performance.now() - this.startTime, repeatCount$3035 = duration$3034 / gifLength$3033, fraction$3036 = repeatCount$3035 % 1;
-        if (!nTimes$3031 || repeatCount$3035 < nTimes$3031) {
-            this.setFrame(fraction$3036, repeatCount$3035);
+        var gifLength$6164 = 10 * this.gif.length / this.speed, duration$6165 = performance.now() - this.startTime, repeatCount$6166 = duration$6165 / gifLength$6164, fraction$6167 = repeatCount$6166 % 1;
+        if (!nTimes$6162 || repeatCount$6166 < nTimes$6162) {
+            this.setFrame(fraction$6167, repeatCount$6166);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$3031 % 1 || 1, repeatCount$3035);
+            this.setFrame(nTimes$6162 % 1 || 1, repeatCount$6166);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$3013.prototype.fromClock = function (beatNr$3037, beatDuration$3038, beatFraction$3039) {
-    var speedup$3040 = 1.5, lengthInBeats$3041 = Math.max(1, Math.round(1 / speedup$3040 * 10 * this.gif.length / beatDuration$3038)), subBeat$3042 = beatNr$3037 % lengthInBeats$3041, repeatCount$3043 = beatNr$3037 / lengthInBeats$3041, subFraction$3044 = beatFraction$3039 / lengthInBeats$3041 + subBeat$3042 / lengthInBeats$3041;
-    this.setFrame(subFraction$3044, repeatCount$3043);
+Playback$6144.prototype.fromClock = function (beatNr$6168, beatDuration$6169, beatFraction$6170) {
+    var speedup$6171 = 1.5, lengthInBeats$6172 = Math.max(1, Math.round(1 / speedup$6171 * 10 * this.gif.length / beatDuration$6169)), subBeat$6173 = beatNr$6168 % lengthInBeats$6172, repeatCount$6174 = beatNr$6168 / lengthInBeats$6172, subFraction$6175 = beatFraction$6170 / lengthInBeats$6172 + subBeat$6173 / lengthInBeats$6172;
+    this.setFrame(subFraction$6175, repeatCount$6174);
 };
-Playback$3013.prototype.startHardBpm = function (bpm$3045) {
-    var beatLength$3046 = 60 * 1000 / bpm$3045;
+Playback$6144.prototype.startHardBpm = function (bpm$6176) {
+    var beatLength$6177 = 60 * 1000 / bpm$6176;
     this.animationLoop = function () {
-        var duration$3048 = performance.now() - this.startTime, repeatCount$3049 = duration$3048 / beatLength$3046, fraction$3050 = repeatCount$3049 % 1;
-        this.setFrame(fraction$3050, repeatCount$3049);
+        var duration$6179 = performance.now() - this.startTime, repeatCount$6180 = duration$6179 / beatLength$6177, fraction$6181 = repeatCount$6180 % 1;
+        this.setFrame(fraction$6181, repeatCount$6180);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$3013.prototype.startBpm = function (bpm$3051) {
-    var beatLength$3052 = 60 * 1000 / bpm$3051;
+Playback$6144.prototype.startBpm = function (bpm$6182) {
+    var beatLength$6183 = 60 * 1000 / bpm$6182;
     this.animationLoop = function () {
-        var duration$3054 = performance.now() - this.startTime, beatNr$3055 = Math.floor(duration$3054 / beatLength$3052), beatFraction$3056 = duration$3054 % beatLength$3052 / beatLength$3052;
-        this.fromClock(beatNr$3055, beatLength$3052, beatFraction$3056);
+        var duration$6185 = performance.now() - this.startTime, beatNr$6186 = Math.floor(duration$6185 / beatLength$6183), beatFraction$6187 = duration$6185 % beatLength$6183 / beatLength$6183;
+        this.fromClock(beatNr$6186, beatLength$6183, beatFraction$6187);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$3013;
+module.exports = Playback$6144;
 
-},{"./exploder.js":15}],19:[function(require,module,exports){
+},{"./exploder.sjs":15}],19:[function(require,module,exports){
 "use strict";
 
 var StreamReader = function (arrayBuffer) {

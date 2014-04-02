@@ -1,7 +1,7 @@
 "use strict";
 
 import macros from './macros.sjs';
-var Exploder = require('./exploder.js');
+var Exploder = require('./exploder.sjs');
 
 // Private functions for setup
 function addClasses(element, frame) {

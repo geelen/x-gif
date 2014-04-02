@@ -12,7 +12,12 @@ macro => {
   rule infix { $param:ident | $guard:expr } => {
     function($param) {
       return $guard;
-    }
+    }.bind(this)
+  }
+  rule { $guard:expr } => {
+    function() {
+      return $guard;
+    }.bind(this)
   }
 }
 

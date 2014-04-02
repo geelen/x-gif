@@ -1,5 +1,7 @@
 "use strict";
 
+import macros from './macros.sjs';
+
 var StreamReader = require('./stream_reader.js'),
   Gif = require('./gif.sjs'),
   Rx = require('rx'),
@@ -17,9 +19,7 @@ Exploder.prototype.loadAndExplode = function () {
   source = Rx.Observable.fromEvent(loader, 'load');
   loader.open('GET', this.file, true);
   loader.responseType = 'arraybuffer';
-  source.subscribe(function (e) {
-    exploder(e.target.response);
-  });
+  source.subscribe((e) => this.explode.call(this, e.target.response));
   loader.send();
 }
 
