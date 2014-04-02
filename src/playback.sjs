@@ -24,9 +24,9 @@ var Playback = function (xgif, element, file, opts) {
   this.fill = opts.fill;
   this.stopped = opts.stopped;
 
-  new Exploder(file, (gif) => {
+  new Exploder(file).subscribe((gif) => {
     // Once we have the GIF data, add things to the DOM
-    console.warn("Callbacks will hurt you. I promise.")
+    console.warn("WE GOT A THING")
     console.log("Received " + gif.frames.length + " frames of gif " + file)
     this.gif = gif;
 
@@ -38,7 +38,7 @@ var Playback = function (xgif, element, file, opts) {
     if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
 
     this.onReady();
-  });
+  }, (err) => console.err(err), () => console.log("WE DONE"));
 };
 
 Playback.prototype.scaleToFill = function () {

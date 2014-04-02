@@ -9,8 +9,9 @@ var StreamReader = require('./stream_reader.js'),
 
 var Exploder = function (file, cb) {
   this.file = file;
-  this.doneCallback = cb;
+  this.subject = new Rx.AsyncSubject();
   this.loadAndExplode();
+  return this.subject;
 };
 
 Exploder.prototype.loadAndExplode = function () {
@@ -142,7 +143,8 @@ Exploder.prototype.explode = function (buffer) {
     frame.url = url.createObjectURL(frame.blob);
   }
 
-  this.doneCallback(new Gif(frames));
+  this.subject.onNext(new Gif(frames));
+  this.subject.onCompleted();
 }
 
 module.exports = Exploder;
