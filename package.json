@@ -26,6 +26,7 @@
     "gulp-browserify": "~0.4.6",
     "gulp-ruby-sass": "~0.4.0",
     "sweetify": "~0.3.1",
-    "gulp-connect": "~1.0.9"
+    "gulp-connect": "~1.0.9",
+    "rx": "~2.2.17"
   }
 }

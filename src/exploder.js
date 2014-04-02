@@ -2,6 +2,7 @@
 
 var StreamReader = require('./stream_reader.js'),
   Gif = require('./gif.sjs'),
+  Rx = require('rx'),
   url = (URL && URL.createObjectURL) ? URL : webkitURL;
 
 var Exploder = function (file, cb) {
@@ -12,12 +13,13 @@ var Exploder = function (file, cb) {
 
 Exploder.prototype.loadAndExplode = function () {
   var loader = new XMLHttpRequest(),
-    exploder = this.explode.bind(this);
+    exploder = this.explode.bind(this),
+  source = Rx.Observable.fromEvent(loader, 'load');
   loader.open('GET', this.file, true);
   loader.responseType = 'arraybuffer';
-  loader.onload = function () {
-    exploder(this.response);
-  };
+  source.subscribe(function (e) {
+    exploder(e.target.response);
+  });
   loader.send();
 }
 
