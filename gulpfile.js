@@ -45,8 +45,10 @@ gulp.task('default', ['build', 'connect'], function () {
   });
 });
 
-gulp.task('connect', $.connect.server({
-  root: [__dirname],
-  port: 1983,
-  livereload: {port: 2983}
-}));
+gulp.task('connect', function () {
+  $.connect.server({
+    root: [__dirname],
+    port: 1983,
+    livereload: {port: 2983}
+  })
+});
