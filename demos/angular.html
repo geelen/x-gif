@@ -71,51 +71,51 @@
       </figcaption>
     </figure>
 
-    <!--<h3>Ping-pong</h3>-->
-    <!--<figure>-->
-      <!--<x-gif ng-src="{{ trustedUrl() }}" ping-pong></x-gif>-->
-      <!--<figcaption>-->
-        <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" ping-pong&gt;&lt;/x-gif&gt;</pre>-->
-      <!--</figcaption>-->
-    <!--</figure>-->
+    <h3>Ping-pong</h3>
+    <figure>
+      <x-gif ng-src="{{ trustedUrl() }}" ping-pong></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" ping-pong&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
 
-    <!--<h3>Speed</h3>-->
-    <!--<figure>-->
-      <!--<label>-->
-        <!--<input type="range" min="0.1" max="5" step="0.1" ng-model="gif.speed"/> {{ gif.speed }}-->
-      <!--</label>-->
-      <!--<x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>-->
-      <!--<figcaption>-->
-        <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"&gt;&lt;/x-gif&gt;</pre>-->
-      <!--</figcaption>-->
-    <!--</figure>-->
+    <h3>Speed</h3>
+    <figure>
+      <label>
+        <input type="range" min="0.1" max="5" step="0.1" ng-model="gif.speed"/> {{ gif.speed }}
+      </label>
+      <x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
 
-    <!--<h3>Synced to Audio</h3>-->
-    <!--<figure>-->
-      <!--<div ng-show="gif.metadata">-->
-        <!--<audio controls preload>-->
-          <!--<source src="demos/cc_audio/encom_part_ii.ogg" type="audio/ogg">-->
-          <!--<source src="demos/cc_audio/encom_part_ii.mp3" type="audio/mpeg">-->
-        <!--</audio>-->
-        <!--<p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href-->
-                                                                                                          <!--ng-click="changeSpeed(-0.1)">-</a>-->
-        <!--</p>-->
-      <!--</div>-->
-      <!--<div ng-hide="gif.metadata">Loading beat data...</div>-->
-      <!--<x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>-->
-      <!--<figcaption>-->
-        <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>-->
-        <!--<p>-->
-          <!--Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.-->
-          <!--<br/>-->
-          <!--Source:-->
-          <!--<a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a>-->
-          <!--<br/>-->
-          <!--Beat metadata provided by <a href="http://echonest.com/">Echo Nest</a>-->
-        <!--</p>-->
-        <!--<h5><a href="demos/audio.html">See a full screen demo</a></h5>-->
-      <!--</figcaption>-->
-    <!--</figure>-->
+    <h3>Synced to Audio</h3>
+    <figure>
+      <div ng-show="gif.metadata">
+        <audio controls preload>
+          <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
+          <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+        </audio>
+        <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
+                                                                                                          ng-click="changeSpeed(-0.1)">-</a>
+        </p>
+      </div>
+      <div ng-hide="gif.metadata">Loading beat data...</div>
+      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>
+        <p>
+          Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.
+          <br/>
+          Source:
+          <a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a>
+          <br/>
+          Beat metadata provided by <a href="http://echonest.com/">Echo Nest</a>
+        </p>
+        <h5><a href="audio.html">See a full screen demo</a></h5>
+      </figcaption>
+    </figure>
 
     <!--<h3>Stop-start</h3>-->
     <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" stopped&gt;&lt;/x-gif&gt;</pre>-->
@@ -136,7 +136,8 @@
     <!--</footer>-->
   <!--</div>-->
 </div>
-<script src="./angular.min.js"></script>
+<script src="synched_playback.js"></script>
+<script src="angular.min.js"></script>
 <script src="../dist/x-gif.angular.js"></script>
 <script type="text/javascript" charset="utf-8">
   angular.module('x-gif-demo', ['x-gif'])
@@ -154,28 +155,28 @@
         speed: 2,
         playbackRate: 1
       };
-//      var audio = document.querySelector('audio');
-//      $scope.changeSpeed = function (delta) {
-//        audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
-//        $scope.gif.playbackRate = audio.playbackRate;
-//      }
-//
-//      $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
-//        $scope.gif.metadata = response.data;
-//        setupAudioSynching(audio,
-//          document.querySelector('#synced'),
-//          $scope.gif.metadata)
-//      })
+      var audio = document.querySelector('audio');
+      $scope.changeSpeed = function (delta) {
+        audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
+        $scope.gif.playbackRate = audio.playbackRate;
+      };
+
+      $http.get('cc_audio/encom_part_ii.json').then(function (response) {
+        $scope.gif.metadata = response.data;
+        setupAudioSynching(audio,
+          document.querySelector('#synced'),
+          $scope.gif.metadata)
+      });
       $scope.trustedUrl = function () {
         return $sce.trustAsResourceUrl($scope.gif.url);
-      }
-//      $scope.loc = $location;
-//      $scope.$watch('loc.path()', function (e) {
-//        if (e) $scope.gif.url = e.slice(1);
-//      })
-//      $scope.$watch('gif.url', function (e) {
-//        if (e) $scope.loc.path(e);
-//      })
+      };
+      $scope.loc = $location;
+      $scope.$watch('loc.path()', function (e) {
+        if (e) $scope.gif.url = e.slice(1);
+      });
+      $scope.$watch('gif.url', function (e) {
+        if (e) $scope.loc.path(e);
+      })
     });
 </script>
 <script>

@@ -44,6 +44,16 @@ angular.module('x-gif', [])
             stopped: xGif.stopped != null
           });
         })
+
+        attrs.$observe('speed', function (speed) {
+          if (!speed) return;
+          console.log("SPEED CHANGED")
+          if (xGif.playback) xGif.playback.speed = speed;
+        });
+
+        element[0].clock = function (beatNr, beatDuration, beatFraction) {
+          if (xGif.playback && xGif.playback.gif) xGif.playback.fromClock(beatNr, beatDuration, beatFraction);
+        }
       }
     }
   });
