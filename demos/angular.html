@@ -6,6 +6,7 @@
 
   <title>&lt;x-gif&gt;</title>
   <link rel="stylesheet" href="./foundation.min.css"/>
+  <link rel="stylesheet" href="../dist/x-gif.css"/>
   <style>
     body {
       margin: 0;
@@ -41,7 +42,7 @@
     }
   </style>
 </head>
-<body unresolved ng-app="x-gif-demo" ng-controller="DemoCtrl">
+<body ng-app="x-gif-demo" ng-controller="DemoCtrl">
 <div class="row">
   <div class="column medium-9 medium-centered large-8">
     <header>
@@ -138,7 +139,7 @@
 <script src="./angular.min.js"></script>
 <script src="../dist/x-gif.angular.js"></script>
 <script type="text/javascript" charset="utf-8">
-  angular.module('x-gif-demo', [])
+  angular.module('x-gif-demo', ['x-gif'])
     .controller('DemoCtrl', function ($scope, $sce, $location, $http) {
       $scope.gifs = [
         "http://i.imgur.com/iKXH4E2.gif",
@@ -165,9 +166,9 @@
 //          document.querySelector('#synced'),
 //          $scope.gif.metadata)
 //      })
-//      $scope.trustedUrl = function () {
-//        return $sce.trustAsResourceUrl($scope.gif.url);
-//      }
+      $scope.trustedUrl = function () {
+        return $sce.trustAsResourceUrl($scope.gif.url);
+      }
 //      $scope.loc = $location;
 //      $scope.$watch('loc.path()', function (e) {
 //        if (e) $scope.gif.url = e.slice(1);

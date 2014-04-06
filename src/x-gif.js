@@ -1,22 +1,9 @@
 "use strict";
 
-var Playback = require('./playback.sjs');
+var Playback = require('./playback.sjs'),
+  Strategies = require('./strategies.js');
 
 var XGif = function () {
-  var Strategies = {
-    speed: function () {
-      this.playback.startSpeed(this.speed, this['n-times']);
-    },
-    hardBpm: function () {
-      this.playback.startHardBpm(this['hard-bpm']);
-    },
-    bpm: function () {
-      this.playback.startBpm(this.bpm);
-    },
-    noop: function () {
-    }
-  }
-
   this.ready = function () {
     // Better than using a default attribute, since this
     // triggers change detectors below.

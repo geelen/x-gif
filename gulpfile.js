@@ -41,7 +41,7 @@ gulp.task('default', ['build', 'connect'], function () {
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
 
-  gulp.watch(['index.html', 'dist/**.*'], function (event) {
+  gulp.watch(['index.html', 'dist/**.*', 'demos/**.*'], function (event) {
     return gulp.src(event.path)
       .pipe($.connect.reload());
   });
