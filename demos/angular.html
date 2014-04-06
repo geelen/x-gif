@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>&lt;x-gif&gt;</title>
+  <link rel="stylesheet" href="./foundation.min.css"/>
+  <link rel="stylesheet" href="../dist/x-gif.css"/>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f9f9f9;
+      height: 100%;
+      text-align: center;
+      padding-bottom: 24px;
+    }
+
+    h3 {
+      margin-top: 2em;
+    }
+
+    body[unresolved] {
+      opacity: 0;
+    }
+
+    pre {
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .me {
+      height: 72px;
+      width: 72px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px white, 0 0 0 3px black;
+      margin: 16px;
+    }
+
+    footer {
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body ng-app="x-gif-demo" ng-controller="DemoCtrl">
+<div class="row">
+  <div class="column medium-9 medium-centered large-8">
+    <header>
+      <h1>&lt;x-gif&gt;</h1>
+      <h4>The GIF tag the internet deserves</h4>
+      <h6><a href="https://github.com/geelen/x-gif" target="_blank">View source on GitHub</a></h6>
+    </header>
+    <hr/>
+
+    <dl class="sub-nav">
+      <dt>Examples:</dt>
+      <dd ng-repeat="url in gifs" ng-class="{active: gif.url == url}"><a ng-href="#{{ url }}"> {{ $index + 1 }} </a>
+      </dd>
+    </dl>
+    <label>
+      Or choose your own. Be sure to choose a server with permissive CORS headers, e.g. imgur
+      <input type="text" ng-model="gif.url"/>
+    </label>
+
+    <h3>Normal playback</h3>
+    <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an issue on GitHub</a> with the URL of the image</p>
+    <figure>
+      <x-gif ng-src="{{ trustedUrl() }}"></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}"&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
+
+    <h3>Ping-pong</h3>
+    <figure>
+      <x-gif ng-src="{{ trustedUrl() }}" ping-pong></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" ping-pong&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
+
+    <h3>Speed</h3>
+    <figure>
+      <label>
+        <input type="range" min="0.1" max="5" step="0.1" ng-model="gif.speed"/> {{ gif.speed }}
+      </label>
+      <x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
+
+    <h3>Synced to Audio</h3>
+    <figure>
+      <div ng-show="gif.metadata">
+        <audio controls preload>
+          <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
+          <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+        </audio>
+        <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
+                                                                                                          ng-click="changeSpeed(-0.1)">-</a>
+        </p>
+      </div>
+      <div ng-hide="gif.metadata">Loading beat data...</div>
+      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>
+        <p>
+          Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.
+          <br/>
+          Source:
+          <a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a>
+          <br/>
+          Beat metadata provided by <a href="http://echonest.com/">Echo Nest</a>
+        </p>
+        <h5><a href="audio-angular.html">See a full screen demo</a></h5>
+      </figcaption>
+    </figure>
+
+    <!--<h3>Stop-start</h3>-->
+    <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" stopped&gt;&lt;/x-gif&gt;</pre>-->
+    <!--<h5><a href="demos/stoppable.html">See demo</a></h5>-->
+
+    <!--<h3>Exploded</h3>-->
+    <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" exploded&gt;&lt;/x-gif&gt;</pre>-->
+    <!--<p>Explode the gif into its component frames (handy for debugging)</p>-->
+    <!--<h5><a href="demos/exploded.html">See demo</a></h5>-->
+
+    <hr/>
+
+    <footer>
+      <h5>Made with <3 by</h5>
+      <img class="me" src="http://i.imgur.com/x577Tga.jpg" alt=""/>
+      <br/>
+      <a target="_blank" href="https://twitter.com/glenmaddern">@glenmaddern</a>
+    </footer>
+  </div>
+</div>
+<script src="synched_playback.js"></script>
+<script src="angular.min.js"></script>
+<script src="../dist/x-gif.angular.js"></script>
+<script type="text/javascript" charset="utf-8">
+  angular.module('x-gif-demo', ['x-gif'])
+    .controller('DemoCtrl', function ($scope, $sce, $location, $http) {
+      $scope.gifs = [
+        "http://i.imgur.com/iKXH4E2.gif",
+        "http://i.imgur.com/RY2vTBQ.gif",
+        "http://i.imgur.com/YlxOOI7.gif",
+        "http://i.imgur.com/5KSc0px.gif",
+        "http://i.imgur.com/m25uYzq.gif",
+        "http://i.imgur.com/ifR7csn.gif"
+      ];
+      $scope.gif = {
+        url: $scope.gifs[0],
+        speed: 2,
+        playbackRate: 1
+      };
+      var audio = document.querySelector('audio');
+      $scope.changeSpeed = function (delta) {
+        audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
+        $scope.gif.playbackRate = audio.playbackRate;
+      };
+
+      $http.get('cc_audio/encom_part_ii.json').then(function (response) {
+        $scope.gif.metadata = response.data;
+        setupAudioSynching(audio,
+          document.querySelector('#synced'),
+          $scope.gif.metadata)
+      });
+      $scope.trustedUrl = function () {
+        return $sce.trustAsResourceUrl($scope.gif.url);
+      };
+      $scope.loc = $location;
+      $scope.$watch('loc.path()', function (e) {
+        if (e) $scope.gif.url = e.slice(1);
+      });
+      $scope.$watch('gif.url', function (e) {
+        if (e) $scope.loc.path(e);
+      })
+    });
+</script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-32408977-5', 'geelen.github.io');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

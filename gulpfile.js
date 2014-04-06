@@ -2,7 +2,10 @@ var gulp = require('gulp'),
   $ = require('gulp-load-plugins')();
 
 gulp.task('js', function () {
-  gulp.src('src/x-gif.js')
+  gulp.src([
+    'src/x-gif.js',
+    'src/x-gif.angular.js'
+  ])
     .pipe($.plumber())
     .pipe($.browserify({
       transform: ['sweetify']
@@ -24,12 +27,11 @@ gulp.task('css', function () {
 
 gulp.task('copy', function () {
   gulp.src([
-      'bower_components/platform/platform.js',
-      'bower_components/polymer/polymer*',
-    ])
+    'bower_components/platform/platform.js',
+    'bower_components/polymer/polymer*',
+  ])
     .pipe(gulp.dest('dist'));
-
-})
+});
 
 gulp.task('build', ['js', 'html', 'css', 'copy']);
 
@@ -39,7 +41,7 @@ gulp.task('default', ['build', 'connect'], function () {
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
 
-  gulp.watch(['index.html', 'dist/**.*'], function (event) {
+  gulp.watch(['index.html', 'dist/**.*', 'demos/**.*'], function (event) {
     return gulp.src(event.path)
       .pipe($.connect.reload());
   });

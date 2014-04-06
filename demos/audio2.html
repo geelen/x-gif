@@ -37,10 +37,15 @@
     var xGif = document.querySelector('x-gif'),
       audio = document.querySelector('audio'),
       metadata,
-      gifNr = 0,
-      changeGif = function () {
+      gifNr = 0;
+
+    window.nextGif = function () {
+      xGif.src = gifs[gifNr++ % gifs.length];
+    };
+
+    var changeGif = function () {
         setTimeout(changeGif, 10000);
-        xGif.src = gifs[gifNr++ % gifs.length];
+        nextGif();
       };
     changeGif();
 
@@ -52,12 +57,6 @@
       audio.play();
     }
     xhr.send();
-
-    window.addEventListener('resize', function () {
-      [].forEach.call(document.querySelectorAll('x-gif'), function (elem) {
-        elem.relayout();
-      });
-    })
   });
 </script>
 <script>
