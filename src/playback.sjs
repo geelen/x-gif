@@ -51,8 +51,7 @@ Playback.prototype.scaleToFill = function () {
   }
 }
 
-Playback.prototype.setFrame = function (fraction, repeatCount) {
-  var frameNr = (this.pingPong && repeatCount % 2 >= 1) ? this.gif.frameAt(1 - fraction) : this.gif.frameAt(fraction);
+Playback.prototype.setFrame = function (frameNr) {
   this.element.dataset['frame'] = frameNr;
 }
 

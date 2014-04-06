@@ -5,16 +5,21 @@ import macros from './macros.sjs';
 window.Rx = require('rx');
 require('rx-dom');
 
-var SpeedStrategy = Rx.Observable.generate(
-  0, () => true,
-  x => (Math.random() > 0.9) ? x + 1 : x,
-  x => x,
-  Rx.Scheduler.requestAnimationFrame);
+var SpeedStrategy = (gif, speed) => {
+  var gifLength = 10 * gif.length / speed,
+    startTime = performance.now();
 
-var sub = SpeedStrategy.distinctUntilChanged().subscribe(function (x) {
-  console.log("SUB1 " + x);
-  if (x > 10) sub.dispose();
-});
+  return Rx.Observable.generate(
+    0, () => true,
+    () => {
+      var duration = performance.now() - startTime,
+        repeatCount = duration / gifLength,
+        fraction = repeatCount % 1;
+      return gif.frameAt(fraction);
+    },
+    x => x,
+    Rx.Scheduler.requestAnimationFrame);
+};
 
 var PlaybackStrategies = {
   speed: SpeedStrategy
