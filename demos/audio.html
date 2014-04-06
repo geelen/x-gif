@@ -52,6 +52,12 @@
       audio.play();
     }
     xhr.send();
+
+    window.addEventListener('resize', function () {
+      [].forEach.call(document.querySelectorAll('x-gif'), function (elem) {
+        elem.relayout();
+      });
+    })
   });
 </script>
 <script>

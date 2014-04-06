@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+  <title>Toggle Button</title>
+  <link rel="stylesheet" href="../dist/x-gif.css"/>
+  <style>
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background-color: white;
+    }
+  </style>
+</head>
+<body ng-app="x-gif-audio">
+<x-gif fill sync ng-src="{{ src }}"></x-gif>
+<audio loop>
+  <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
+  <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+</audio>
+
+<script src="synched_playback.js"></script>
+<script src="angular.min.js"></script>
+<script src="../dist/x-gif.angular.js"></script>
+<script>
+  "use strict";
+
+  var synchOffset = -0.1,
+    gifs = [
+      "http://i.imgur.com/iKXH4E2.gif",
+      "http://i.imgur.com/RY2vTBQ.gif",
+      "http://i.imgur.com/YlxOOI7.gif",
+      "http://i.imgur.com/5KSc0px.gif",
+      "http://i.imgur.com/m25uYzq.gif",
+      "http://i.imgur.com/ifR7csn.gif"
+    ];
+  angular.module('x-gif-audio', ['x-gif'])
+    .run(function($timeout, $rootScope, $sce) {
+      var xGif = document.querySelector('x-gif'),
+        audio = document.querySelector('audio'),
+        metadata,
+        gifNr = 0,
+        changeGif = function () {
+          $timeout(changeGif, 10000);
+          $rootScope.src = $sce.trustAsResourceUrl(gifs[gifNr++ % gifs.length]);
+          console.log(xGif.src)
+        };
+      changeGif();
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
+      xhr.onload = function () {
+        metadata = JSON.parse(this.response);
+        setupAudioSynching(audio, xGif, metadata);
+        audio.play();
+      }
+      xhr.send();
+
+      window.addEventListener('resize', function () {
+        [].forEach.call(document.querySelectorAll('x-gif'), function (elem) {
+          elem.relayout();
+        });
+      })
+    });
+</script>
+<script>
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+  ga('create', 'UA-32408977-5', 'geelen.github.io');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

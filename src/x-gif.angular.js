@@ -54,6 +54,10 @@ angular.module('x-gif', [])
         element[0].clock = function (beatNr, beatDuration, beatFraction) {
           if (xGif.playback && xGif.playback.gif) xGif.playback.fromClock(beatNr, beatDuration, beatFraction);
         }
+
+        element[0].relayout = function () {
+          if (xGif.playback && xGif.fill != null) xGif.playback.scaleToFill();
+        }
       }
     }
   });
