@@ -11250,163 +11250,163 @@ module.exports = Rx;
 },{"./rx":12}],17:[function(require,module,exports){
 'use strict';
 ;
-var StreamReader$14977 = require('./stream_reader.js'), Gif$14978 = require('./gif.sjs'), Rx$14979 = require('rx'), url$14980 = URL && URL.createObjectURL ? URL : webkitURL;
-var Exploder$14981 = function (file$14982, cb$14983) {
-    this.file = file$14982;
-    this.subject = new Rx$14979.AsyncSubject();
+var StreamReader$17043 = require('./stream_reader.js'), Gif$17044 = require('./gif.sjs'), Rx$17045 = require('rx'), url$17046 = URL && URL.createObjectURL ? URL : webkitURL;
+var Exploder$17047 = function (file$17048, cb$17049) {
+    this.file = file$17048;
+    this.subject = new Rx$17045.AsyncSubject();
     this.loadAndExplode();
     return this.subject;
 };
-Exploder$14981.prototype.loadAndExplode = function () {
-    var loader$14984 = new XMLHttpRequest(), source$14985 = Rx$14979.Observable.fromEvent(loader$14984, 'load');
-    loader$14984.open('GET', this.file, true);
-    loader$14984.responseType = 'arraybuffer';
-    source$14985.subscribe(function (e$14988) {
-        return this.explode(e$14988.target.response);
+Exploder$17047.prototype.loadAndExplode = function () {
+    var loader$17050 = new XMLHttpRequest(), source$17051 = Rx$17045.Observable.fromEvent(loader$17050, 'load');
+    loader$17050.open('GET', this.file, true);
+    loader$17050.responseType = 'arraybuffer';
+    source$17051.subscribe(function (e$17054) {
+        return this.explode(e$17054.target.response);
     }.bind(this));
-    loader$14984.send();
+    loader$17050.send();
 };
-Exploder$14981.prototype.explode = function (buffer$14989) {
-    var frames$14990 = [], streamReader$14991 = new StreamReader$14977(buffer$14989);
+Exploder$17047.prototype.explode = function (buffer$17055) {
+    var frames$17056 = [], streamReader$17057 = new StreamReader$17043(buffer$17055);
     // Ensure this is an animated GIF
-    if (streamReader$14991.readAscii(6) != 'GIF89a') {
+    if (streamReader$17057.readAscii(6) != 'GIF89a') {
         //    deferred.reject();
         return;
     }
-    streamReader$14991.skipBytes(4);
+    streamReader$17057.skipBytes(4);
     // Height & Width
-    if (streamReader$14991.peekBit(1)) {
-        streamReader$14991.log('GLOBAL COLOR TABLE');
-        var colorTableSize$14998 = streamReader$14991.readByte() & 7;
-        streamReader$14991.log('GLOBAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$14998 + 1) + ' BYTES');
-        streamReader$14991.skipBytes(2);
-        streamReader$14991.skipBytes(3 * Math.pow(2, colorTableSize$14998 + 1));
+    if (streamReader$17057.peekBit(1)) {
+        streamReader$17057.log('GLOBAL COLOR TABLE');
+        var colorTableSize$17064 = streamReader$17057.readByte() & 7;
+        streamReader$17057.log('GLOBAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$17064 + 1) + ' BYTES');
+        streamReader$17057.skipBytes(2);
+        streamReader$17057.skipBytes(3 * Math.pow(2, colorTableSize$17064 + 1));
     } else {
-        streamReader$14991.log('NO GLOBAL COLOR TABLE');
+        streamReader$17057.log('NO GLOBAL COLOR TABLE');
     }
     // WE HAVE ENOUGH FOR THE GIF HEADER!
-    var gifHeader$14992 = buffer$14989.slice(0, streamReader$14991.index);
-    var spinning$14993 = true, expectingImage$14994 = false;
-    while (spinning$14993) {
-        if (streamReader$14991.isNext([
+    var gifHeader$17058 = buffer$17055.slice(0, streamReader$17057.index);
+    var spinning$17059 = true, expectingImage$17060 = false;
+    while (spinning$17059) {
+        if (streamReader$17057.isNext([
                 33,
                 255
             ])) {
-            streamReader$14991.log('APPLICATION EXTENSION');
-            streamReader$14991.skipBytes(2);
-            var blockSize$14999 = streamReader$14991.readByte();
-            streamReader$14991.log(streamReader$14991.readAscii(blockSize$14999));
-            if (streamReader$14991.isNext([
+            streamReader$17057.log('APPLICATION EXTENSION');
+            streamReader$17057.skipBytes(2);
+            var blockSize$17065 = streamReader$17057.readByte();
+            streamReader$17057.log(streamReader$17057.readAscii(blockSize$17065));
+            if (streamReader$17057.isNext([
                     3,
                     1
                 ])) {
                 // we cool
-                streamReader$14991.skipBytes(5);
+                streamReader$17057.skipBytes(5);
             } else {
-                streamReader$14991.log('A weird application extension. Skip until we have 2 NULL bytes');
-                while (!(streamReader$14991.readByte() === 0 && streamReader$14991.peekByte() === 0));
-                streamReader$14991.log('OK moving on');
-                streamReader$14991.skipBytes(1);
+                streamReader$17057.log('A weird application extension. Skip until we have 2 NULL bytes');
+                while (!(streamReader$17057.readByte() === 0 && streamReader$17057.peekByte() === 0));
+                streamReader$17057.log('OK moving on');
+                streamReader$17057.skipBytes(1);
             }
-        } else if (streamReader$14991.isNext([
+        } else if (streamReader$17057.isNext([
                 33,
                 254
             ])) {
-            streamReader$14991.log('COMMENT EXTENSION');
-            streamReader$14991.skipBytes(2);
-            while (!streamReader$14991.isNext([0])) {
-                var blockSize$14999 = streamReader$14991.readByte();
-                streamReader$14991.log(streamReader$14991.readAscii(blockSize$14999));
+            streamReader$17057.log('COMMENT EXTENSION');
+            streamReader$17057.skipBytes(2);
+            while (!streamReader$17057.isNext([0])) {
+                var blockSize$17065 = streamReader$17057.readByte();
+                streamReader$17057.log(streamReader$17057.readAscii(blockSize$17065));
             }
-            streamReader$14991.skipBytes(1);
+            streamReader$17057.skipBytes(1);
         }    //NULL terminator
-        else if (streamReader$14991.isNext([44])) {
-            streamReader$14991.log('IMAGE DESCRIPTOR!');
-            if (!expectingImage$14994) {
+        else if (streamReader$17057.isNext([44])) {
+            streamReader$17057.log('IMAGE DESCRIPTOR!');
+            if (!expectingImage$17060) {
                 // This is a bare image, not prefaced with a Graphics Control Extension
                 // so we should treat it as a frame.
-                frames$14990.push({
-                    index: streamReader$14991.index,
+                frames$17056.push({
+                    index: streamReader$17057.index,
                     delay: 0
                 });
             }
-            expectingImage$14994 = false;
-            streamReader$14991.skipBytes(9);
-            if (streamReader$14991.peekBit(1)) {
-                streamReader$14991.log('LOCAL COLOR TABLE');
-                var colorTableSize$14998 = streamReader$14991.readByte() & 7;
-                streamReader$14991.log('LOCAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$14998 + 1) + ' BYTES');
-                streamReader$14991.skipBytes(2);
-                streamReader$14991.skipBytes(3 * Math.pow(2, colorTableSize$14998 + 1));
+            expectingImage$17060 = false;
+            streamReader$17057.skipBytes(9);
+            if (streamReader$17057.peekBit(1)) {
+                streamReader$17057.log('LOCAL COLOR TABLE');
+                var colorTableSize$17064 = streamReader$17057.readByte() & 7;
+                streamReader$17057.log('LOCAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$17064 + 1) + ' BYTES');
+                streamReader$17057.skipBytes(2);
+                streamReader$17057.skipBytes(3 * Math.pow(2, colorTableSize$17064 + 1));
             } else {
-                streamReader$14991.log('NO LOCAL TABLE PHEW');
-                streamReader$14991.skipBytes(1);
+                streamReader$17057.log('NO LOCAL TABLE PHEW');
+                streamReader$17057.skipBytes(1);
             }
-            streamReader$14991.log('MIN CODE SIZE ' + streamReader$14991.readByte());
-            streamReader$14991.log('DATA START');
-            while (!streamReader$14991.isNext([0])) {
-                var blockSize$14999 = streamReader$14991.readByte();
+            streamReader$17057.log('MIN CODE SIZE ' + streamReader$17057.readByte());
+            streamReader$17057.log('DATA START');
+            while (!streamReader$17057.isNext([0])) {
+                var blockSize$17065 = streamReader$17057.readByte();
                 //        streamReader.log("SKIPPING " + blockSize + " BYTES");
-                streamReader$14991.skipBytes(blockSize$14999);
+                streamReader$17057.skipBytes(blockSize$17065);
             }
-            streamReader$14991.log('DATA END');
-            streamReader$14991.skipBytes(1);
+            streamReader$17057.log('DATA END');
+            streamReader$17057.skipBytes(1);
         }    //NULL terminator
-        else if (streamReader$14991.isNext([
+        else if (streamReader$17057.isNext([
                 33,
                 249,
                 4
             ])) {
-            streamReader$14991.log('GRAPHICS CONTROL EXTENSION!');
+            streamReader$17057.log('GRAPHICS CONTROL EXTENSION!');
             // We _definitely_ have a frame. Now we're expecting an image
-            var index$15000 = streamReader$14991.index;
-            streamReader$14991.skipBytes(3);
-            var disposalMethod$15001 = streamReader$14991.readByte() >> 2;
-            streamReader$14991.log('DISPOSAL ' + disposalMethod$15001);
-            var delay$15002 = streamReader$14991.readByte() + streamReader$14991.readByte() * 256;
-            frames$14990.push({
-                index: index$15000,
-                delay: delay$15002,
-                disposal: disposalMethod$15001
+            var index$17066 = streamReader$17057.index;
+            streamReader$17057.skipBytes(3);
+            var disposalMethod$17067 = streamReader$17057.readByte() >> 2;
+            streamReader$17057.log('DISPOSAL ' + disposalMethod$17067);
+            var delay$17068 = streamReader$17057.readByte() + streamReader$17057.readByte() * 256;
+            frames$17056.push({
+                index: index$17066,
+                delay: delay$17068,
+                disposal: disposalMethod$17067
             });
-            streamReader$14991.log('FRAME DELAY ' + delay$15002);
-            streamReader$14991.skipBytes(2);
-            expectingImage$14994 = true;
+            streamReader$17057.log('FRAME DELAY ' + delay$17068);
+            streamReader$17057.skipBytes(2);
+            expectingImage$17060 = true;
         } else {
-            var maybeTheEnd$15003 = streamReader$14991.index;
-            while (!streamReader$14991.finished() && !streamReader$14991.isNext([
+            var maybeTheEnd$17069 = streamReader$17057.index;
+            while (!streamReader$17057.finished() && !streamReader$17057.isNext([
                     33,
                     249,
                     4
                 ])) {
-                streamReader$14991.readByte();
+                streamReader$17057.readByte();
             }
-            if (streamReader$14991.finished()) {
-                streamReader$14991.index = maybeTheEnd$15003;
-                streamReader$14991.log('WE END');
-                spinning$14993 = false;
+            if (streamReader$17057.finished()) {
+                streamReader$17057.index = maybeTheEnd$17069;
+                streamReader$17057.log('WE END');
+                spinning$17059 = false;
             } else {
-                streamReader$14991.log('UNKNOWN DATA FROM ' + maybeTheEnd$15003);
+                streamReader$17057.log('UNKNOWN DATA FROM ' + maybeTheEnd$17069);
             }
         }
     }
-    var endOfFrames$14995 = streamReader$14991.index;
-    var gifFooter$14996 = buffer$14989.slice(-1);
+    var endOfFrames$17061 = streamReader$17057.index;
+    var gifFooter$17062 = buffer$17055.slice(-1);
     //last bit is all we need
-    for (var i$14997 = 0; i$14997 < frames$14990.length; i$14997++) {
-        var frame$15004 = frames$14990[i$14997];
-        var nextIndex$15005 = i$14997 < frames$14990.length - 1 ? frames$14990[i$14997 + 1].index : endOfFrames$14995;
-        frame$15004.blob = new Blob([
-            gifHeader$14992,
-            buffer$14989.slice(frame$15004.index, nextIndex$15005),
-            gifFooter$14996
+    for (var i$17063 = 0; i$17063 < frames$17056.length; i$17063++) {
+        var frame$17070 = frames$17056[i$17063];
+        var nextIndex$17071 = i$17063 < frames$17056.length - 1 ? frames$17056[i$17063 + 1].index : endOfFrames$17061;
+        frame$17070.blob = new Blob([
+            gifHeader$17058,
+            buffer$17055.slice(frame$17070.index, nextIndex$17071),
+            gifFooter$17062
         ], { type: 'image/gif' });
-        frame$15004.url = url$14980.createObjectURL(frame$15004.blob);
+        frame$17070.url = url$17046.createObjectURL(frame$17070.blob);
     }
-    this.subject.onNext(new Gif$14978(frames$14990));
+    this.subject.onNext(new Gif$17044(frames$17056));
     this.subject.onCompleted();
 };
-module.exports = Exploder$14981;
+module.exports = Exploder$17047;
 
 },{"./gif.sjs":19,"./stream_reader.js":22,"rx":13}],18:[function(require,module,exports){
 "use strict";
@@ -11494,149 +11494,151 @@ Polymer('x-gif', new XGif());
 },{"./playback.sjs":20,"./playback_strategies.sjs":21}],19:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$15072 = 10;
-var Gif$15073 = function (frames$15074) {
-    this.frames = frames$15074;
+var defaultFrameDelay$17138 = 10;
+var Gif$17139 = function (frames$17140) {
+    this.frames = frames$17140;
     this.length = 0;
     this.offsets = [];
-    frames$15074.forEach(function (frame$15077) {
+    frames$17140.forEach(function (frame$17143) {
         this.offsets.push(this.length);
-        this.length += frame$15077.delay || defaultFrameDelay$15072;
+        this.length += frame$17143.delay || defaultFrameDelay$17138;
     }.bind(this));
 };
-Gif$15073.prototype.frameAt = function (fraction$15078) {
-    var offset$15079 = fraction$15078 * this.length;
-    for (var i$15080 = 1, l$15081 = this.offsets.length; i$15080 < l$15081; i$15080++) {
-        if (this.offsets[i$15080] > offset$15079)
+Gif$17139.prototype.frameAt = function (fraction$17144) {
+    var offset$17145 = fraction$17144 * this.length;
+    for (var i$17146 = 1, l$17147 = this.offsets.length; i$17146 < l$17147; i$17146++) {
+        if (this.offsets[i$17146] > offset$17145)
             break;
     }
-    return i$15080 - 1;
+    return i$17146 - 1;
 };
-module.exports = Gif$15073;
+module.exports = Gif$17139;
 
 },{}],20:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$14785 = require('./exploder.sjs');
+var Exploder$16847 = require('./exploder.sjs');
 // Private functions for setup
-function addClasses$14786(element$14789, frame$14790) {
-    element$14789.classList.add('frame');
-    if (frame$14790.disposal == 2)
-        element$14789.classList.add('disposal-restore');
+function addClasses$16848(element$16851, frame$16852) {
+    element$16851.classList.add('frame');
+    if (frame$16852.disposal == 2)
+        element$16851.classList.add('disposal-restore');
 }
-var createImage$14787 = function (frame$14791) {
-    var image$14792 = new Image();
-    image$14792.src = frame$14791.url;
-    addClasses$14786(image$14792, frame$14791);
-    return image$14792;
+var createImage$16849 = function (frame$16853) {
+    var image$16854 = new Image();
+    image$16854.src = frame$16853.url;
+    addClasses$16848(image$16854, frame$16853);
+    return image$16854;
 };
-var Playback$14788 = function (xgif$14793, element$14794, file$14795, opts$14796) {
+var Playback$16850 = function (xgif$16855, element$16856, file$16857, opts$16858) {
     // Set up out instance variables
-    this.xgif = xgif$14793;
-    this.element = element$14794;
-    this.pingPong = opts$14796.pingPong;
-    this.fill = opts$14796.fill;
-    this.stopped = opts$14796.stopped;
-    new Exploder$14785(file$14795).subscribe(function (gif$14801) {
+    this.xgif = xgif$16855;
+    this.element = element$16856;
+    this.pingPong = opts$16858.pingPong;
+    this.fill = opts$16858.fill;
+    this.stopped = opts$16858.stopped;
+    new Exploder$16847(file$16857).subscribe(function (gif$16863) {
         // Once we have the GIF data, add things to the DOM
         console.warn('WE GOT A THING');
-        console.log('Received ' + gif$14801.frames.length + ' frames of gif ' + file$14795);
-        this.gif = gif$14801;
+        console.log('Received ' + gif$16863.frames.length + ' frames of gif ' + file$16857);
+        this.gif = gif$16863;
         this.element.innerHTML = '';
-        var createFrameElement$14802 = createImage$14787;
+        var createFrameElement$16864 = createImage$16849;
         //(this.fill) ? createDiv : createImage;
-        gif$14801.frames.map(createFrameElement$14802).forEach(this.element.appendChild, this.element);
+        gif$16863.frames.map(createFrameElement$16864).forEach(this.element.appendChild, this.element);
         if (this.fill)
             requestAnimationFrame(this.scaleToFill.bind(this));
         this.onReady();
-    }.bind(this), function (err$14803) {
-        return console.err(err$14803);
+    }.bind(this), function (err$16865) {
+        return console.err(err$16865);
     }.bind(this), function () {
         return console.log('WE DONE');
     }.bind(this));
 };
-Playback$14788.prototype.scaleToFill = function () {
+Playback$16850.prototype.scaleToFill = function () {
     if (!(this.element.offsetWidth && this.element.offsetHeight)) {
         requestAnimationFrame(this.scaleToFill.bind(this));
     } else {
-        var xScale$14804 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$14805 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$14804, yScale$14805) + ')';
+        var xScale$16866 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$16867 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$16866, yScale$16867) + ')';
     }
 };
-Playback$14788.prototype.setFrame = function (fraction$14806, repeatCount$14807) {
-    var frameNr$14808 = this.pingPong && repeatCount$14807 % 2 >= 1 ? this.gif.frameAt(1 - fraction$14806) : this.gif.frameAt(fraction$14806);
-    this.element.dataset['frame'] = frameNr$14808;
+Playback$16850.prototype.setFrame = function (fraction$16868, repeatCount$16869) {
+    var frameNr$16870 = this.pingPong && repeatCount$16869 % 2 >= 1 ? this.gif.frameAt(1 - fraction$16868) : this.gif.frameAt(fraction$16868);
+    this.element.dataset['frame'] = frameNr$16870;
 };
-Playback$14788.prototype.start = function () {
+Playback$16850.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$14788.prototype.stop = function () {
+Playback$16850.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$14788.prototype.startSpeed = function (speed$14809, nTimes$14810) {
-    this.speed = speed$14809;
+Playback$16850.prototype.startSpeed = function (speed$16871, nTimes$16872) {
+    this.speed = speed$16871;
     this.animationLoop = function () {
-        var gifLength$14812 = 10 * this.gif.length / this.speed, duration$14813 = performance.now() - this.startTime, repeatCount$14814 = duration$14813 / gifLength$14812, fraction$14815 = repeatCount$14814 % 1;
-        if (!nTimes$14810 || repeatCount$14814 < nTimes$14810) {
-            this.setFrame(fraction$14815, repeatCount$14814);
+        var gifLength$16874 = 10 * this.gif.length / this.speed, duration$16875 = performance.now() - this.startTime, repeatCount$16876 = duration$16875 / gifLength$16874, fraction$16877 = repeatCount$16876 % 1;
+        if (!nTimes$16872 || repeatCount$16876 < nTimes$16872) {
+            this.setFrame(fraction$16877, repeatCount$16876);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$14810 % 1 || 1, repeatCount$14814);
+            this.setFrame(nTimes$16872 % 1 || 1, repeatCount$16876);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$14788.prototype.fromClock = function (beatNr$14816, beatDuration$14817, beatFraction$14818) {
-    var speedup$14819 = 1.5, lengthInBeats$14820 = Math.max(1, Math.round(1 / speedup$14819 * 10 * this.gif.length / beatDuration$14817)), subBeat$14821 = beatNr$14816 % lengthInBeats$14820, repeatCount$14822 = beatNr$14816 / lengthInBeats$14820, subFraction$14823 = beatFraction$14818 / lengthInBeats$14820 + subBeat$14821 / lengthInBeats$14820;
-    this.setFrame(subFraction$14823, repeatCount$14822);
+Playback$16850.prototype.fromClock = function (beatNr$16878, beatDuration$16879, beatFraction$16880) {
+    var speedup$16881 = 1.5, lengthInBeats$16882 = Math.max(1, Math.round(1 / speedup$16881 * 10 * this.gif.length / beatDuration$16879)), subBeat$16883 = beatNr$16878 % lengthInBeats$16882, repeatCount$16884 = beatNr$16878 / lengthInBeats$16882, subFraction$16885 = beatFraction$16880 / lengthInBeats$16882 + subBeat$16883 / lengthInBeats$16882;
+    this.setFrame(subFraction$16885, repeatCount$16884);
 };
-Playback$14788.prototype.startHardBpm = function (bpm$14824) {
-    var beatLength$14825 = 60 * 1000 / bpm$14824;
+Playback$16850.prototype.startHardBpm = function (bpm$16886) {
+    var beatLength$16887 = 60 * 1000 / bpm$16886;
     this.animationLoop = function () {
-        var duration$14827 = performance.now() - this.startTime, repeatCount$14828 = duration$14827 / beatLength$14825, fraction$14829 = repeatCount$14828 % 1;
-        this.setFrame(fraction$14829, repeatCount$14828);
+        var duration$16889 = performance.now() - this.startTime, repeatCount$16890 = duration$16889 / beatLength$16887, fraction$16891 = repeatCount$16890 % 1;
+        this.setFrame(fraction$16891, repeatCount$16890);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$14788.prototype.startBpm = function (bpm$14830) {
-    var beatLength$14831 = 60 * 1000 / bpm$14830;
+Playback$16850.prototype.startBpm = function (bpm$16892) {
+    var beatLength$16893 = 60 * 1000 / bpm$16892;
     this.animationLoop = function () {
-        var duration$14833 = performance.now() - this.startTime, beatNr$14834 = Math.floor(duration$14833 / beatLength$14831), beatFraction$14835 = duration$14833 % beatLength$14831 / beatLength$14831;
-        this.fromClock(beatNr$14834, beatLength$14831, beatFraction$14835);
+        var duration$16895 = performance.now() - this.startTime, beatNr$16896 = Math.floor(duration$16895 / beatLength$16893), beatFraction$16897 = duration$16895 % beatLength$16893 / beatLength$16893;
+        this.fromClock(beatNr$16896, beatLength$16893, beatFraction$16897);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$14788;
+module.exports = Playback$16850;
 
 },{"./exploder.sjs":17}],21:[function(require,module,exports){
 'use strict';
 ;
 window.Rx = require('rx');
 require('rx-dom');
-var SpeedStrategy$14887 = Rx.Observable.generate(0, function () {
+var SpeedStrategy$16949 = Rx.Observable.generate(0, function () {
         return true;
-    }, function (x$14889) {
-        return Math.random() > 0.9 ? x$14889 + 1 : x$14889;
-    }, function (x$14890) {
-        return x$14890;
-    }, Rx.Scheduler.requestAnimationFrame);
-SpeedStrategy$14887.distinctUntilChanged().subscribe(function (x$14891) {
-    console.log('SUB1 ' + x$14891);
-});
-var PlaybackStrategies$14888 = { speed: SpeedStrategy$14887 };
-module.exports = PlaybackStrategies$14888;
+    }.bind(this), function (x$16955) {
+        return Math.random() > 0.9 ? x$16955 + 1 : x$16955;
+    }.bind(this), function (x$16956) {
+        return x$16956;
+    }.bind(this), Rx.Scheduler.requestAnimationFrame);
+var sub$16950 = SpeedStrategy$16949.distinctUntilChanged().subscribe(function (x$16957) {
+        console.log('SUB1 ' + x$16957);
+        if (x$16957 > 10)
+            sub$16950.dispose();
+    });
+var PlaybackStrategies$16951 = { speed: SpeedStrategy$16949 };
+module.exports = PlaybackStrategies$16951;
 
 },{"rx":13,"rx-dom":4}],22:[function(require,module,exports){
 "use strict";

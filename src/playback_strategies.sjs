@@ -6,14 +6,14 @@ window.Rx = require('rx');
 require('rx-dom');
 
 var SpeedStrategy = Rx.Observable.generate(
-  0,
-  function () { return true; },
-  function (x) { return (Math.random() > 0.9) ? x + 1 : x; },
-  function (x) { return x; },
+  0, () => true,
+  x => (Math.random() > 0.9) ? x + 1 : x,
+  x => x,
   Rx.Scheduler.requestAnimationFrame);
 
-SpeedStrategy.distinctUntilChanged().subscribe(function (x) {
+var sub = SpeedStrategy.distinctUntilChanged().subscribe(function (x) {
   console.log("SUB1 " + x);
+  if (x > 10) sub.dispose();
 });
 
 var PlaybackStrategies = {
