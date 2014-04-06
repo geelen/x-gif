@@ -345,6 +345,13 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 
+function noop() {}
+
+process.on = noop;
+process.once = noop;
+process.off = noop;
+process.emit = noop;
+
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
 }
@@ -356,6 +363,750 @@ process.chdir = function (dir) {
 };
 
 },{}],3:[function(require,module,exports){
+(function (global){
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+
+(function (root, factory) {
+    var freeExports = typeof exports == 'object' && exports,
+        freeModule = typeof module == 'object' && module && module.exports == freeExports && module,
+        freeGlobal = typeof global == 'object' && global;
+    if (freeGlobal.global === freeGlobal) {
+        window = freeGlobal;
+    }
+
+    // Because of build optimizers
+    if (typeof define === 'function' && define.amd) {
+        define(['rx', 'exports'], function (Rx, exports) {
+            root.Rx = factory(root, exports, Rx);
+            return root.Rx;
+        });
+    } else if (typeof module === 'object' && module && module.exports === freeExports) {
+        module.exports = factory(root, module.exports, require('rx'));
+    } else {
+        root.Rx = factory(root, {}, root.Rx);
+    }
+}(this, function (global, exp, Rx, undefined) {
+    
+    var freeExports = typeof exports == 'object' && exports,
+        freeModule = typeof module == 'object' && module && module.exports == freeExports && module,
+        freeGlobal = typeof global == 'object' && global;
+    if (freeGlobal.global === freeGlobal) {
+        window = freeGlobal;
+    }    
+
+    var Rx = window.Rx,
+        Observable = Rx.Observable,
+        observableProto = Observable.prototype,
+        observableCreate = Observable.create,
+        observableCreateWithDisposable = Observable.createWithDisposable,
+        disposableCreate = Rx.Disposable.create,
+        CompositeDisposable = Rx.CompositeDisposable,
+        SingleAssignmentDisposable = Rx.SingleAssignmentDisposable,
+        AsynsSubject = Rx.AsynsSubject,
+        Subject = Rx.Subject,
+        Scheduler = Rx.Scheduler,
+        dom = Rx.DOM = {},
+        ajax = Rx.DOM.Request = {};
+
+
+    /** @private
+     * Creates an event listener on a single element with compat back to DOM Level 1.
+     */
+    function createListener (element, name, handler) {
+        // Standards compliant
+        if (element.addEventListener) {
+            element.addEventListener(name, handler, false);
+            return disposableCreate(function () {
+                element.removeEventListener(name, handler, false);
+            });
+        } else if (element.attachEvent) {
+            // IE Specific
+            var innerHandler = function (event) {
+                event || (event = window.event);
+                event.target = event.target || event.srcElement; 
+                handler(event);  
+            };
+            element.attachEvent('on' + name, innerHandler);
+            return disposableCreate(function () {
+                element.detachEvent('on' + name, innerHandler);
+            });         
+        } else {
+            // Level 1 DOM Events
+            var innerHandler = function (event) {
+                event || (event = window.event);
+                event.target = event.target || event.srcElement; 
+                handler(event);  
+            };            
+            element['on' + name] = innerHandler;
+            return disposableCreate(function () {
+                element['on' + name] = null;
+            });
+        }
+    }
+
+    /** @private
+     * Creates event listeners on either a single element or NodeList
+     */
+    function createEventListener (el, eventName, handler) {
+        var disposables = new CompositeDisposable();
+
+        if ( el && el.nodeName || el === window ) {
+            disposables.add(createListener(el, eventName, handler));
+        } else if ( el && el.length ) {
+            for (var i = 0, len = el.length; i < len; i++) {
+                disposables.add(createEventListener(el[i], eventName, handler));
+            }
+        }
+
+        return disposables;
+    }
+
+    /**
+     * Creates an observable sequence by adding an event listener to the matching DOMElement or each item in the NodeList.
+     *
+     * @example
+     *   source = Rx.DOM.fromEvent(element, 'mouseup');
+     * 
+     * @param {Object} element The DOMElement or NodeList to attach a listener.
+     * @param {String} eventName The event name to attach the observable sequence.
+     * @returns {Observable} An observable sequence of events from the specified element and the specified event.
+     */
+    dom.fromEvent = function (element, eventName) {
+        return observableCreateWithDisposable(function (observer) {
+            return createEventListener(element, eventName, function handler (e) { observer.onNext(e); });
+        }).publish().refCount();
+    };
+
+    /* @private 
+     * Gets the proper XMLHttpRequest for support for older IE 
+     */
+    function getXMLHttpRequest() {
+        if (global.XMLHttpRequest) {
+            return new global.XMLHttpRequest;
+        } else {
+            try {
+                return new global.ActiveXObject('Microsoft.XMLHTTP');
+            } catch (e) {
+                throw new Error('XMLHttpRequest is not supported by your browser');
+            }
+        }
+    }
+
+    /**
+     * Creates a cold observable for an Ajax request with either a settings object with url, headers, etc or a string for a URL.
+     *
+     * @example 
+     *   source = Rx.DOM.Request.ajaxCold('/products');
+     *   source = Rx.DOM.Request.ajaxCold( url: 'products', method: 'GET' });
+     *     
+     * @param {Object} settings Can be one of the following:
+     *
+     *  A string of the URL to make the Ajax call.
+     *  An object with the following properties
+     *   - url: URL of the request
+     *   - method: Method of the request, such as GET, POST, PUT, PATCH, DELETE
+     *   - async: Whether the request is async
+     *   - headers: Optional headers
+     *
+     * @returns {Observable} An observable sequence containing the XMLHttpRequest.
+    */
+    ajax.ajaxCold = function (settings) {
+        return observableCreateWithDisposable( function (observer) {
+            if (typeof settings === 'string') {
+                settings = { method: 'GET', url: settings, async: true };
+            }
+            if (settings.async === undefined) {
+                settings.async = true;
+            }
+
+            var xhr;
+            try {
+                xhr = getXMLHttpRequest();
+            } catch (err) {
+                observer.onError(err);
+            }
+
+            try {
+                if (settings.user) {
+                    xhr.open(settings.method, settings.url, settings.async, settings.user, settings.password);
+                } else {
+                    xhr.open(settings.method, settings.url, settings.async);
+                }
+
+                if (settings.headers) {
+                    var headers = settings.headers;
+                    for (var header in headers) {
+                        if (headers.hasOwnProperty(header)) {
+                            xhr.setRequestHeader(header, headers[header]);
+                        }
+                    }
+                }
+
+                xhr.onreadystatechange = xhr.onload = function () {
+                    if (xhr.readyState === 4) {
+                        var status = xhr.status;
+                        if ((status >= 200 && status <= 300) || status === 0 || status === '') {
+                            observer.onNext(xhr);
+                            observer.onCompleted();
+                        } else {
+                            observer.onError(xhr);
+                        }
+                    }
+                };
+
+                xhr.onerror = function () {
+                    observer.onError(xhr);
+                };
+
+                xhr.send(settings.body || null);
+            } catch (e) {
+                observer.onError(e);
+            }
+        
+            return disposableCreate( function () {
+                if (xhr.readyState !== 4) {
+                    xhr.abort();
+                }
+            });
+        });
+    };
+
+    /** @private */
+    var ajaxCold = ajax.ajaxCold;
+
+    /**
+     * Creates a hot observable for an Ajax request with either a settings object with url, headers, etc or a string for a URL.
+     *
+     * @example 
+     *   source = Rx.DOM.Request.ajax('/products');
+     *   source = Rx.DOM.Request.ajax( url: 'products', method: 'GET' });
+     *
+     * @param {Object} settings Can be one of the following:
+     *
+     *  A string of the URL to make the Ajax call.
+     *  An object with the following properties
+     *   - url: URL of the request
+     *   - method: Method of the request, such as GET, POST, PUT, PATCH, DELETE
+     *   - async: Whether the request is async
+     *   - headers: Optional headers
+     *
+     * @returns {Observable} An observable sequence containing the XMLHttpRequest.
+    */
+    var observableAjax = ajax.ajax = function (settings) {
+        return ajaxCold(settings).publishLast().refCount();
+    };
+
+    /**
+     * Creates an observable sequence from an Ajax POST Request with the body.
+     *
+     * @param {String} url The URL to POST
+     * @param {Object} body The body to POST
+     * @returns {Observable} The observable sequence which contains the response from the Ajax POST.
+     */
+    ajax.post = function (url, body) {
+        return observableAjax({ url: url, body: body, method: 'POST', async: true });
+    };
+    
+    /**
+     * Creates an observable sequence from an Ajax GET Request with the body.
+     *
+     * @param {String} url The URL to GET
+     * @returns {Observable} The observable sequence which contains the response from the Ajax GET.
+     */   
+    var observableGet = ajax.get = function (url) {
+        return observableAjax({ url: url, method: 'GET', async: true });
+    };
+    
+    if (typeof JSON !== 'undefined' && typeof JSON.parse === 'function') {
+        /**
+         * Creates an observable sequence from JSON from an Ajax request
+         *
+         * @param {String} url The URL to GET
+         * @returns {Observable} The observable sequence which contains the parsed JSON.
+         */       
+        ajax.getJSON = function (url) {
+            return observableGet(url).select(function (xhr) {
+                return JSON.parse(xhr.responseText);
+            });
+        };      
+    }    
+
+    /** @private
+     * Destroys the current element
+     */
+    var destroy = (function () {
+        var trash = document.createElement('div');
+        return function (element) {
+            trash.appendChild(element);
+            trash.innerHTML = '';
+        };
+    })();
+
+    /**
+     * Creates a cold observable JSONP Request with the specified settings.
+     *
+     * @example 
+     *   source = Rx.DOM.Request.jsonpRequestCold('http://www.bing.com/?q=foo&JSONPRequest=?');
+     *   source = Rx.DOM.Request.jsonpRequestCold( url: 'http://bing.com/?q=foo', jsonp: 'JSONPRequest' });
+     *
+     * @param {Object} settings Can be one of the following:
+     *
+     *  A string of the URL to make the JSONP call with the JSONPCallback=? in the url.
+     *  An object with the following properties
+     *   - url: URL of the request
+     *   - jsonp: The named callback parameter for the JSONP call
+     *
+     * @returns {Observable} A cold observable containing the results from the JSONP call.
+     */
+    ajax.jsonpRequestCold = (function () {
+        var uniqueId = 0;
+        return function (settings) {
+            return Observable.createWithDisposable(function (observer) {
+
+                if (typeof settings === 'string') {
+                    settings = { url: settings }
+                }
+                if (!settings.jsonp) {
+                    settings.jsonp = 'JSONPCallback';
+                }
+
+                var head = document.getElementsByTagName('head')[0] || document.documentElement,
+                    tag = document.createElement('script'),
+                    handler = 'rxjscallback' + uniqueId++;
+
+                settings.url = settings.url.replace('=' + settings.jsonp, '=' + handler);
+
+                window[handler] = function (data) {
+                    observer.onNext(data);
+                    observer.onCompleted();  
+                };
+
+                tag.src = settings.url;
+                tag.async = true;
+                tag.onload = tag.onreadystatechange = function (_, abort) {
+                    if ( abort || !tag.readyState || /loaded|complete/.test(tag.readyState) ) {
+                        tag.onload = tag.onreadystatechange = null;
+                        if (head && tag.parentNode) {
+                            destroy(tag);
+                        }
+                        tag = undefined;
+                        window[handler] = undefined;
+                    }
+                    
+                };  
+                head.insertBefore(tag, head.firstChild);
+
+                return disposableCreate(function () {
+                    if (!tag) {
+                        return;
+                    }
+                    tag.onload = tag.onreadystatechange = null;
+                    if (head && tag.parentNode) {
+                        destroy(tag);
+                    }
+                    tag = undefined;
+                    window[handler] = undefined;
+                });
+            });
+        };      
+
+    })();
+
+    /** @private */
+    var getJSONPRequestCold = ajax.jsonpRequestCold;
+
+    /**
+     * Creates a hot observable JSONP Request with the specified settings.
+     *
+     * @example 
+     *   source = Rx.DOM.Request.getJSONPRequest('http://www.bing.com/?q=foo&JSONPRequest=?');
+     *   source = Rx.DOM.Request.getJSONPRequest( url: 'http://bing.com/?q=foo', jsonp: 'JSONPRequest' });
+     * 
+     * @param {Object} settings Can be one of the following:
+     *
+     *  A string of the URL to make the JSONP call with the JSONPCallback=? in the url.
+     *  An object with the following properties
+     *   - url: URL of the request
+     *   - jsonp: The named callback parameter for the JSONP call
+     *
+     * @returns {Observable} A hot observable containing the results from the JSONP call.
+     */
+    ajax.jsonpRequest = function (settings) {
+        return getJSONPRequestCold(settings).publishLast().refCount();
+    };
+    if (window.WebSocket) {
+         /**
+         * Creates a WebSocket Subject with a given URL, protocol and an optional observer for the open event.
+         * 
+         * @example
+         *  var socket = Rx.DOM.fromWebSocket('http://localhost:8080', 'stock-protocol', function(e) { ... });
+         *  var socket = Rx.DOM.fromWebSocket('http://localhost:8080', 'stock-protocol', observer);
+         *s
+         * @param {String} url The URL of the WebSocket.
+         * @param {String} protocol The protocol of the WebSocket.
+         * @param {Function|Observer} [observerOrOnNext] An optional Observer or onNext function to capture the open event.
+         * @returns {Subject} An observable sequence wrapping a WebSocket.
+         */
+        dom.fromWebSocket = function (url, protocol, observerOrOnNext) {
+            var socket = new window.WebSocket(url, protocol);
+
+            var observable = observableCreate(function (obs) {
+                if (observerOrOnNext) {
+                    socket.onopen = function (openEvent) {
+                        if (typeof observerOrOnNext === 'function') {
+                            observerOrOnNext(openEvent);
+                        } else if (observerOrOnNext.onNext) {
+                            observerOrOnNext.onNext(openEvent);
+                        }
+                    };
+                }
+
+                socket.onmessage = function (data) {
+                    obs.onNext(data);
+                };
+
+                socket.onerror = function (err) {
+                    obs.onError(err);
+                };
+
+                socket.onclose = function () {
+                    obs.onCompleted();
+                };
+
+                return function () {
+                    socket.close();
+                };
+            });
+
+            var observer = observerCreate(function (data) {
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(data);
+                }
+            });
+
+            return Subject.create(observer, observable);
+        };       
+    }
+
+
+    if (window.Worker) {
+        /**
+         * Creates a Web Worker with a given URL as a Subject.
+         * 
+         * @example
+         * var worker = Rx.DOM.fromWebWorker('worker.js');
+         *
+         * @param {String} url The URL of the Web Worker.
+         * @returns {Subject} A Subject wrapping the Web Worker.
+         */
+        dom.fromWebWorker = function (url) {
+            var worker = new window.Worker(url);
+
+            var observable = observableCreateWithDisposable(function (obs) {
+                worker.onmessage = function (data) {
+                    obs.onNext(data);
+                };
+
+                worker.onerror = function (err) {
+                    obs.onError(err);
+                };
+
+                return disposableCreate(function () {
+                    worker.close();
+                });
+            });
+
+            var observer = observerCreate(function (data) {
+                worker.postMessage(data);
+            });
+
+            return Subject.create(observer, observable);
+        };      
+    }
+
+    if (window.MutationObserver) {
+
+        /**
+         * Creates an observable sequence from a Mutation Observer.
+         * MutationObserver provides developers a way to react to changes in a DOM.
+         * @example
+         *  Rx.DOM.fromMutationObserver(document.getElementById('foo'), { attributes: true, childList: true, characterData: true });
+         *
+         * @param {Object} target The Node on which to obserave DOM mutations.
+         * @param {Object} options A MutationObserverInit object, specifies which DOM mutations should be reported.
+         * @returns {Observable} An observable sequence which contains mutations on the given DOM target.
+         */
+        dom.fromMutationObserver = function (target, options) {
+
+            return observableCreate(function (observer) {
+                var mutationObserver = new MutationObserver(function (mutations) {
+                    observer.onNext(mutations);
+                });
+
+                mutationObserver.observe(target, options);
+
+                return function () {
+                    mutationObserver.disconnect();
+                };
+            });
+
+        };
+
+    }
+
+    // Get the right animation frame method
+    var requestAnimFrame, cancelAnimFrame;
+    if (window.requestAnimationFrame) {
+        requestAnimFrame = window.requestAnimationFrame;
+        cancelAnimFrame = window.cancelAnimationFrame;
+    } else if (window.mozRequestAnimationFrame) {
+        requestAnimFrame = window.mozRequestAnimationFrame;
+        cancelAnimFrame = window.mozCancelAnimationFrame;
+    } else if (window.webkitRequestAnimationFrame) {
+        requestAnimFrame = window.webkitRequestAnimationFrame;
+        cancelAnimFrame = window.webkitCancelAnimationFrame;
+    } else if (window.msRequestAnimationFrame) {
+        requestAnimFrame = window.msRequestAnimationFrame;
+        cancelAnimFrame = window.msCancelAnimationFrame;
+    } else if (window.oRequestAnimationFrame) {
+        requestAnimFrame = window.oRequestAnimationFrame;
+        cancelAnimFrame = window.oCancelAnimationFrame;    
+    } else {
+        requestAnimFrame = function(cb) { window.setTimeout(cb, 1000 / 60); };
+        cancelAnimFrame = window.clearTimeout;
+    }
+
+    /** 
+     * Gets a scheduler that schedules schedules work on the requestAnimationFrame for immediate actions.
+     *
+     * @memberOf Scheduler
+     */
+    Scheduler.requestAnimationFrame = (function () {
+
+        function defaultNow () { return new Date().getTime(); }
+
+        function scheduleNow(state, action) {
+            var scheduler = this,
+                disposable = new SingleAssignmentDisposable();
+            var id = requestAnimFrame(function () {
+                if (!disposable.isDisposed) {
+                    disposable.setDisposable(action(scheduler, state));
+                }
+            });
+            return new CompositeDisposable(disposable, disposableCreate(function () {
+                cancelAnimFrame(id);
+            }));
+        }
+
+        function scheduleRelative(state, dueTime, action) {
+            var scheduler = this,
+                dt = Scheduler.normalize(dueTime);
+            if (dt === 0) {
+                return scheduler.scheduleWithState(state, action);
+            }
+
+            var disposable = new SingleAssignmentDisposable(),
+                id;
+            var scheduleFunc = function () {
+                if (id) { cancelAnimFrame(id); }
+                if (dt - scheduler.now() <= 0) {
+                    if (!disposable.isDisposed) {
+                        disposable.setDisposable(action(scheduler, state));
+                    }
+                } else {
+                    id = requestAnimFrame(scheduleFunc);
+                }
+            };
+
+            id = requestAnimFrame(scheduleFunc);
+
+            return new CompositeDisposable(disposable, disposableCreate(function () {
+                cancelAnimFrame(id);
+            }));
+        }
+
+        function scheduleAbsolute(state, dueTime, action) {
+            return this.scheduleWithRelativeAndState(state, dueTime - this.now(), action);
+        }
+
+        return new Scheduler(defaultNow, scheduleNow, scheduleRelative, scheduleAbsolute);        
+
+    }());
+    
+    // Check for mutation observer
+    var BrowserMutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+    if (BrowserMutationObserver) {
+
+        /**
+         * Scheduler that uses a MutationObserver changes as the scheduling mechanism
+         * @memberOf {Scheduler}
+         */
+        Scheduler.mutationObserver = (function () {
+
+            var queue = {}, queueId = 0;
+
+            function cloneObj (obj) {
+                var newObj = {};
+                for (var prop in obj) {
+                    if (obj.hasOwnProperty(prop)) {
+                        newObj[prop] = obj[prop];
+                    }
+                }
+                return newObj;
+            }
+
+            var observer = new BrowserMutationObserver(function() {
+                var toProcess = cloneObj(queue);
+                queue = {};
+
+                for (var prop in toProcess) {
+                    if (toProcess.hasOwnProperty(prop)) {
+                        toProcess[prop]();
+                    }
+                }
+            });
+
+            var element = document.createElement('div');
+            observer.observe(element, { attributes: true });
+
+            // Prevent leaks
+            window.addEventListener('unload', function () {
+                observer.disconnect();
+                observer = null;
+            }, false);
+
+            function scheduleMethod (action) {
+                var id = queueId++;
+                queue[id] = action;
+                element.setAttribute('drainQueue', 'drainQueue');
+                return id;
+            }
+
+            function cancelMethod (id) {
+                delete queue[id];
+            }
+
+            function defaultNow () { return new Date().getTime(); }
+
+            function scheduleNow(state, action) {
+                var scheduler = this,
+                    disposable = new SingleAssignmentDisposable();
+                var id = scheduleMethod(function () {
+                    if (!disposable.isDisposed) {
+                        disposable.setDisposable(action(scheduler, state));
+                    }
+                });
+                return disposable;
+            }
+
+            function scheduleRelative(state, dueTime, action) {
+                var scheduler = this,
+                    dt = Scheduler.normalize(dueTime);
+                if (dt === 0) {
+                    return scheduler.scheduleWithState(state, action);
+                }
+
+                var disposable = new SingleAssignmentDisposable(),
+                    id;
+                var scheduleFunc = function () {
+                    if (id) { cancelMethod(id); }
+                    if (dt - scheduler.now() <= 0) {
+                        if (!disposable.isDisposed) {
+                            disposable.setDisposable(action(scheduler, state));
+                        }
+                    } else {
+                        id = scheduleMethod(scheduleFunc);
+                    }
+                };
+
+                id = scheduleMethod(scheduleFunc);
+
+                return new CompositeDisposable(disposable, disposableCreate(function () {
+                    cancelMethod(id);
+                }));
+            }
+
+            function scheduleAbsolute(state, dueTime, action) {
+                return this.scheduleWithRelativeAndState(state, dueTime - this.now(), action);
+            }
+
+            return new Scheduler(defaultNow, scheduleNow, scheduleRelative, scheduleAbsolute);  
+        }());
+    }
+
+
+if ('navigator' in window && 'geolocation' in window.navigator) {
+    Rx.DOM.Geolocation = {
+
+        /**
+         * Obtains the geographic position, in terms of latitude and longitude coordinates, of the device.
+        * @param {Object} [geolocationOptions] An object literal to specify one or more of the following attributes and desired values:
+        *   - enableHighAccuracy: Specify true to obtain the most accurate position possible, or false to optimize in favor of performance and power consumption.
+        *   - timeout: An Integer value that indicates the time, in milliseconds, allowed for obtaining the position.
+        *              If timeout is Infinity, (the default value) the location request will not time out.
+        *              If timeout is zero (0) or negative, the results depend on the behavior of the location provider.
+        *   - maximumAge: An Integer value indicating the maximum age, in milliseconds, of cached position information.
+        *                 If maximumAge is non-zero, and a cached position that is no older than maximumAge is available, the cached position is used instead of obtaining an updated location.
+        *                 If maximumAge is zero (0), watchPosition always tries to obtain an updated position, even if a cached position is already available.
+        *                 If maximumAge is Infinity, any cached position is used, regardless of its age, and watchPosition only tries to obtain an updated position if no cached position data exists.
+        * @returns {AsyncSubject} An observable sequence with the geographical location of the device running the client.
+        */
+        getCurrentPosition: function (geolocationOptions) {
+            var subject = new Rx.AsyncSubject();
+
+            window.navigator.geolocation.getCurrentPosition(
+                function successHandler (loc) {
+                    subject.onNext(loc);
+                    subject.onCompleted();                    
+                }, 
+                function errorHandler (err) {
+                    subject.onError(err);
+                }, 
+                geolocationOptions);
+
+            return subject.asObservable();
+        },
+
+        /**
+        * Begins listening for updates to the current geographical location of the device running the client.
+        * @param {Object} [geolocationOptions] An object literal to specify one or more of the following attributes and desired values:
+        *   - enableHighAccuracy: Specify true to obtain the most accurate position possible, or false to optimize in favor of performance and power consumption.
+        *   - timeout: An Integer value that indicates the time, in milliseconds, allowed for obtaining the position.
+        *              If timeout is Infinity, (the default value) the location request will not time out.
+        *              If timeout is zero (0) or negative, the results depend on the behavior of the location provider.
+        *   - maximumAge: An Integer value indicating the maximum age, in milliseconds, of cached position information.
+        *                 If maximumAge is non-zero, and a cached position that is no older than maximumAge is available, the cached position is used instead of obtaining an updated location.
+        *                 If maximumAge is zero (0), watchPosition always tries to obtain an updated position, even if a cached position is already available.
+        *                 If maximumAge is Infinity, any cached position is used, regardless of its age, and watchPosition only tries to obtain an updated position if no cached position data exists.
+        * @returns {Observable} An observable sequence with the current geographical location of the device running the client.
+        */ 
+        watchPosition: function (geolocationOptions) {
+            return observableCreate(function (observer) {
+                var watchId = window.navigator.geolocation.watchPosition(
+                    function successHandler (loc) {
+                        observer.onNext(loc);
+                    }, 
+                    function errorHandler (err) {
+                        observer.onError(err);
+                    }, 
+                    geolocationOptions);
+
+                return function () {
+                    window.navigator.geolocation.clearWatch(watchId);
+                };
+            }).publish().refCount();
+        }
+    }
+}
+
+    return Rx;
+}));
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"rx":13}],4:[function(require,module,exports){
+var Rx = require('rx');
+require('./rx.dom');
+module.exports = Rx;
+},{"./rx.dom":3,"rx":13}],5:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -397,22 +1148,14 @@ process.chdir = function (dir) {
         observableProto = Observable.prototype,
         CompositeDisposable = Rx.CompositeDisposable,
         AnonymousObservable = Rx.AnonymousObservable,
-        isEqual = Rx.internals.isEqual;
+        isEqual = Rx.internals.isEqual,
+        defaultComparer = Rx.helpers.defaultComparer,
+        identity = Rx.helpers.identity,
+        subComparer = Rx.helpers.defaultSubComparer;
 
     // Defaults
     var argumentOutOfRange = 'Argument out of range';
     var sequenceContainsNoElements = "Sequence contains no elements.";
-    function defaultComparer(x, y) { return isEqual(x, y); }
-    function identity(x) { return x; }
-    function subComparer(x, y) {
-        if (x > y) {
-            return 1;
-        }
-        if (x < y) {
-            return -1
-        }
-        return 0;
-    }
     
     function extremaBy(source, keySelector, comparer) {
         return new AnonymousObservable(function (observer) {
@@ -1045,7 +1788,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],4:[function(require,module,exports){
+},{"./rx":12}],6:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -1240,98 +1983,122 @@ process.chdir = function (dir) {
         };
     };
 
-    function createListener (element, name, handler) {
-        // Node.js specific
-        if (element.addListener) {
-            element.addListener(name, handler);
-            return disposableCreate(function () {
-                element.removeListener(name, handler);
-            });
-        } else if (element.addEventListener) {
-            element.addEventListener(name, handler, false);
-            return disposableCreate(function () {
-                element.removeEventListener(name, handler, false);
-            });
-        }
+  function createListener (element, name, handler) {
+    // Node.js specific
+    if (element.addListener) {
+      element.addListener(name, handler);
+      return disposableCreate(function () {
+        element.removeListener(name, handler);
+      });
+    } 
+    if (element.addEventListener) {
+      element.addEventListener(name, handler, false);
+      return disposableCreate(function () {
+        element.removeEventListener(name, handler, false);
+      });
+    }
+    throw new Error('No listener found');
+  }
+
+  function createEventListener (el, eventName, handler) {
+    var disposables = new CompositeDisposable();
+
+    // Asume NodeList
+    if (typeof el.item === 'function' && typeof el.length === 'number') {
+      for (var i = 0, len = el.length; i < len; i++) {
+        disposables.add(createEventListener(el.item(i), eventName, handler));
+      }
+    } else if (el) {
+      disposables.add(createListener(el, eventName, handler));
     }
 
-    function createEventListener (el, eventName, handler) {
-        var disposables = new CompositeDisposable();
+    return disposables;
+  }
 
-        // Asume NodeList
-        if (el && el.length) {
-            for (var i = 0, len = el.length; i < len; i++) {
-                disposables.add(createEventListener(el[i], eventName, handler));
-            }
-        } else if (el) {
-            disposables.add(createListener(el, eventName, handler));
-        }
+  // Check for Angular/jQuery/Zepto support
+  var jq =
+   !!root.angular && !!angular.element ? angular.element :
+   (!!root.jQuery ? root.jQuery : (
+     !!root.Zepto ? root.Zepto : null));
 
-        return disposables;
+  // Check for ember
+  var ember = !!root.Ember && typeof root.Ember.addListener === 'function';
+
+  /**
+   * Creates an observable sequence by adding an event listener to the matching DOMElement or each item in the NodeList.
+   *
+   * @example
+   *   var source = Rx.Observable.fromEvent(element, 'mouseup');
+   * 
+   * @param {Object} element The DOMElement or NodeList to attach a listener.
+   * @param {String} eventName The event name to attach the observable sequence.
+   * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.     
+   * @returns {Observable} An observable sequence of events from the specified element and the specified event.
+   */
+  Observable.fromEvent = function (element, eventName, selector) {
+    if (ember) {
+      return fromEventPattern(
+        function (h) { Ember.addListener(element, eventName); },
+        function (h) { Ember.removeListener(element, eventName); },
+        selector);
+    }    
+    if (jq) {
+      var $elem = jq(elem);
+      return fromEventPattern(
+        function (h) { $elem.on(eventName, h); },
+        function (h) { $elem.off(eventName, h); },
+        selector);
     }
+    return new AnonymousObservable(function (observer) {
+      return createEventListener(
+        element, 
+        eventName, 
+        function handler (e) { 
+          var results = e;
 
-    /**
-     * Creates an observable sequence by adding an event listener to the matching DOMElement or each item in the NodeList.
-     *
-     * @example
-     *   var source = Rx.Observable.fromEvent(element, 'mouseup');
-     * 
-     * @param {Object} element The DOMElement or NodeList to attach a listener.
-     * @param {String} eventName The event name to attach the observable sequence.
-     * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.     
-     * @returns {Observable} An observable sequence of events from the specified element and the specified event.
-     */
-    Observable.fromEvent = function (element, eventName, selector) {
-        return new AnonymousObservable(function (observer) {
-            return createEventListener(
-                element, 
-                eventName, 
-                function handler (e) { 
-                    var results = e;
-
-                    if (selector) {
-                        try {
-                            results = selector(arguments);
-                        } catch (err) {
-                            observer.onError(err);
-                            return
-                        }
-                    }
-
-                    observer.onNext(results); 
-                });
-        }).publish().refCount();
-    };
-    /**
-     * Creates an observable sequence from an event emitter via an addHandler/removeHandler pair.
-     * @param {Function} addHandler The function to add a handler to the emitter.
-     * @param {Function} [removeHandler] The optional function to remove a handler from an emitter.
-     * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.
-     * @returns {Observable} An observable sequence which wraps an event from an event emitter
-     */
-    Observable.fromEventPattern = function (addHandler, removeHandler, selector) {
-        return new AnonymousObservable(function (observer) {
-            function innerHandler (e) {
-                var result = e;
-                if (selector) {
-                    try {
-                        result = selector(arguments);
-                    } catch (err) {
-                        observer.onError(err);
-                        return;
-                    }
-                }
-                observer.onNext(result);
+          if (selector) {
+            try {
+              results = selector(arguments);
+            } catch (err) {
+              observer.onError(err);
+              return
             }
+          }
 
-            var returnValue = addHandler(innerHandler);
-            return disposableCreate(function () {
-                if (removeHandler) {
-                    removeHandler(innerHandler, returnValue);
-                }
-            });
-        }).publish().refCount();
-    };
+          observer.onNext(results); 
+        });
+    }).publish().refCount();
+  };
+  /**
+   * Creates an observable sequence from an event emitter via an addHandler/removeHandler pair.
+   * @param {Function} addHandler The function to add a handler to the emitter.
+   * @param {Function} [removeHandler] The optional function to remove a handler from an emitter.
+   * @param {Function} [selector] A selector which takes the arguments from the event handler to produce a single item to yield on next.
+   * @returns {Observable} An observable sequence which wraps an event from an event emitter
+   */
+  var fromEventPattern = Observable.fromEventPattern = function (addHandler, removeHandler, selector) {
+    return new AnonymousObservable(function (observer) {
+      function innerHandler (e) {
+        var result = e;
+        if (selector) {
+          try {
+            result = selector(arguments);
+          } catch (err) {
+            observer.onError(err);
+            return;
+          }
+        }
+        observer.onNext(result);
+      }
+
+      var returnValue = addHandler(innerHandler);
+      return disposableCreate(function () {
+        if (removeHandler) {
+          removeHandler(innerHandler, returnValue);
+        }
+      });
+    }).publish().refCount();
+  };
 
   /**
    * Invokes the asynchronous function, surfacing the result through an observable sequence.
@@ -1351,7 +2118,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],5:[function(require,module,exports){
+},{"./rx":12}],7:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -1399,11 +2166,59 @@ process.chdir = function (dir) {
     disposableCreate = Rx.Disposable.create,
     inherits = Rx.internals.inherits,
     addProperties = Rx.internals.addProperties,  
-    timeoutScheduler = Rx.Scheduler.timeout;
+    timeoutScheduler = Rx.Scheduler.timeout,
+    identity = Rx.helpers.identity;
 
   var objectDisposed = 'Object has been disposed';
   function checkDisposed() { if (this.isDisposed) { throw new Error(objectDisposed); } }
-  function identity (x) { return x; }
+
+  var PausableObservable = (function (_super) {
+
+    inherits(PausableObservable, _super);
+
+    function subscribe(observer) {
+      var conn = this.source.publish(),
+        subscription = conn.subscribe(observer),
+        connection = disposableEmpty;
+
+      var pausable = this.subject.distinctUntilChanged().subscribe(function (b) {
+        if (b) {
+          connection = conn.connect();
+        } else {
+          connection.dispose();
+          connection = disposableEmpty;
+        }
+      });
+
+      return new CompositeDisposable(subscription, connection, pausable);
+    }
+
+    function PausableObservable(source, subject) {
+      this.source = source;
+      this.subject = subject || new Subject();
+      this.isPaused = true;
+      _super.call(this, subscribe);
+    }
+
+    PausableObservable.prototype.pause = function () {
+      if (this.isPaused === true){
+        return;
+      }
+      this.isPaused = true;
+      this.subject.onNext(false);
+    };
+
+    PausableObservable.prototype.resume = function () {
+      if (this.isPaused === false){
+        return;
+      }
+      this.isPaused = false;
+      this.subject.onNext(true);
+    };
+
+    return PausableObservable;
+
+  }(Observable));
 
   /**
    * Pauses the underlying observable sequence based upon the observable sequence which yields true/false.
@@ -1414,23 +2229,7 @@ process.chdir = function (dir) {
    * @returns {Observable} The observable sequence which is paused based upon the pauser.
    */
   observableProto.pausable = function (pauser) {
-    var self = this;
-    return new AnonymousObservable(function (observer) {
-      var conn = self.publish(),
-        subscription = conn.subscribe(observer),
-        connection = disposableEmpty;
-
-      var pausable = pauser.distinctUntilChanged().subscribe(function (b) {
-        if (b) {
-          connection = conn.connect();
-        } else {
-          connection.dispose();
-          connection = disposableEmpty;
-        }
-      });
-
-      return new CompositeDisposable(subscription, connection, pausable);
-    });
+    return new PausableObservable(this, pauser);
   };
   function combineLatestSource(source, subject, resultSelector) {
     return new AnonymousObservable(function (observer) {
@@ -1476,24 +2275,17 @@ process.chdir = function (dir) {
     });
   }
 
-  /**
-   * Pauses the underlying observable sequence based upon the observable sequence which yields true/false,
-   * and yields the values that were buffered while paused.
-   * @example
-   * var pauser = new Rx.Subject();
-   * var source = Rx.Observable.interval(100).pausableBuffered(pauser);
-   * @param {Observable} pauser The observable sequence used to pause the underlying sequence.
-   * @returns {Observable} The observable sequence which is paused based upon the pauser.
-   */  
-  observableProto.pausableBuffered = function (subject) {
-    var source = this;
-    return new AnonymousObservable(function (observer) {
+  var PausableBufferedObservable = (function (_super) {
+
+    inherits(PausableBufferedObservable, _super);
+
+    function subscribe(observer) {
       var q = [], previous = true;
       
       var subscription =  
         combineLatestSource(
-          source,
-          subject.distinctUntilChanged(), 
+          this.source,
+          this.subject.distinctUntilChanged(), 
           function (data, shouldFire) {
             return { data: data, shouldFire: shouldFire };      
           })
@@ -1518,10 +2310,49 @@ process.chdir = function (dir) {
             observer.onCompleted.bind(observer)
           );
 
-      subject.onNext(false);
+      this.subject.onNext(false);
 
-      return subscription;
-    });
+      return subscription;      
+    }
+
+    function PausableBufferedObservable(source, subject) {
+      this.source = source;
+      this.subject = subject || new Subject();
+      this.isPaused = true;
+      _super.call(this, subscribe);
+    }
+
+    PausableBufferedObservable.prototype.pause = function () {
+      if (this.isPaused === true){
+        return;
+      }
+      this.isPaused = true;
+      this.subject.onNext(false);
+    };
+
+    PausableBufferedObservable.prototype.resume = function () {
+      if (this.isPaused === false){
+        return;
+      }
+      this.isPaused = false;
+      this.subject.onNext(true);
+    };
+
+    return PausableBufferedObservable; 
+
+  }(Observable));
+
+  /**
+   * Pauses the underlying observable sequence based upon the observable sequence which yields true/false,
+   * and yields the values that were buffered while paused.
+   * @example
+   * var pauser = new Rx.Subject();
+   * var source = Rx.Observable.interval(100).pausableBuffered(pauser);
+   * @param {Observable} pauser The observable sequence used to pause the underlying sequence.
+   * @returns {Observable} The observable sequence which is paused based upon the pauser.
+   */  
+  observableProto.pausableBuffered = function (subject) {
+    return new PausableBufferedObservable(this, subject);
   };
 
   /**
@@ -1688,7 +2519,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],6:[function(require,module,exports){
+},{"./rx":12}],8:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -2252,7 +3083,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],7:[function(require,module,exports){
+},{"./rx":12}],9:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -2300,10 +3131,8 @@ process.chdir = function (dir) {
         AnonymousObservable = Rx.AnonymousObservable,
         observerCreate = Rx.Observer.create,
         addRef = Rx.internals.addRef,
-        defaultComparer = Rx.internals.isEqual;
-
-    // defaults
-    function noop() { }
+        defaultComparer = Rx.internals.isEqual,
+        noop = Rx.helpers.noop;
     
     // Real Dictionary
     var primes = [1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381, 32749, 65521, 131071, 262139, 524287, 1048573, 2097143, 4194301, 8388593, 16777213, 33554393, 67108859, 134217689, 268435399, 536870909, 1073741789, 2147483647];
@@ -2946,7 +3775,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],8:[function(require,module,exports){
+},{"./rx":12}],10:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -3003,10 +3832,10 @@ process.chdir = function (dir) {
     AsyncSubject = Rx.AsyncSubject,
     Observer = Rx.Observer,
     inherits = Rx.internals.inherits,
-    addProperties = Rx.internals.addProperties;
+    addProperties = Rx.internals.addProperties,
+    noop = Rx.helpers.noop;
 
   // Utilities
-  function nothing () { }
   function argsOrArray(args, idx) {
     return args.length === 1 && Array.isArray(args[idx]) ?
       args[idx] :
@@ -3353,7 +4182,7 @@ process.chdir = function (dir) {
                         return curr;
                     })
                 .doAction(
-                    nothing,
+                    noop,
                     function (e) {
                         if (chain) {
                             chain.onError(e);
@@ -3409,7 +4238,7 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],9:[function(require,module,exports){
+},{"./rx":12}],11:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -3455,15 +4284,12 @@ process.chdir = function (dir) {
         SingleAssignmentDisposable = Rx.SingleAssignmentDisposable,
         CompositeDisposable = Rx.CompositeDisposable,
         AbstractObserver = Rx.internals.AbstractObserver,
-        isEqual = Rx.internals.isEqual;
-
-    // Defaults
-    function defaultComparer(x, y) { return isEqual(x, y); }
-    function noop() { }
+        noop = Rx.helpers.noop,
+        defaultComparer = Rx.internals.isEqual,
+        inherits = Rx.internals.inherits,
+        slice = Array.prototype.slice;
 
     // Utilities
-    var inherits = Rx.internals.inherits;
-    var slice = Array.prototype.slice;
     function argsOrArray(args, idx) {
         return args.length === 1 && Array.isArray(args[idx]) ?
             args[idx] :
@@ -3830,42 +4656,50 @@ process.chdir = function (dir) {
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],10:[function(require,module,exports){
+},{"./rx":12}],12:[function(require,module,exports){
 (function (process,global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 ;(function (undefined) {
 
-    var objectTypes = {
-        'boolean': false,
-        'function': true,
-        'object': true,
-        'number': false,
-        'string': false,
-        'undefined': false
-    };
+  var objectTypes = {
+    'boolean': false,
+    'function': true,
+    'object': true,
+    'number': false,
+    'string': false,
+    'undefined': false
+  };
 
-    var root = (objectTypes[typeof window] && window) || this,
-        freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports,
-        freeModule = objectTypes[typeof module] && module && !module.nodeType && module,
-        moduleExports = freeModule && freeModule.exports === freeExports && freeExports,
-        freeGlobal = objectTypes[typeof global] && global;
-    
-    if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal)) {
-        root = freeGlobal;
-    }
+  var root = (objectTypes[typeof window] && window) || this,
+    freeExports = objectTypes[typeof exports] && exports && !exports.nodeType && exports,
+    freeModule = objectTypes[typeof module] && module && !module.nodeType && module,
+    moduleExports = freeModule && freeModule.exports === freeExports && freeExports,
+    freeGlobal = objectTypes[typeof global] && global;
+  
+  if (freeGlobal && (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal)) {
+    root = freeGlobal;
+  }
 
-    var Rx = { internals: {}, config: {} };
+  var Rx = { 
+      internals: {}, 
+      config: {
+        Promise: root.Promise // Detect if promise exists
+      },
+      helpers: { }
+  };
     
   // Defaults
-  function noop() { }
-  function identity(x) { return x; }
-  var defaultNow = Date.now;
-  function defaultComparer(x, y) { return isEqual(x, y); }
-  function defaultSubComparer(x, y) { return x - y; }
-  function defaultKeySerializer(x) { return x.toString(); }
-  function defaultError(err) { throw err; }
-  function isPromise(p) { return typeof p.then === 'function' && p.then !== Rx.Observable.prototype.then; }
+  var noop = Rx.helpers.noop = function () { },
+    identity = Rx.helpers.identity = function (x) { return x; },
+    defaultNow = Rx.helpers.defaultNow = Date.now,
+    defaultComparer = Rx.helpers.defaultComparer = function (x, y) { return isEqual(x, y); },
+    defaultSubComparer = Rx.helpers.defaultSubComparer = function (x, y) { return x > y ? 1 : (x < y ? -1 : 0); },
+    defaultKeySerializer = Rx.helpers.defaultKeySerializer = function (x) { return x.toString(); },
+    defaultError = Rx.helpers.defaultError = function (err) { throw err; },
+    isPromise = Rx.helpers.isPromise = function (p) { return typeof p.then === 'function' && p.then !== Rx.Observable.prototype.then; },
+    asArray = Rx.helpers.asArray = function () { return Array.prototype.slice.call(arguments); },
+    not = Rx.helpers.not = function (a) { return !a; };
 
   // Errors
   var sequenceContainsNoElements = 'Sequence contains no elements.';
@@ -5400,9 +6234,13 @@ process.chdir = function (dir) {
             return;
           }
 
+          // Check if promise
+          var currentValue = currentItem.value;
+          isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));
+
           var d = new SingleAssignmentDisposable();
           subscription.setDisposable(d);
-          d.setDisposable(currentItem.value.subscribe(
+          d.setDisposable(currentValue.subscribe(
             observer.onNext.bind(observer),
             observer.onError.bind(observer),
             function () { self(); })
@@ -5449,9 +6287,13 @@ process.chdir = function (dir) {
           return;
         }
 
+        // Check if promise
+        var currentValue = currentItem.value;
+        isPromise(currentValue) && (currentValue = observableFromPromise(currentValue));        
+
         var d = new SingleAssignmentDisposable();
         subscription.setDisposable(d);
-        d.setDisposable(currentItem.value.subscribe(
+        d.setDisposable(currentValue.subscribe(
           observer.onNext.bind(observer),
           function (exn) {
             lastException = exn;
@@ -5970,6 +6812,12 @@ process.chdir = function (dir) {
         function (reason) {
           observer.onError(reason);
         });
+
+      return function () {
+        if (promise && promise.abort) {
+          promise.abort();
+        }
+      }
     });
   };
     /*
@@ -6035,6 +6883,9 @@ process.chdir = function (dir) {
             } catch (e) {
                 return observableThrow(e).subscribe(observer);
             }
+
+            // Check if promise
+            isPromise(result) && (result = observableFromPromise(result));
             return result.subscribe(observer);
         });
     };
@@ -8242,7 +9093,7 @@ process.chdir = function (dir) {
     }
 }.call(this));
 }).call(this,require("/Users/glen/src/projects/x-gif/node_modules/gulp-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"/Users/glen/src/projects/x-gif/node_modules/gulp-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":2}],11:[function(require,module,exports){
+},{"/Users/glen/src/projects/x-gif/node_modules/gulp-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":2}],13:[function(require,module,exports){
 var Rx = require('./rx');
 require('./rx.aggregates');
 require('./rx.backpressure');
@@ -8387,7 +9238,7 @@ Rx.Node = {
 };
 
 module.exports = Rx;
-},{"./rx":10,"./rx.aggregates":3,"./rx.async":4,"./rx.backpressure":5,"./rx.binding":6,"./rx.coincidence":7,"./rx.experimental":8,"./rx.joinpatterns":9,"./rx.testing":12,"./rx.time":13,"./rx.virtualtime":14,"events":1}],12:[function(require,module,exports){
+},{"./rx":12,"./rx.aggregates":5,"./rx.async":6,"./rx.backpressure":7,"./rx.binding":8,"./rx.coincidence":9,"./rx.experimental":10,"./rx.joinpatterns":11,"./rx.testing":14,"./rx.time":15,"./rx.virtualtime":16,"events":1}],14:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -8890,7 +9741,7 @@ module.exports = Rx;
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],13:[function(require,module,exports){
+},{"./rx":12}],15:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -10058,7 +10909,7 @@ module.exports = Rx;
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],14:[function(require,module,exports){
+},{"./rx":12}],16:[function(require,module,exports){
 (function (global){
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
@@ -10101,9 +10952,8 @@ module.exports = Rx;
 		ScheduledItem = Rx.internals.ScheduledItem,
 		SchedulePeriodicRecursive  = Rx.internals.SchedulePeriodicRecursive,
 		disposableEmpty = Rx.Disposable.empty,
-		inherits = Rx.internals.inherits;
-
-	function defaultSubComparer(x, y) { return x > y ? 1 : (x < y ? -1 : 0); }
+		inherits = Rx.internals.inherits,
+    defaultSubComparer = Rx.helpers.defaultSubComparer;
 
     /** Provides a set of extension methods for virtual time scheduling. */
     Rx.VirtualTimeScheduler = (function (_super) {
@@ -10397,171 +11247,172 @@ module.exports = Rx;
     return Rx;
 }));
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./rx":10}],15:[function(require,module,exports){
+},{"./rx":12}],17:[function(require,module,exports){
 'use strict';
 ;
-var StreamReader$8984 = require('./stream_reader.js'), Gif$8985 = require('./gif.sjs'), Rx$8986 = require('rx'), url$8987 = URL && URL.createObjectURL ? URL : webkitURL;
-var Exploder$8988 = function (file$8989, cb$8990) {
-    this.file = file$8989;
-    this.subject = new Rx$8986.AsyncSubject();
+var StreamReader$14977 = require('./stream_reader.js'), Gif$14978 = require('./gif.sjs'), Rx$14979 = require('rx'), url$14980 = URL && URL.createObjectURL ? URL : webkitURL;
+var Exploder$14981 = function (file$14982, cb$14983) {
+    this.file = file$14982;
+    this.subject = new Rx$14979.AsyncSubject();
     this.loadAndExplode();
     return this.subject;
 };
-Exploder$8988.prototype.loadAndExplode = function () {
-    var loader$8991 = new XMLHttpRequest(), source$8992 = Rx$8986.Observable.fromEvent(loader$8991, 'load');
-    loader$8991.open('GET', this.file, true);
-    loader$8991.responseType = 'arraybuffer';
-    source$8992.subscribe(function (e$8995) {
-        return this.explode(e$8995.target.response);
+Exploder$14981.prototype.loadAndExplode = function () {
+    var loader$14984 = new XMLHttpRequest(), source$14985 = Rx$14979.Observable.fromEvent(loader$14984, 'load');
+    loader$14984.open('GET', this.file, true);
+    loader$14984.responseType = 'arraybuffer';
+    source$14985.subscribe(function (e$14988) {
+        return this.explode(e$14988.target.response);
     }.bind(this));
-    loader$8991.send();
+    loader$14984.send();
 };
-Exploder$8988.prototype.explode = function (buffer$8996) {
-    var frames$8997 = [], streamReader$8998 = new StreamReader$8984(buffer$8996);
+Exploder$14981.prototype.explode = function (buffer$14989) {
+    var frames$14990 = [], streamReader$14991 = new StreamReader$14977(buffer$14989);
     // Ensure this is an animated GIF
-    if (streamReader$8998.readAscii(6) != 'GIF89a') {
+    if (streamReader$14991.readAscii(6) != 'GIF89a') {
         //    deferred.reject();
         return;
     }
-    streamReader$8998.skipBytes(4);
+    streamReader$14991.skipBytes(4);
     // Height & Width
-    if (streamReader$8998.peekBit(1)) {
-        streamReader$8998.log('GLOBAL COLOR TABLE');
-        var colorTableSize$9005 = streamReader$8998.readByte() & 7;
-        streamReader$8998.log('GLOBAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$9005 + 1) + ' BYTES');
-        streamReader$8998.skipBytes(2);
-        streamReader$8998.skipBytes(3 * Math.pow(2, colorTableSize$9005 + 1));
+    if (streamReader$14991.peekBit(1)) {
+        streamReader$14991.log('GLOBAL COLOR TABLE');
+        var colorTableSize$14998 = streamReader$14991.readByte() & 7;
+        streamReader$14991.log('GLOBAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$14998 + 1) + ' BYTES');
+        streamReader$14991.skipBytes(2);
+        streamReader$14991.skipBytes(3 * Math.pow(2, colorTableSize$14998 + 1));
     } else {
-        streamReader$8998.log('NO GLOBAL COLOR TABLE');
+        streamReader$14991.log('NO GLOBAL COLOR TABLE');
     }
     // WE HAVE ENOUGH FOR THE GIF HEADER!
-    var gifHeader$8999 = buffer$8996.slice(0, streamReader$8998.index);
-    var spinning$9000 = true, expectingImage$9001 = false;
-    while (spinning$9000) {
-        if (streamReader$8998.isNext([
+    var gifHeader$14992 = buffer$14989.slice(0, streamReader$14991.index);
+    var spinning$14993 = true, expectingImage$14994 = false;
+    while (spinning$14993) {
+        if (streamReader$14991.isNext([
                 33,
                 255
             ])) {
-            streamReader$8998.log('APPLICATION EXTENSION');
-            streamReader$8998.skipBytes(2);
-            var blockSize$9006 = streamReader$8998.readByte();
-            streamReader$8998.log(streamReader$8998.readAscii(blockSize$9006));
-            if (streamReader$8998.isNext([
+            streamReader$14991.log('APPLICATION EXTENSION');
+            streamReader$14991.skipBytes(2);
+            var blockSize$14999 = streamReader$14991.readByte();
+            streamReader$14991.log(streamReader$14991.readAscii(blockSize$14999));
+            if (streamReader$14991.isNext([
                     3,
                     1
                 ])) {
                 // we cool
-                streamReader$8998.skipBytes(5);
+                streamReader$14991.skipBytes(5);
             } else {
-                streamReader$8998.log('A weird application extension. Skip until we have 2 NULL bytes');
-                while (!(streamReader$8998.readByte() === 0 && streamReader$8998.peekByte() === 0));
-                streamReader$8998.log('OK moving on');
-                streamReader$8998.skipBytes(1);
+                streamReader$14991.log('A weird application extension. Skip until we have 2 NULL bytes');
+                while (!(streamReader$14991.readByte() === 0 && streamReader$14991.peekByte() === 0));
+                streamReader$14991.log('OK moving on');
+                streamReader$14991.skipBytes(1);
             }
-        } else if (streamReader$8998.isNext([
+        } else if (streamReader$14991.isNext([
                 33,
                 254
             ])) {
-            streamReader$8998.log('COMMENT EXTENSION');
-            streamReader$8998.skipBytes(2);
-            while (!streamReader$8998.isNext([0])) {
-                var blockSize$9006 = streamReader$8998.readByte();
-                streamReader$8998.log(streamReader$8998.readAscii(blockSize$9006));
+            streamReader$14991.log('COMMENT EXTENSION');
+            streamReader$14991.skipBytes(2);
+            while (!streamReader$14991.isNext([0])) {
+                var blockSize$14999 = streamReader$14991.readByte();
+                streamReader$14991.log(streamReader$14991.readAscii(blockSize$14999));
             }
-            streamReader$8998.skipBytes(1);
+            streamReader$14991.skipBytes(1);
         }    //NULL terminator
-        else if (streamReader$8998.isNext([44])) {
-            streamReader$8998.log('IMAGE DESCRIPTOR!');
-            if (!expectingImage$9001) {
+        else if (streamReader$14991.isNext([44])) {
+            streamReader$14991.log('IMAGE DESCRIPTOR!');
+            if (!expectingImage$14994) {
                 // This is a bare image, not prefaced with a Graphics Control Extension
                 // so we should treat it as a frame.
-                frames$8997.push({
-                    index: streamReader$8998.index,
+                frames$14990.push({
+                    index: streamReader$14991.index,
                     delay: 0
                 });
             }
-            expectingImage$9001 = false;
-            streamReader$8998.skipBytes(9);
-            if (streamReader$8998.peekBit(1)) {
-                streamReader$8998.log('LOCAL COLOR TABLE');
-                var colorTableSize$9005 = streamReader$8998.readByte() & 7;
-                streamReader$8998.log('LOCAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$9005 + 1) + ' BYTES');
-                streamReader$8998.skipBytes(2);
-                streamReader$8998.skipBytes(3 * Math.pow(2, colorTableSize$9005 + 1));
+            expectingImage$14994 = false;
+            streamReader$14991.skipBytes(9);
+            if (streamReader$14991.peekBit(1)) {
+                streamReader$14991.log('LOCAL COLOR TABLE');
+                var colorTableSize$14998 = streamReader$14991.readByte() & 7;
+                streamReader$14991.log('LOCAL COLOR TABLE IS ' + 3 * Math.pow(2, colorTableSize$14998 + 1) + ' BYTES');
+                streamReader$14991.skipBytes(2);
+                streamReader$14991.skipBytes(3 * Math.pow(2, colorTableSize$14998 + 1));
             } else {
-                streamReader$8998.log('NO LOCAL TABLE PHEW');
-                streamReader$8998.skipBytes(1);
+                streamReader$14991.log('NO LOCAL TABLE PHEW');
+                streamReader$14991.skipBytes(1);
             }
-            streamReader$8998.log('MIN CODE SIZE ' + streamReader$8998.readByte());
-            streamReader$8998.log('DATA START');
-            while (!streamReader$8998.isNext([0])) {
-                var blockSize$9006 = streamReader$8998.readByte();
+            streamReader$14991.log('MIN CODE SIZE ' + streamReader$14991.readByte());
+            streamReader$14991.log('DATA START');
+            while (!streamReader$14991.isNext([0])) {
+                var blockSize$14999 = streamReader$14991.readByte();
                 //        streamReader.log("SKIPPING " + blockSize + " BYTES");
-                streamReader$8998.skipBytes(blockSize$9006);
+                streamReader$14991.skipBytes(blockSize$14999);
             }
-            streamReader$8998.log('DATA END');
-            streamReader$8998.skipBytes(1);
+            streamReader$14991.log('DATA END');
+            streamReader$14991.skipBytes(1);
         }    //NULL terminator
-        else if (streamReader$8998.isNext([
+        else if (streamReader$14991.isNext([
                 33,
                 249,
                 4
             ])) {
-            streamReader$8998.log('GRAPHICS CONTROL EXTENSION!');
+            streamReader$14991.log('GRAPHICS CONTROL EXTENSION!');
             // We _definitely_ have a frame. Now we're expecting an image
-            var index$9007 = streamReader$8998.index;
-            streamReader$8998.skipBytes(3);
-            var disposalMethod$9008 = streamReader$8998.readByte() >> 2;
-            streamReader$8998.log('DISPOSAL ' + disposalMethod$9008);
-            var delay$9009 = streamReader$8998.readByte() + streamReader$8998.readByte() * 256;
-            frames$8997.push({
-                index: index$9007,
-                delay: delay$9009,
-                disposal: disposalMethod$9008
+            var index$15000 = streamReader$14991.index;
+            streamReader$14991.skipBytes(3);
+            var disposalMethod$15001 = streamReader$14991.readByte() >> 2;
+            streamReader$14991.log('DISPOSAL ' + disposalMethod$15001);
+            var delay$15002 = streamReader$14991.readByte() + streamReader$14991.readByte() * 256;
+            frames$14990.push({
+                index: index$15000,
+                delay: delay$15002,
+                disposal: disposalMethod$15001
             });
-            streamReader$8998.log('FRAME DELAY ' + delay$9009);
-            streamReader$8998.skipBytes(2);
-            expectingImage$9001 = true;
+            streamReader$14991.log('FRAME DELAY ' + delay$15002);
+            streamReader$14991.skipBytes(2);
+            expectingImage$14994 = true;
         } else {
-            var maybeTheEnd$9010 = streamReader$8998.index;
-            while (!streamReader$8998.finished() && !streamReader$8998.isNext([
+            var maybeTheEnd$15003 = streamReader$14991.index;
+            while (!streamReader$14991.finished() && !streamReader$14991.isNext([
                     33,
                     249,
                     4
                 ])) {
-                streamReader$8998.readByte();
+                streamReader$14991.readByte();
             }
-            if (streamReader$8998.finished()) {
-                streamReader$8998.index = maybeTheEnd$9010;
-                streamReader$8998.log('WE END');
-                spinning$9000 = false;
+            if (streamReader$14991.finished()) {
+                streamReader$14991.index = maybeTheEnd$15003;
+                streamReader$14991.log('WE END');
+                spinning$14993 = false;
             } else {
-                streamReader$8998.log('UNKNOWN DATA FROM ' + maybeTheEnd$9010);
+                streamReader$14991.log('UNKNOWN DATA FROM ' + maybeTheEnd$15003);
             }
         }
     }
-    var endOfFrames$9002 = streamReader$8998.index;
-    var gifFooter$9003 = buffer$8996.slice(-1);
+    var endOfFrames$14995 = streamReader$14991.index;
+    var gifFooter$14996 = buffer$14989.slice(-1);
     //last bit is all we need
-    for (var i$9004 = 0; i$9004 < frames$8997.length; i$9004++) {
-        var frame$9011 = frames$8997[i$9004];
-        var nextIndex$9012 = i$9004 < frames$8997.length - 1 ? frames$8997[i$9004 + 1].index : endOfFrames$9002;
-        frame$9011.blob = new Blob([
-            gifHeader$8999,
-            buffer$8996.slice(frame$9011.index, nextIndex$9012),
-            gifFooter$9003
+    for (var i$14997 = 0; i$14997 < frames$14990.length; i$14997++) {
+        var frame$15004 = frames$14990[i$14997];
+        var nextIndex$15005 = i$14997 < frames$14990.length - 1 ? frames$14990[i$14997 + 1].index : endOfFrames$14995;
+        frame$15004.blob = new Blob([
+            gifHeader$14992,
+            buffer$14989.slice(frame$15004.index, nextIndex$15005),
+            gifFooter$14996
         ], { type: 'image/gif' });
-        frame$9011.url = url$8987.createObjectURL(frame$9011.blob);
+        frame$15004.url = url$14980.createObjectURL(frame$15004.blob);
     }
-    this.subject.onNext(new Gif$8985(frames$8997));
+    this.subject.onNext(new Gif$14978(frames$14990));
     this.subject.onCompleted();
 };
-module.exports = Exploder$8988;
+module.exports = Exploder$14981;
 
-},{"./gif.sjs":17,"./stream_reader.js":19,"rx":11}],16:[function(require,module,exports){
+},{"./gif.sjs":19,"./stream_reader.js":22,"rx":13}],18:[function(require,module,exports){
 "use strict";
 
-var Playback = require('./playback.sjs');
+var Playback = require('./playback.sjs'),
+  PlaybackStrategies = require('./playback_strategies.sjs');
 
 var XGif = function () {
   var Strategies = {
@@ -10640,137 +11491,154 @@ var XGif = function () {
 
 Polymer('x-gif', new XGif());
 
-},{"./playback.sjs":18}],17:[function(require,module,exports){
+},{"./playback.sjs":20,"./playback_strategies.sjs":21}],19:[function(require,module,exports){
 'use strict';
 ;
-var defaultFrameDelay$9079 = 10;
-var Gif$9080 = function (frames$9081) {
-    this.frames = frames$9081;
+var defaultFrameDelay$15072 = 10;
+var Gif$15073 = function (frames$15074) {
+    this.frames = frames$15074;
     this.length = 0;
     this.offsets = [];
-    frames$9081.forEach(function (frame$9084) {
+    frames$15074.forEach(function (frame$15077) {
         this.offsets.push(this.length);
-        this.length += frame$9084.delay || defaultFrameDelay$9079;
+        this.length += frame$15077.delay || defaultFrameDelay$15072;
     }.bind(this));
 };
-Gif$9080.prototype.frameAt = function (fraction$9085) {
-    var offset$9086 = fraction$9085 * this.length;
-    for (var i$9087 = 1, l$9088 = this.offsets.length; i$9087 < l$9088; i$9087++) {
-        if (this.offsets[i$9087] > offset$9086)
+Gif$15073.prototype.frameAt = function (fraction$15078) {
+    var offset$15079 = fraction$15078 * this.length;
+    for (var i$15080 = 1, l$15081 = this.offsets.length; i$15080 < l$15081; i$15080++) {
+        if (this.offsets[i$15080] > offset$15079)
             break;
     }
-    return i$9087 - 1;
+    return i$15080 - 1;
 };
-module.exports = Gif$9080;
+module.exports = Gif$15073;
 
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 ;
-var Exploder$8848 = require('./exploder.sjs');
+var Exploder$14785 = require('./exploder.sjs');
 // Private functions for setup
-function addClasses$8849(element$8852, frame$8853) {
-    element$8852.classList.add('frame');
-    if (frame$8853.disposal == 2)
-        element$8852.classList.add('disposal-restore');
+function addClasses$14786(element$14789, frame$14790) {
+    element$14789.classList.add('frame');
+    if (frame$14790.disposal == 2)
+        element$14789.classList.add('disposal-restore');
 }
-var createImage$8850 = function (frame$8854) {
-    var image$8855 = new Image();
-    image$8855.src = frame$8854.url;
-    addClasses$8849(image$8855, frame$8854);
-    return image$8855;
+var createImage$14787 = function (frame$14791) {
+    var image$14792 = new Image();
+    image$14792.src = frame$14791.url;
+    addClasses$14786(image$14792, frame$14791);
+    return image$14792;
 };
-var Playback$8851 = function (xgif$8856, element$8857, file$8858, opts$8859) {
+var Playback$14788 = function (xgif$14793, element$14794, file$14795, opts$14796) {
     // Set up out instance variables
-    this.xgif = xgif$8856;
-    this.element = element$8857;
-    this.onReady = opts$8859.onReady;
-    this.pingPong = opts$8859.pingPong;
-    this.fill = opts$8859.fill;
-    this.stopped = opts$8859.stopped;
-    new Exploder$8848(file$8858).subscribe(function (gif$8864) {
+    this.xgif = xgif$14793;
+    this.element = element$14794;
+    this.pingPong = opts$14796.pingPong;
+    this.fill = opts$14796.fill;
+    this.stopped = opts$14796.stopped;
+    new Exploder$14785(file$14795).subscribe(function (gif$14801) {
         // Once we have the GIF data, add things to the DOM
         console.warn('WE GOT A THING');
-        console.log('Received ' + gif$8864.frames.length + ' frames of gif ' + file$8858);
-        this.gif = gif$8864;
+        console.log('Received ' + gif$14801.frames.length + ' frames of gif ' + file$14795);
+        this.gif = gif$14801;
         this.element.innerHTML = '';
-        var createFrameElement$8865 = createImage$8850;
+        var createFrameElement$14802 = createImage$14787;
         //(this.fill) ? createDiv : createImage;
-        gif$8864.frames.map(createFrameElement$8865).forEach(this.element.appendChild, this.element);
+        gif$14801.frames.map(createFrameElement$14802).forEach(this.element.appendChild, this.element);
         if (this.fill)
             requestAnimationFrame(this.scaleToFill.bind(this));
         this.onReady();
-    }.bind(this), function (err$8866) {
-        return console.err(err$8866);
+    }.bind(this), function (err$14803) {
+        return console.err(err$14803);
     }.bind(this), function () {
         return console.log('WE DONE');
     }.bind(this));
 };
-Playback$8851.prototype.scaleToFill = function () {
+Playback$14788.prototype.scaleToFill = function () {
     if (!(this.element.offsetWidth && this.element.offsetHeight)) {
         requestAnimationFrame(this.scaleToFill.bind(this));
     } else {
-        var xScale$8867 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$8868 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
-        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$8867, yScale$8868) + ')';
+        var xScale$14804 = this.element.parentElement.offsetWidth / this.element.offsetWidth, yScale$14805 = this.element.parentElement.offsetHeight / this.element.offsetHeight;
+        this.element.style.webkitTransform = 'scale(' + 1.1 * Math.max(xScale$14804, yScale$14805) + ')';
     }
 };
-Playback$8851.prototype.setFrame = function (fraction$8869, repeatCount$8870) {
-    var frameNr$8871 = this.pingPong && repeatCount$8870 % 2 >= 1 ? this.gif.frameAt(1 - fraction$8869) : this.gif.frameAt(fraction$8869);
-    this.element.dataset['frame'] = frameNr$8871;
+Playback$14788.prototype.setFrame = function (fraction$14806, repeatCount$14807) {
+    var frameNr$14808 = this.pingPong && repeatCount$14807 % 2 >= 1 ? this.gif.frameAt(1 - fraction$14806) : this.gif.frameAt(fraction$14806);
+    this.element.dataset['frame'] = frameNr$14808;
 };
-Playback$8851.prototype.start = function () {
+Playback$14788.prototype.start = function () {
     this.stopped = false;
     this.startTime = performance.now();
     if (this.animationLoop)
         this.animationLoop();
 };
-Playback$8851.prototype.stop = function () {
+Playback$14788.prototype.stop = function () {
     this.stopped = true;
 };
-Playback$8851.prototype.startSpeed = function (speed$8872, nTimes$8873) {
-    this.speed = speed$8872;
+Playback$14788.prototype.startSpeed = function (speed$14809, nTimes$14810) {
+    this.speed = speed$14809;
     this.animationLoop = function () {
-        var gifLength$8875 = 10 * this.gif.length / this.speed, duration$8876 = performance.now() - this.startTime, repeatCount$8877 = duration$8876 / gifLength$8875, fraction$8878 = repeatCount$8877 % 1;
-        if (!nTimes$8873 || repeatCount$8877 < nTimes$8873) {
-            this.setFrame(fraction$8878, repeatCount$8877);
+        var gifLength$14812 = 10 * this.gif.length / this.speed, duration$14813 = performance.now() - this.startTime, repeatCount$14814 = duration$14813 / gifLength$14812, fraction$14815 = repeatCount$14814 % 1;
+        if (!nTimes$14810 || repeatCount$14814 < nTimes$14810) {
+            this.setFrame(fraction$14815, repeatCount$14814);
             if (!this.stopped)
                 requestAnimationFrame(this.animationLoop);
         } else {
-            this.setFrame(nTimes$8873 % 1 || 1, repeatCount$8877);
+            this.setFrame(nTimes$14810 % 1 || 1, repeatCount$14814);
             this.xgif.fire('x-gif-finished');
         }
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$8851.prototype.fromClock = function (beatNr$8879, beatDuration$8880, beatFraction$8881) {
-    var speedup$8882 = 1.5, lengthInBeats$8883 = Math.max(1, Math.round(1 / speedup$8882 * 10 * this.gif.length / beatDuration$8880)), subBeat$8884 = beatNr$8879 % lengthInBeats$8883, repeatCount$8885 = beatNr$8879 / lengthInBeats$8883, subFraction$8886 = beatFraction$8881 / lengthInBeats$8883 + subBeat$8884 / lengthInBeats$8883;
-    this.setFrame(subFraction$8886, repeatCount$8885);
+Playback$14788.prototype.fromClock = function (beatNr$14816, beatDuration$14817, beatFraction$14818) {
+    var speedup$14819 = 1.5, lengthInBeats$14820 = Math.max(1, Math.round(1 / speedup$14819 * 10 * this.gif.length / beatDuration$14817)), subBeat$14821 = beatNr$14816 % lengthInBeats$14820, repeatCount$14822 = beatNr$14816 / lengthInBeats$14820, subFraction$14823 = beatFraction$14818 / lengthInBeats$14820 + subBeat$14821 / lengthInBeats$14820;
+    this.setFrame(subFraction$14823, repeatCount$14822);
 };
-Playback$8851.prototype.startHardBpm = function (bpm$8887) {
-    var beatLength$8888 = 60 * 1000 / bpm$8887;
+Playback$14788.prototype.startHardBpm = function (bpm$14824) {
+    var beatLength$14825 = 60 * 1000 / bpm$14824;
     this.animationLoop = function () {
-        var duration$8890 = performance.now() - this.startTime, repeatCount$8891 = duration$8890 / beatLength$8888, fraction$8892 = repeatCount$8891 % 1;
-        this.setFrame(fraction$8892, repeatCount$8891);
+        var duration$14827 = performance.now() - this.startTime, repeatCount$14828 = duration$14827 / beatLength$14825, fraction$14829 = repeatCount$14828 % 1;
+        this.setFrame(fraction$14829, repeatCount$14828);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-Playback$8851.prototype.startBpm = function (bpm$8893) {
-    var beatLength$8894 = 60 * 1000 / bpm$8893;
+Playback$14788.prototype.startBpm = function (bpm$14830) {
+    var beatLength$14831 = 60 * 1000 / bpm$14830;
     this.animationLoop = function () {
-        var duration$8896 = performance.now() - this.startTime, beatNr$8897 = Math.floor(duration$8896 / beatLength$8894), beatFraction$8898 = duration$8896 % beatLength$8894 / beatLength$8894;
-        this.fromClock(beatNr$8897, beatLength$8894, beatFraction$8898);
+        var duration$14833 = performance.now() - this.startTime, beatNr$14834 = Math.floor(duration$14833 / beatLength$14831), beatFraction$14835 = duration$14833 % beatLength$14831 / beatLength$14831;
+        this.fromClock(beatNr$14834, beatLength$14831, beatFraction$14835);
         if (!this.stopped)
             requestAnimationFrame(this.animationLoop);
     }.bind(this);
     if (!this.stopped)
         this.start();
 };
-module.exports = Playback$8851;
+module.exports = Playback$14788;
 
-},{"./exploder.sjs":15}],19:[function(require,module,exports){
+},{"./exploder.sjs":17}],21:[function(require,module,exports){
+'use strict';
+;
+window.Rx = require('rx');
+require('rx-dom');
+var SpeedStrategy$14887 = Rx.Observable.generate(0, function () {
+        return true;
+    }, function (x$14889) {
+        return Math.random() > 0.9 ? x$14889 + 1 : x$14889;
+    }, function (x$14890) {
+        return x$14890;
+    }, Rx.Scheduler.requestAnimationFrame);
+SpeedStrategy$14887.distinctUntilChanged().subscribe(function (x$14891) {
+    console.log('SUB1 ' + x$14891);
+});
+var PlaybackStrategies$14888 = { speed: SpeedStrategy$14887 };
+module.exports = PlaybackStrategies$14888;
+
+},{"rx":13,"rx-dom":4}],22:[function(require,module,exports){
 "use strict";
 
 var StreamReader = function (arrayBuffer) {
@@ -10816,4 +11684,4 @@ StreamReader.prototype.error = function (str) {
 
 module.exports = StreamReader;
 
-},{}]},{},[16])
+},{}]},{},[18])

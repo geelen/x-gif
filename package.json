@@ -28,5 +28,8 @@
     "sweetify": "~0.3.1",
     "gulp-connect": "~2.0.4",
     "rx": "~2.2.19"
+  },
+  "dependencies": {
+    "rx-dom": "~2.0.7"
   }
 }

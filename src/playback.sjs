@@ -19,7 +19,6 @@ var Playback = function (xgif, element, file, opts) {
   // Set up out instance variables
   this.xgif = xgif;
   this.element = element;
-  this.onReady = opts.onReady;
   this.pingPong = opts.pingPong;
   this.fill = opts.fill;
   this.stopped = opts.stopped;
