@@ -17,8 +17,7 @@
 <body unresolved>
 <x-gif fill sync></x-gif>
 <audio loop>
-  <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
-  <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+  <source src="audio/lose_yourself_to_dance.mp3" type="audio/mpeg">
 </audio>
 
 <script src="synched_playback.js"></script>
@@ -42,15 +41,10 @@
     window.nextGif = function () {
       xGif.src = gifs[gifNr++ % gifs.length];
     };
-
-    var changeGif = function () {
-        setTimeout(changeGif, 10000);
-        nextGif();
-      };
-    changeGif();
+    nextGif();
 
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
+    xhr.open('GET', 'audio/lose_yourself_to_dance2.json', true);
     xhr.onload = function () {
       metadata = JSON.parse(this.response);
       setupAudioSynching(audio, xGif, metadata);
