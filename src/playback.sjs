@@ -11,6 +11,7 @@ function addClasses(element, frame) {
 var createImage = function (frame) {
     var image = new Image();
     image.src = frame.url;
+    image.alt = '';
     addClasses(image, frame);
     return image;
   };
