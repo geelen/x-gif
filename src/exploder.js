@@ -86,7 +86,6 @@ Exploder.prototype.explode = function (buffer) {
         streamReader.log("LOCAL COLOR TABLE");
         var colorTableSize = streamReader.readByte() & 0x07;
         streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES")
-        streamReader.skipBytes(2);
         streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
       } else {
         streamReader.log("NO LOCAL TABLE PHEW");
