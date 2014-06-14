@@ -63,7 +63,6 @@ Exploder.prototype.explode = function (buffer) {
 
       // 1B: Block Terminator
       streamReader.skipBytes(1);
-      }
     } else if (streamReader.isNext([0x21, 0xFE])) {
       streamReader.log("COMMENT EXTENSION")
       streamReader.skipBytes(2);
