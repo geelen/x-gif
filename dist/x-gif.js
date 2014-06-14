@@ -48,20 +48,21 @@ Exploder.prototype.explode = function (buffer) {
   var spinning = true, expectingImage = false;
   while (spinning) {
 
-    if (streamReader.isNext([0x21, 0xFF])) {
+    if (streamReader.isNext([0x21, 0xFF, 0x0b])) {
       streamReader.log("APPLICATION EXTENSION")
-      streamReader.skipBytes(2);
+      // 1B: Extension Introducer
+      // 1B: Extension Label
+      // 1B: Extension Block Size #1 (must be 0x0b)
+      // 8B: Application Identifier
+      // 3B: Application Authentication Code
+      streamReader.skipBytes(14);
+      // 1B: Block Size #2 (This is true block size)
       var blockSize = streamReader.readByte();
       streamReader.log(streamReader.readAscii(blockSize));
+      streamReader.skipBytes(blockSize);
 
-      if (streamReader.isNext([0x03, 0x01])) {
-        // we cool
-        streamReader.skipBytes(5)
-      } else {
-        streamReader.log("A weird application extension. Skip until we have 2 NULL bytes");
-        while (!(streamReader.readByte() === 0 && streamReader.peekByte() === 0));
-        streamReader.log("OK moving on")
-        streamReader.skipBytes(1);
+      // 1B: Block Terminator
+      streamReader.skipBytes(1);
       }
     } else if (streamReader.isNext([0x21, 0xFE])) {
       streamReader.log("COMMENT EXTENSION")
