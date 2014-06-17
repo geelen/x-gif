@@ -58,7 +58,6 @@ Exploder.prototype.explode = function (buffer) {
       streamReader.skipBytes(14);
       // 1B: Block Size #2 (This is true block size)
       var blockSize = streamReader.readByte();
-      streamReader.log(streamReader.readAscii(blockSize));
       streamReader.skipBytes(blockSize);
 
       // 1B: Block Terminator
