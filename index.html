@@ -67,7 +67,7 @@
     <h3>Normal playback</h3>
     <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an issue on GitHub</a> with the URL of the image</p>
     <figure>
-      <x-gif ng-src="{{ trustedUrl() }}"></x-gif>
+      <x-gif ng-src="{{ trustedUrl() }}" role="img" aria-label="Normal playback example"></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}"&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
@@ -75,7 +75,7 @@
 
     <h3>Ping-pong</h3>
     <figure>
-      <x-gif ng-src="{{ trustedUrl() }}" ping-pong></x-gif>
+      <x-gif ng-src="{{ trustedUrl() }}" ping-pong role="img" aria-label="Ping-pong playback example"></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}" ping-pong&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
@@ -86,7 +86,7 @@
       <label>
         <input type="range" min="0.1" max="5" step="0.1" ng-model="gif.speed"/> {{ gif.speed }}
       </label>
-      <x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>
+      <x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}" role="img" aria-label="Variable speed playback example"></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"&gt;&lt;/x-gif&gt;</pre>
       </figcaption>
@@ -99,12 +99,13 @@
           <source src="demos/cc_audio/encom_part_ii.ogg" type="audio/ogg">
           <source src="demos/cc_audio/encom_part_ii.mp3" type="audio/mpeg">
         </audio>
-        <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
-                                                                                                          ng-click="changeSpeed(-0.1)">-</a>
+        <p>Playback speed: {{ gif.playbackRate | number:1 }}
+          <a href ng-click="changeSpeed(0.1)">+</a>
+          <a href ng-click="changeSpeed(-0.1)">-</a>
         </p>
       </div>
       <div ng-hide="gif.metadata">Loading beat data...</div>
-      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>
+      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync role="img" aria-label="Synchronised playback example"></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>
         <p>
