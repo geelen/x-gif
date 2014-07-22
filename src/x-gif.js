@@ -22,11 +22,11 @@ var XGif = function () {
   this.srcChanged = function () {
     var playbackStrategy = Strategies[this.playbackStrategy];
     this.playback = new Playback(this, this.$.frames, this.src, {
-      onReady: playbackStrategy.bind(this),
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,
       stopped: this.stopped != null
     });
+    this.playback.ready.then(playbackStrategy.bind(this));
   };
 
   this.speedChanged = function (oldVal, newVal) {

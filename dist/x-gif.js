@@ -2014,11 +2014,11 @@ var XGif = function() {
   this.srcChanged = function() {
     var playbackStrategy = Strategies[this.playbackStrategy];
     this.playback = new Playback(this, this.$.frames, this.src, {
-      onReady: playbackStrategy.bind(this),
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,
       stopped: this.stopped != null
     });
+    this.playback.ready.then(playbackStrategy.bind(this));
   };
   this.speedChanged = function(oldVal, newVal) {
     if (this.playback)
@@ -2112,16 +2112,20 @@ var $__default = (function() {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
-    new Exploder(file, (function(gif) {
-      console.warn("Callbacks will hurt you. I promise.");
-      console.log("Received " + gif.frames.length + " frames of gif " + file);
-      $__0.gif = gif;
-      $__0.element.innerHTML = "";
-      var createFrameElement = createImage;
-      gif.frames.map(createFrameElement).forEach($__0.element.appendChild, $__0.element);
-      if ($__0.fill)
-        requestAnimationFrame($__0.scaleToFill.bind($__0));
-      $__0.onReady();
+    this.ready = new Promise((function(resolve, reject) {
+      new Exploder(file, (function(gif) {
+        console.warn("Callbacks will hurt you. I promise.");
+        console.log("Received " + gif.frames.length + " frames of gif " + file);
+        $__0.gif = gif;
+        $__0.element.innerHTML = "";
+        var createFrameElement = createImage;
+        gif.frames.map(createFrameElement).forEach($__0.element.appendChild, $__0.element);
+        if ($__0.fill)
+          requestAnimationFrame($__0.scaleToFill.bind($__0));
+        console.log("WE GOOD TO GO");
+        console.log(resolve);
+        resolve("wat");
+      }));
     }));
   };
   return ($traceurRuntime.createClass)(Playback, {

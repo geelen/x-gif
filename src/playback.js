@@ -24,21 +24,25 @@ export default class Playback {
     this.fill = opts.fill;
     this.stopped = opts.stopped;
 
-    new Exploder(file, (gif) => {
-      // Once we have the GIF data, add things to the DOM
-      console.warn("Callbacks will hurt you. I promise.")
-      console.log("Received " + gif.frames.length + " frames of gif " + file)
-      this.gif = gif;
+    this.ready = new Promise((resolve, reject) => {
+      new Exploder(file, (gif) => {
+        // Once we have the GIF data, add things to the DOM
+        console.warn("Callbacks will hurt you. I promise.")
+        console.log("Received " + gif.frames.length + " frames of gif " + file)
+        this.gif = gif;
 
-      this.element.innerHTML = "";
-      var createFrameElement = createImage;//(this.fill) ? createDiv : createImage;
-      gif.frames.map(createFrameElement)
-        .forEach(this.element.appendChild, this.element);
+        this.element.innerHTML = "";
+        var createFrameElement = createImage;//(this.fill) ? createDiv : createImage;
+        gif.frames.map(createFrameElement)
+          .forEach(this.element.appendChild, this.element);
 
-      if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
+        if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
 
-      this.onReady();
-    });
+        console.log("WE GOOD TO GO")
+        console.log(resolve)
+        resolve("wat");
+      });
+    })
   }
 
   scaleToFill() {
