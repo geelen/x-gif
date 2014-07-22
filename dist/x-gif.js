@@ -1998,7 +1998,6 @@ var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
 var XGif = function() {
   this.ready = function() {
-    this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = 'noop';
     } else if (this.sync != null) {
@@ -2013,11 +2012,7 @@ var XGif = function() {
     }
   };
   this.srcChanged = function() {
-    console.log(this.playbackStrategy);
     var playbackStrategy = Strategies[this.playbackStrategy];
-    console.log(playbackStrategy);
-    console.log("GO TIME");
-    console.log(this.fill != null);
     this.playback = new Playback(this, this.$.frames, this.src, {
       onReady: playbackStrategy.bind(this),
       pingPong: this['ping-pong'] != null,
@@ -2026,17 +2021,14 @@ var XGif = function() {
     });
   };
   this.speedChanged = function(oldVal, newVal) {
-    console.log("SPEED CHANGED");
     if (this.playback)
       this.playback.speed = newVal;
   };
   this.stoppedChanged = function(oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
-      console.log("TIME TO STOP");
       this.playback.stop();
     } else if (this.playback && !nowStop && this.playback.stopped) {
-      console.log("TIME TO START");
       this.playback.start();
     }
   };
