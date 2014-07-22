@@ -1999,8 +1999,8 @@ var $__default = (function() {
 },{"./gif.js":5,"./stream_reader.js":8,"./utils.js":9}],4:[function(require,module,exports){
 "use strict";
 "use strict";
-var Playback = require('./playback.js'),
-    Strategies = require('./strategies.js');
+var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
+var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
 angular.module('x-gif', []).directive('gif', function() {
   return {
     restrict: 'E',
@@ -2022,23 +2022,19 @@ angular.module('x-gif', []).directive('gif', function() {
         xGif.playbackStrategy = 'speed';
       }
       attrs.$observe('src', function(src) {
-        console.log(src);
         if (!src)
           return;
-        var playbackStrategy = Strategies[xGif.playbackStrategy].bind(xGif);
-        console.log("GO TIME");
-        console.log(xGif.fill != null);
+        var playbackStrategy = Strategies[xGif.playbackStrategy];
         xGif.playback = new Playback(xGif, element[0].querySelector('.x-gif__frames'), xGif.src, {
-          onReady: playbackStrategy,
           pingPong: xGif.pingPong != null,
           fill: xGif.fill != null,
           stopped: xGif.stopped != null
         });
+        xGif.playback.ready.then(playbackStrategy.bind(xGif));
       });
       attrs.$observe('speed', function(speed) {
         if (!speed)
           return;
-        console.log("SPEED CHANGED");
         if (xGif.playback)
           xGif.playback.speed = speed;
       });
