@@ -25,9 +25,9 @@ export default class Playback {
     this.stopped = opts.stopped;
 
     this.ready = new Promise((resolve, reject) => {
-      new Exploder(file, (gif) => {
+      var exploder = new Exploder(file)
+      exploder.load().then((gif) => {
         // Once we have the GIF data, add things to the DOM
-        console.warn("Callbacks will hurt you. I promise.")
         console.log("Received " + gif.frames.length + " frames of gif " + file)
         this.gif = gif;
 
@@ -38,9 +38,7 @@ export default class Playback {
 
         if (this.fill) requestAnimationFrame(this.scaleToFill.bind(this));
 
-        console.log("WE GOOD TO GO")
-        console.log(resolve)
-        resolve("wat");
+        resolve();
       });
     })
   }

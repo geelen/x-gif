@@ -1861,137 +1861,135 @@ Object.defineProperties(exports, {
 });
 var Gif = $traceurRuntime.assertObject(require('./gif.js')).default;
 var StreamReader = $traceurRuntime.assertObject(require('./stream_reader.js')).default;
+var Promises = $traceurRuntime.assertObject(require('./utils.js')).Promises;
 var url = (URL && URL.createObjectURL) ? URL : webkitURL;
 var $__default = (function() {
-  var Exploder = function Exploder(file, cb) {
+  var Exploder = function Exploder(file) {
     this.file = file;
-    this.doneCallback = cb;
-    this.loadAndExplode();
   };
   return ($traceurRuntime.createClass)(Exploder, {
-    loadAndExplode: function() {
-      var loader = new XMLHttpRequest(),
-          exploder = this.explode.bind(this);
-      loader.open('GET', this.file, true);
-      loader.responseType = 'arraybuffer';
-      loader.onload = function() {
-        exploder(this.response);
-      };
-      loader.send();
+    load: function() {
+      var $__0 = this;
+      return Promises.xhrGet(this.file, 'arraybuffer').then((function(buffer) {
+        return $__0.explode(buffer);
+      }));
     },
     explode: function(buffer) {
-      var frames = [],
-          streamReader = new StreamReader(buffer);
-      if (streamReader.readAscii(6) != "GIF89a") {
-        return;
-      }
-      streamReader.skipBytes(4);
-      if (streamReader.peekBit(1)) {
-        streamReader.log("GLOBAL COLOR TABLE");
-        var colorTableSize = streamReader.readByte() & 0x07;
-        streamReader.log("GLOBAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES");
-        streamReader.skipBytes(2);
-        streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
-      } else {
-        streamReader.log("NO GLOBAL COLOR TABLE");
-      }
-      var gifHeader = buffer.slice(0, streamReader.index);
-      var spinning = true,
-          expectingImage = false;
-      while (spinning) {
-        if (streamReader.isNext([0x21, 0xFF])) {
-          streamReader.log("APPLICATION EXTENSION");
+      return new Promise((function(resolve, reject) {
+        var frames = [],
+            streamReader = new StreamReader(buffer);
+        if (streamReader.readAscii(6) != "GIF89a") {
+          reject(Error("Not a GIF!"));
+          return;
+        }
+        streamReader.skipBytes(4);
+        if (streamReader.peekBit(1)) {
+          streamReader.log("GLOBAL COLOR TABLE");
+          var colorTableSize = streamReader.readByte() & 0x07;
+          streamReader.log("GLOBAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES");
           streamReader.skipBytes(2);
-          var blockSize = streamReader.readByte();
-          streamReader.log(streamReader.readAscii(blockSize));
-          if (streamReader.isNext([0x03, 0x01])) {
-            streamReader.skipBytes(5);
-          } else {
-            streamReader.log("A weird application extension. Skip until we have 2 NULL bytes");
-            while (!(streamReader.readByte() === 0 && streamReader.peekByte() === 0))
-              ;
-            streamReader.log("OK moving on");
-            streamReader.skipBytes(1);
-          }
-        } else if (streamReader.isNext([0x21, 0xFE])) {
-          streamReader.log("COMMENT EXTENSION");
-          streamReader.skipBytes(2);
-          while (!streamReader.isNext([0x00])) {
+          streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
+        } else {
+          streamReader.log("NO GLOBAL COLOR TABLE");
+        }
+        var gifHeader = buffer.slice(0, streamReader.index);
+        var spinning = true,
+            expectingImage = false;
+        while (spinning) {
+          if (streamReader.isNext([0x21, 0xFF])) {
+            streamReader.log("APPLICATION EXTENSION");
+            streamReader.skipBytes(2);
             var blockSize = streamReader.readByte();
             streamReader.log(streamReader.readAscii(blockSize));
-          }
-          streamReader.skipBytes(1);
-        } else if (streamReader.isNext([0x2c])) {
-          streamReader.log("IMAGE DESCRIPTOR!");
-          if (!expectingImage) {
-            frames.push({
-              index: streamReader.index,
-              delay: 0
-            });
-          }
-          expectingImage = false;
-          streamReader.skipBytes(9);
-          if (streamReader.peekBit(1)) {
-            streamReader.log("LOCAL COLOR TABLE");
-            var colorTableSize = streamReader.readByte() & 0x07;
-            streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES");
-            streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
-          } else {
-            streamReader.log("NO LOCAL TABLE PHEW");
+            if (streamReader.isNext([0x03, 0x01])) {
+              streamReader.skipBytes(5);
+            } else {
+              streamReader.log("A weird application extension. Skip until we have 2 NULL bytes");
+              while (!(streamReader.readByte() === 0 && streamReader.peekByte() === 0))
+                ;
+              streamReader.log("OK moving on");
+              streamReader.skipBytes(1);
+            }
+          } else if (streamReader.isNext([0x21, 0xFE])) {
+            streamReader.log("COMMENT EXTENSION");
+            streamReader.skipBytes(2);
+            while (!streamReader.isNext([0x00])) {
+              var blockSize = streamReader.readByte();
+              streamReader.log(streamReader.readAscii(blockSize));
+            }
             streamReader.skipBytes(1);
-          }
-          streamReader.log("MIN CODE SIZE " + streamReader.readByte());
-          streamReader.log("DATA START");
-          while (!streamReader.isNext([0x00])) {
-            var blockSize = streamReader.readByte();
-            streamReader.skipBytes(blockSize);
-          }
-          streamReader.log("DATA END");
-          streamReader.skipBytes(1);
-        } else if (streamReader.isNext([0x21, 0xF9, 0x04])) {
-          streamReader.log("GRAPHICS CONTROL EXTENSION!");
-          var index = streamReader.index;
-          streamReader.skipBytes(3);
-          var disposalMethod = streamReader.readByte() >> 2;
-          streamReader.log("DISPOSAL " + disposalMethod);
-          var delay = streamReader.readByte() + streamReader.readByte() * 256;
-          frames.push({
-            index: index,
-            delay: delay,
-            disposal: disposalMethod
-          });
-          streamReader.log("FRAME DELAY " + delay);
-          streamReader.skipBytes(2);
-          expectingImage = true;
-        } else {
-          var maybeTheEnd = streamReader.index;
-          while (!streamReader.finished() && !streamReader.isNext([0x21, 0xF9, 0x04])) {
-            streamReader.readByte();
-          }
-          if (streamReader.finished()) {
-            streamReader.index = maybeTheEnd;
-            streamReader.log("WE END");
-            spinning = false;
+          } else if (streamReader.isNext([0x2c])) {
+            streamReader.log("IMAGE DESCRIPTOR!");
+            if (!expectingImage) {
+              frames.push({
+                index: streamReader.index,
+                delay: 0
+              });
+            }
+            expectingImage = false;
+            streamReader.skipBytes(9);
+            if (streamReader.peekBit(1)) {
+              streamReader.log("LOCAL COLOR TABLE");
+              var colorTableSize = streamReader.readByte() & 0x07;
+              streamReader.log("LOCAL COLOR TABLE IS " + 3 * Math.pow(2, colorTableSize + 1) + " BYTES");
+              streamReader.skipBytes(3 * Math.pow(2, colorTableSize + 1));
+            } else {
+              streamReader.log("NO LOCAL TABLE PHEW");
+              streamReader.skipBytes(1);
+            }
+            streamReader.log("MIN CODE SIZE " + streamReader.readByte());
+            streamReader.log("DATA START");
+            while (!streamReader.isNext([0x00])) {
+              var blockSize = streamReader.readByte();
+              streamReader.skipBytes(blockSize);
+            }
+            streamReader.log("DATA END");
+            streamReader.skipBytes(1);
+          } else if (streamReader.isNext([0x21, 0xF9, 0x04])) {
+            streamReader.log("GRAPHICS CONTROL EXTENSION!");
+            var index = streamReader.index;
+            streamReader.skipBytes(3);
+            var disposalMethod = streamReader.readByte() >> 2;
+            streamReader.log("DISPOSAL " + disposalMethod);
+            var delay = streamReader.readByte() + streamReader.readByte() * 256;
+            frames.push({
+              index: index,
+              delay: delay,
+              disposal: disposalMethod
+            });
+            streamReader.log("FRAME DELAY " + delay);
+            streamReader.skipBytes(2);
+            expectingImage = true;
           } else {
-            streamReader.log("UNKNOWN DATA FROM " + maybeTheEnd);
+            var maybeTheEnd = streamReader.index;
+            while (!streamReader.finished() && !streamReader.isNext([0x21, 0xF9, 0x04])) {
+              streamReader.readByte();
+            }
+            if (streamReader.finished()) {
+              streamReader.index = maybeTheEnd;
+              streamReader.log("WE END");
+              spinning = false;
+            } else {
+              streamReader.log("UNKNOWN DATA FROM " + maybeTheEnd);
+            }
           }
         }
-      }
-      var endOfFrames = streamReader.index;
-      var gifFooter = buffer.slice(-1);
-      for (var i = 0; i < frames.length; i++) {
-        var frame = frames[i];
-        var nextIndex = (i < frames.length - 1) ? frames[i + 1].index : endOfFrames;
-        frame.blob = new Blob([gifHeader, buffer.slice(frame.index, nextIndex), gifFooter], {type: 'image/gif'});
-        frame.url = url.createObjectURL(frame.blob);
-      }
-      this.doneCallback(new Gif(frames));
+        var endOfFrames = streamReader.index;
+        var gifFooter = buffer.slice(-1);
+        for (var i = 0; i < frames.length; i++) {
+          var frame = frames[i];
+          var nextIndex = (i < frames.length - 1) ? frames[i + 1].index : endOfFrames;
+          frame.blob = new Blob([gifHeader, buffer.slice(frame.index, nextIndex), gifFooter], {type: 'image/gif'});
+          frame.url = url.createObjectURL(frame.blob);
+        }
+        resolve(new Gif(frames));
+      }));
     }
   }, {});
 }());
 
 
-},{"./gif.js":5,"./stream_reader.js":8}],4:[function(require,module,exports){
+},{"./gif.js":5,"./stream_reader.js":8,"./utils.js":9}],4:[function(require,module,exports){
 "use strict";
 "use strict";
 var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
@@ -2113,8 +2111,8 @@ var $__default = (function() {
     this.fill = opts.fill;
     this.stopped = opts.stopped;
     this.ready = new Promise((function(resolve, reject) {
-      new Exploder(file, (function(gif) {
-        console.warn("Callbacks will hurt you. I promise.");
+      var exploder = new Exploder(file);
+      exploder.load().then((function(gif) {
         console.log("Received " + gif.frames.length + " frames of gif " + file);
         $__0.gif = gif;
         $__0.element.innerHTML = "";
@@ -2122,9 +2120,7 @@ var $__default = (function() {
         gif.frames.map(createFrameElement).forEach($__0.element.appendChild, $__0.element);
         if ($__0.fill)
           requestAnimationFrame($__0.scaleToFill.bind($__0));
-        console.log("WE GOOD TO GO");
-        console.log(resolve);
-        resolve("wat");
+        resolve();
       }));
     }));
   };
@@ -2286,6 +2282,35 @@ var $__default = (function() {
     }
   }, {});
 }());
+
+
+},{}],9:[function(require,module,exports){
+"use strict";
+"use strict";
+Object.defineProperties(exports, {
+  Promises: {get: function() {
+      return Promises;
+    }},
+  __esModule: {value: true}
+});
+var Promises = {xhrGet: (function(url, type) {
+    return new Promise((function(resolve, reject) {
+      var loader = new XMLHttpRequest();
+      loader.open('GET', url, true);
+      loader.responseType = type;
+      loader.onload = function() {
+        if (this.status == 200) {
+          resolve(this.response);
+        } else {
+          reject(Error(this.statusText));
+        }
+      };
+      loader.onerror = function() {
+        reject(Error("Network Error"));
+      };
+      loader.send();
+    }));
+  })};
 
 
 },{}]},{},[1,4])
