@@ -6,18 +6,25 @@ import { Promises } from './utils.js';
 
 var url = (URL && URL.createObjectURL) ? URL : webkitURL;
 
-export default
-class Exploder {
+var gifCache = new Map();
+export default class Exploder {
   constructor(file) {
     this.file = file;
   }
 
   load() {
-    return Promises.xhrGet(this.file, 'arraybuffer')
-      .then(buffer => this.explode(buffer))
+    var cachedGifPromise = gifCache.get(this.file)
+    if (cachedGifPromise) return cachedGifPromise;
+
+    var gifPromise = Promises.xhrGet(this.file, 'arraybuffer')
+      .then(buffer => this.explode(buffer));
+
+    gifCache.set(this.file, gifPromise);
+    return gifPromise;
   }
 
   explode(buffer) {
+    console.debug("EXPLODING " + this.file)
     return new Promise((resolve, reject) => {
       var frames = [],
         streamReader = new StreamReader(buffer);

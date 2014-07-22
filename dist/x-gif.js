@@ -1863,6 +1863,7 @@ var Gif = $traceurRuntime.assertObject(require('./gif.js')).default;
 var StreamReader = $traceurRuntime.assertObject(require('./stream_reader.js')).default;
 var Promises = $traceurRuntime.assertObject(require('./utils.js')).Promises;
 var url = (URL && URL.createObjectURL) ? URL : webkitURL;
+var gifCache = new Map();
 var $__default = (function() {
   var Exploder = function Exploder(file) {
     this.file = file;
@@ -1870,11 +1871,17 @@ var $__default = (function() {
   return ($traceurRuntime.createClass)(Exploder, {
     load: function() {
       var $__0 = this;
-      return Promises.xhrGet(this.file, 'arraybuffer').then((function(buffer) {
+      var cachedGifPromise = gifCache.get(this.file);
+      if (cachedGifPromise)
+        return cachedGifPromise;
+      var gifPromise = Promises.xhrGet(this.file, 'arraybuffer').then((function(buffer) {
         return $__0.explode(buffer);
       }));
+      gifCache.set(this.file, gifPromise);
+      return gifPromise;
     },
     explode: function(buffer) {
+      console.debug("EXPLODING " + this.file);
       return new Promise((function(resolve, reject) {
         var frames = [],
             streamReader = new StreamReader(buffer);
@@ -2113,7 +2120,7 @@ var $__default = (function() {
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
-        console.log("Received " + gif.frames.length + " frames of gif " + file);
+        console.debug("Received " + gif.frames.length + " frames of gif " + file);
         $__0.gif = gif;
         $__0.element.innerHTML = "";
         var createFrameElement = createImage;

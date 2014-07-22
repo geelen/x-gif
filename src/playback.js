@@ -28,7 +28,7 @@ export default class Playback {
       var exploder = new Exploder(file)
       exploder.load().then((gif) => {
         // Once we have the GIF data, add things to the DOM
-        console.log("Received " + gif.frames.length + " frames of gif " + file)
+        console.debug("Received " + gif.frames.length + " frames of gif " + file)
         this.gif = gif;
 
         this.element.innerHTML = "";
