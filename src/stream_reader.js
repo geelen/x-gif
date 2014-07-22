@@ -1,44 +1,52 @@
 "use strict";
 
-var StreamReader = function (arrayBuffer) {
-  this.data = new Uint8Array(arrayBuffer);
-  this.index = 0;
-  this.log("TOTAL LENGTH: " + this.data.length);
-}
+export default class StreamReader {
+  constructor(arrayBuffer) {
+    this.data = new Uint8Array(arrayBuffer);
+    this.index = 0;
+    this.log("TOTAL LENGTH: " + this.data.length);
+  }
 
-StreamReader.prototype.finished = function () {
-  return this.index >= this.data.length;
-}
-StreamReader.prototype.readByte = function () {
-  return this.data[this.index++];
-};
-StreamReader.prototype.peekByte = function () {
-  return this.data[this.index];
-};
-StreamReader.prototype.skipBytes = function (n) {
-  this.index += n;
-};
-StreamReader.prototype.peekBit = function (i) {
-  return !!(this.peekByte() & (1 << 8 - i));
-};
-StreamReader.prototype.readAscii = function (n) {
-  var s = '';
-  for (var i = 0; i < n; i++) {
-    s += String.fromCharCode(this.readByte());
+  finished() {
+    return this.index >= this.data.length;
   }
-  return s;
-};
-StreamReader.prototype.isNext = function (array) {
-  for (var i = 0; i < array.length; i++) {
-    if (array[i] !== this.data[this.index + i]) return false;
+
+  readByte() {
+    return this.data[this.index++];
   }
-  return true;
-};
-StreamReader.prototype.log = function (str) {
+
+  peekByte() {
+    return this.data[this.index];
+  }
+
+  skipBytes(n) {
+    this.index += n;
+  }
+
+  peekBit(i) {
+    return !!(this.peekByte() & (1 << 8 - i));
+  }
+
+  readAscii(n) {
+    var s = '';
+    for (var i = 0; i < n; i++) {
+      s += String.fromCharCode(this.readByte());
+    }
+    return s;
+  }
+
+  isNext(array) {
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] !== this.data[this.index + i]) return false;
+    }
+    return true;
+  }
+
+  log(str) {
 //  console.log(this.index + ": " + str);
-};
-StreamReader.prototype.error = function (str) {
-  console.error(this.index + ": " + str);
-}
+  }
 
-module.exports = StreamReader;
+  error(str) {
+    console.error(this.index + ": " + str);
+  }
+}

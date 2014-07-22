@@ -1,6 +1,6 @@
 "use strict";
 
-var Playback = require('./playback.sjs'),
+var Playback = require('./playback.js'),
   Strategies = require('./strategies.js');
 
 angular.module('x-gif', [])

@@ -1,7 +1,7 @@
 "use strict";
 
-var Playback = require('./playback.sjs'),
-  Strategies = require('./strategies.js');
+import Playback from './playback.js';
+import Strategies from './strategies.js';
 
 var XGif = function () {
   this.ready = function () {
@@ -23,11 +23,13 @@ var XGif = function () {
   };
 
   this.srcChanged = function () {
-    var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
+    console.log(this.playbackStrategy)
+    var playbackStrategy = Strategies[this.playbackStrategy];
+    console.log(playbackStrategy)
     console.log("GO TIME")
     console.log(this.fill != null)
     this.playback = new Playback(this, this.$.frames, this.src, {
-      onReady: playbackStrategy,
+      onReady: playbackStrategy.bind(this),
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,
       stopped: this.stopped != null

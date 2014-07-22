@@ -13,5 +13,11 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "platform": "^0.3.3"
+  },
+  "dependencies": {
+    "polymer": "~0.3.3"
+  }
 }
