@@ -31,6 +31,7 @@ gulp.task('copy', function () {
   gulp.src([
     'bower_components/platform/platform.js',
     'bower_components/polymer/polymer*',
+    'bower_components/polymer/layout*',
   ])
     .pipe(gulp.dest('dist'));
 });
