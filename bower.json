@@ -1,6 +1,6 @@
 {
   "name": "x-gif",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "authors": [
     "Glen Maddern <glenmaddern@gmail.com>"
   ],
@@ -13,5 +13,11 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "resolutions": {
+    "platform": "^0.3.3"
+  },
+  "dependencies": {
+    "polymer": "~0.3.3"
+  }
 }

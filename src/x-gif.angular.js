@@ -1,7 +1,7 @@
 "use strict";
 
-var Playback = require('./playback.sjs'),
-  Strategies = require('./strategies.js');
+import Playback from './playback.js';
+import Strategies from './strategies.js';
 
 angular.module('x-gif', [])
   // Angular strips the 'x' off <x-gif> cause reasons
@@ -32,22 +32,18 @@ angular.module('x-gif', [])
         }
 
         attrs.$observe('src', function (src) {
-          console.log(src)
           if (!src) return;
-          var playbackStrategy = Strategies[xGif.playbackStrategy].bind(xGif);
-          console.log("GO TIME");
-          console.log(xGif.fill != null);
+          var playbackStrategy = Strategies[xGif.playbackStrategy];
           xGif.playback = new Playback(xGif, element[0].querySelector('.x-gif__frames'), xGif.src, {
-            onReady: playbackStrategy,
             pingPong: xGif.pingPong != null,
             fill: xGif.fill != null,
             stopped: xGif.stopped != null
           });
+          xGif.playback.ready.then(playbackStrategy.bind(xGif));
         })
 
         attrs.$observe('speed', function (speed) {
           if (!speed) return;
-          console.log("SPEED CHANGED")
           if (xGif.playback) xGif.playback.speed = speed;
         });
 

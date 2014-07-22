@@ -14,4 +14,4 @@ var Strategies = {
   }
 };
 
-module.exports = Strategies;
+export default Strategies;

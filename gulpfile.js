@@ -1,4 +1,5 @@
 var gulp = require('gulp'),
+  es6ify = require('es6ify'),
   $ = require('gulp-load-plugins')();
 
 gulp.task('js', function () {
@@ -8,7 +9,8 @@ gulp.task('js', function () {
   ])
     .pipe($.plumber())
     .pipe($.browserify({
-      transform: ['sweetify']
+      add: [ es6ify.runtime ],
+      transform: ['es6ify']
     }))
     .pipe(gulp.dest('dist'));
 });
@@ -29,6 +31,7 @@ gulp.task('copy', function () {
   gulp.src([
     'bower_components/platform/platform.js',
     'bower_components/polymer/polymer*',
+    'bower_components/polymer/layout*',
   ])
     .pipe(gulp.dest('dist'));
 });

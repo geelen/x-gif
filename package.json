@@ -25,7 +25,7 @@
     "gulp-plumber": "~0.5.6",
     "gulp-browserify": "~0.5.0",
     "gulp-ruby-sass": "~0.4.1",
-    "sweetify": "~0.3.1",
-    "gulp-connect": "~2.0.4"
+    "gulp-connect": "~2.0.4",
+    "es6ify": "~1.2.0"
   }
 }
