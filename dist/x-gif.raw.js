@@ -2003,21 +2003,42 @@ var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
 (function(document, owner) {
   var XGifController = function(context) {
+    var $__0 = this;
     this.context = context;
     this.shadow = this.context.createShadowRoot();
     var template = owner.querySelector("#template").content.cloneNode(true);
     this.shadow.appendChild(template);
-    this.speed = this.speed || 1.0;
-    this.playbackStrategy = 'speed';
-    var playbackStrategy = Strategies[this.playbackStrategy];
-    console.log(context.getAttribute('src'));
-    console.log(this.shadow.querySelector('#frames'));
-    this.playback = new Playback(this, this.shadow.querySelector('#frames'), context.getAttribute('src'), {
-      pingPong: this['ping-pong'] != null,
-      fill: this.fill != null,
-      stopped: this.stopped != null
+    this.srcChanged = function() {
+      this.speed = this.speed || 1.0;
+      this.playbackStrategy = 'speed';
+      var playbackStrategy = Strategies[this.playbackStrategy];
+      console.log(context.getAttribute('src'));
+      console.log(this.shadow.querySelector('#frames'));
+      this.playback = new Playback(this, this.shadow.querySelector('#frames'), context.getAttribute('src'), {
+        pingPong: this['ping-pong'] != null,
+        fill: this.fill != null,
+        stopped: this.stopped != null
+      });
+      this.playback.ready.then(playbackStrategy.bind(this));
+    };
+    var observer = new MutationObserver((function(mutations) {
+      mutations.forEach((function(mutation) {
+        console.log({
+          mutation: mutation,
+          el: mutation.target,
+          old: mutation.oldValue,
+          new: mutation.target.getAttribute(mutation.attributeName)
+        });
+        if (mutation.attributeName == "src")
+          $__0.srcChanged(mutation.target.getAttribute(mutation.attributeName));
+      }));
+    }));
+    observer.observe(context, {
+      attributes: true,
+      attributeOldValue: true,
+      childList: false,
+      characterData: false
     });
-    this.playback.ready.then(playbackStrategy.bind(this));
   };
   var XGif = Object.create(HTMLElement.prototype);
   XGif.createdCallback = function() {
