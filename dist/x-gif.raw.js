@@ -2046,22 +2046,6 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
         this.playback.start();
       }
     };
-    var observer = new MutationObserver((function(mutations) {
-      mutations.forEach((function(mutation) {
-        if (mutation.attributeName == "src")
-          $__0.srcChanged(mutation.target.getAttribute(mutation.attributeName));
-        if (mutation.attributeName == "speed")
-          $__0.speedChanged(mutation.target.getAttribute(mutation.attributeName));
-        if (mutation.attributeName == "stopped")
-          $__0.stoppedChanged(mutation.target.getAttribute(mutation.attributeName));
-      }));
-    }));
-    observer.observe(context, {
-      attributes: true,
-      attributeOldValue: true,
-      childList: false,
-      characterData: false
-    });
     context.togglePingPong = (function() {
       if (context.hasAttribute('ping-pong')) {
         context.removeAttribute('ping-pong');
@@ -2084,8 +2068,13 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
   XGif.createdCallback = function() {
     this.controller = new XGifController(this);
   };
-  XGif.attributeChangedCallback = function() {
-    console.log(arguments);
+  XGif.attributeChangedCallback = function(attribute, oldVal, newVal) {
+    if (attribute == "src")
+      this.controller.srcChanged(newVal);
+    if (attribute == "speed")
+      this.controller.speedChanged(newVal);
+    if (attribute == "stopped")
+      this.controller.stoppedChanged(newVal);
   };
   document.registerElement('x-gif', {prototype: XGif});
 })(document, (document._currentScript || document.currentScript).ownerDocument);

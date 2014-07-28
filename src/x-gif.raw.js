@@ -3,9 +3,9 @@
 import Playback from './playback.js';
 import Strategies from './strategies.js';
 
-(function(document, owner){
+(function (document, owner) {
 
-  var XGifController = function(context){
+  var XGifController = function (context) {
     // save the context to the custom element
     this.context = context;
 
@@ -57,25 +57,6 @@ import Strategies from './strategies.js';
       }
     }
 
-    var observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-//        console.log({
-//          mutation: mutation,
-//          el: mutation.target,
-//          old: mutation.oldValue,
-//          new: mutation.target.getAttribute(mutation.attributeName)
-//        })
-        if (mutation.attributeName == "src") this.srcChanged(mutation.target.getAttribute(mutation.attributeName))
-        if (mutation.attributeName == "speed") this.speedChanged(mutation.target.getAttribute(mutation.attributeName))
-        if (mutation.attributeName == "stopped") this.stoppedChanged(mutation.target.getAttribute(mutation.attributeName))
-      })
-    })
-    observer.observe(context, {
-      attributes: true,
-      attributeOldValue: true,
-      childList: false,
-      characterData: false
-    });
 //    src speed bpm hard-bpm exploded n-times ping-pong sync fill stopped
 
     context.togglePingPong = () => {
@@ -98,11 +79,13 @@ import Strategies from './strategies.js';
 
   // Register the element in the document
   var XGif = Object.create(HTMLElement.prototype);
-  XGif.createdCallback = function(){
+  XGif.createdCallback = function () {
     this.controller = new XGifController(this);
   };
-  XGif.attributeChangedCallback = function () {
-    console.log(arguments)
+  XGif.attributeChangedCallback = function (attribute, oldVal, newVal) {
+    if (attribute == "src") this.controller.srcChanged(newVal)
+    if (attribute == "speed") this.controller.speedChanged(newVal)
+    if (attribute == "stopped") this.controller.stoppedChanged(newVal)
   }
 
   // Register our todo-item tag with the document
