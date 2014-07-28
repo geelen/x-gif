@@ -5,7 +5,8 @@ var gulp = require('gulp'),
 gulp.task('js', function () {
   gulp.src([
     'src/x-gif.js',
-    'src/x-gif.angular.js'
+    'src/x-gif.angular.js',
+    'src/x-gif.raw.js'
   ])
     .pipe($.plumber())
     .pipe($.browserify({
