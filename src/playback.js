@@ -82,7 +82,7 @@ export default class Playback {
         if (!this.stopped) requestAnimationFrame(this.animationLoop);
       } else {
         this.setFrame(nTimes % 1 || 1.0, repeatCount);
-        this.xgif.fire('x-gif-finished');
+        this.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
       }
     }
 

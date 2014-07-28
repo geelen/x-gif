@@ -2165,7 +2165,7 @@ var $__default = (function() {
             requestAnimationFrame($__0.animationLoop);
         } else {
           $__0.setFrame(nTimes % 1 || 1.0, repeatCount);
-          $__0.xgif.fire('x-gif-finished');
+          $__0.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
         }
       });
       if (!this.stopped)
@@ -2222,13 +2222,13 @@ Object.defineProperties(exports, {
 });
 var Strategies = {
   speed: function() {
-    this.playback.startSpeed(this.speed, this['n-times']);
+    this.playback.startSpeed(this.speed, this.context.getAttribute('n-times'));
   },
   hardBpm: function() {
-    this.playback.startHardBpm(this['hard-bpm']);
+    this.playback.startHardBpm(parseFloat(this.context.getAttribute('hard-bpm')));
   },
   bpm: function() {
-    this.playback.startBpm(this.bpm);
+    this.playback.startBpm(parseFloat(this.context.getAttribute('bpm')));
   },
   noop: function() {}
 };

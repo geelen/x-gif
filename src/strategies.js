@@ -2,13 +2,13 @@
 
 var Strategies = {
   speed: function () {
-    this.playback.startSpeed(this.speed, this['n-times']);
+    this.playback.startSpeed(this.speed, this.context.getAttribute('n-times'));
   },
   hardBpm: function () {
-    this.playback.startHardBpm(this['hard-bpm']);
+    this.playback.startHardBpm(parseFloat(this.context.getAttribute('hard-bpm')));
   },
   bpm: function () {
-    this.playback.startBpm(this.bpm);
+    this.playback.startBpm(parseFloat(this.context.getAttribute('bpm')));
   },
   noop: function () {
   }
