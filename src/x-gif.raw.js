@@ -48,6 +48,15 @@ import Strategies from './strategies.js';
       if (this.playback) this.playback.speed = this.speed;
     }
 
+    this.stoppedChanged = function (newVal) {
+      var nowStop = newVal != null;
+      if (this.playback && nowStop && !this.playback.stopped) {
+        this.playback.stop();
+      } else if (this.playback && !nowStop && this.playback.stopped) {
+        this.playback.start();
+      }
+    }
+
     var observer = new MutationObserver(mutations => {
       mutations.forEach(mutation => {
 //        console.log({
@@ -58,6 +67,7 @@ import Strategies from './strategies.js';
 //        })
         if (mutation.attributeName == "src") this.srcChanged(mutation.target.getAttribute(mutation.attributeName))
         if (mutation.attributeName == "speed") this.speedChanged(mutation.target.getAttribute(mutation.attributeName))
+        if (mutation.attributeName == "stopped") this.stoppedChanged(mutation.target.getAttribute(mutation.attributeName))
       })
     })
     observer.observe(context, {
@@ -91,6 +101,9 @@ import Strategies from './strategies.js';
   XGif.createdCallback = function(){
     this.controller = new XGifController(this);
   };
+  XGif.attributeChangedCallback = function () {
+    console.log(arguments)
+  }
 
   // Register our todo-item tag with the document
   document.registerElement('x-gif', {prototype: XGif});

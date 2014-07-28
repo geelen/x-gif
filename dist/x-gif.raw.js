@@ -2038,12 +2038,22 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
       if (this.playback)
         this.playback.speed = this.speed;
     };
+    this.stoppedChanged = function(newVal) {
+      var nowStop = newVal != null;
+      if (this.playback && nowStop && !this.playback.stopped) {
+        this.playback.stop();
+      } else if (this.playback && !nowStop && this.playback.stopped) {
+        this.playback.start();
+      }
+    };
     var observer = new MutationObserver((function(mutations) {
       mutations.forEach((function(mutation) {
         if (mutation.attributeName == "src")
           $__0.srcChanged(mutation.target.getAttribute(mutation.attributeName));
         if (mutation.attributeName == "speed")
           $__0.speedChanged(mutation.target.getAttribute(mutation.attributeName));
+        if (mutation.attributeName == "stopped")
+          $__0.stoppedChanged(mutation.target.getAttribute(mutation.attributeName));
       }));
     }));
     observer.observe(context, {
@@ -2073,6 +2083,9 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
   var XGif = Object.create(HTMLElement.prototype);
   XGif.createdCallback = function() {
     this.controller = new XGifController(this);
+  };
+  XGif.attributeChangedCallback = function() {
+    console.log(arguments);
   };
   document.registerElement('x-gif', {prototype: XGif});
 })(document, (document._currentScript || document.currentScript).ownerDocument);
