@@ -2008,29 +2008,42 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
     this.shadow = this.context.createShadowRoot();
     var template = owner.querySelector("#template").content.cloneNode(true);
     this.shadow.appendChild(template);
-    this.srcChanged = function() {
-      this.speed = this.speed || 1.0;
+    if (context.hasAttribute('exploded')) {
+      this.playbackStrategy = 'noop';
+    } else if (context.hasAttribute('sync')) {
+      this.playbackStrategy = 'noop';
+    } else if (context.getAttribute('hard-bpm')) {
+      this.playbackStrategy = 'hardBpm';
+    } else if (context.getAttribute('bpm')) {
+      this.playbackStrategy = 'bpm';
+    } else {
+      this.speed = parseFloat(context.getAttribute('speed')) || 1.0;
       this.playbackStrategy = 'speed';
+    }
+    this.srcChanged = function(src) {
+      if (!src)
+        return;
+      console.log("Loading " + src);
       var playbackStrategy = Strategies[this.playbackStrategy];
-      console.log(context.getAttribute('src'));
-      console.log(this.shadow.querySelector('#frames'));
-      this.playback = new Playback(this, this.shadow.querySelector('#frames'), context.getAttribute('src'), {
-        pingPong: this['ping-pong'] != null,
-        fill: this.fill != null,
-        stopped: this.stopped != null
+      this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
+        pingPong: context.hasAttribute('ping-pong'),
+        fill: context.hasAttribute('fill'),
+        stopped: context.hasAttribute('stopped')
       });
       this.playback.ready.then(playbackStrategy.bind(this));
     };
+    this.srcChanged(context.getAttribute('src'));
+    this.speedChanged = function(speedStr) {
+      this.speed = parseFloat(speedStr) || this.speed;
+      if (this.playback)
+        this.playback.speed = this.speed;
+    };
     var observer = new MutationObserver((function(mutations) {
       mutations.forEach((function(mutation) {
-        console.log({
-          mutation: mutation,
-          el: mutation.target,
-          old: mutation.oldValue,
-          new: mutation.target.getAttribute(mutation.attributeName)
-        });
         if (mutation.attributeName == "src")
           $__0.srcChanged(mutation.target.getAttribute(mutation.attributeName));
+        if (mutation.attributeName == "speed")
+          $__0.speedChanged(mutation.target.getAttribute(mutation.attributeName));
       }));
     }));
     observer.observe(context, {
@@ -2038,6 +2051,23 @@ var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).defaul
       attributeOldValue: true,
       childList: false,
       characterData: false
+    });
+    context.togglePingPong = (function() {
+      if (context.hasAttribute('ping-pong')) {
+        context.removeAttribute('ping-pong');
+      } else {
+        context.setAttribute('ping-pong', '');
+      }
+      if ($__0.playback)
+        $__0.playback.pingPong = context.hasAttribute('ping-pong');
+    });
+    context.clock = (function(beatNr, beatDuration, beatFraction) {
+      if ($__0.playback && $__0.playback.gif)
+        $__0.playback.fromClock(beatNr, beatDuration, beatFraction);
+    });
+    context.relayout = (function() {
+      if (context.hasAttribute('fill'))
+        $__0.playback.scaleToFill();
     });
   };
   var XGif = Object.create(HTMLElement.prototype);
