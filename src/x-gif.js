@@ -1,27 +1,11 @@
 "use strict";
 
-var Playback = require('./playback.sjs'),
-  DirectDomUpdater = require('./direct_dom_updater.sjs');
+import Playback from './playback.js';
+import Strategies from './strategies.js';
+import DirectDomUpdater from './direct_dom_updater.sjs';
 
 var XGif = function () {
-  var Strategies = {
-    speed: function () {
-      this.playback.startSpeed(this.speed, this['n-times']);
-    },
-    hardBpm: function () {
-      this.playback.startHardBpm(this['hard-bpm']);
-    },
-    bpm: function () {
-      this.playback.startBpm(this.bpm);
-    },
-    noop: function () {
-    }
-  }
-
   this.ready = function () {
-    // Better than using a default attribute, since this
-    // triggers change detectors below.
-    this.src = this.src || "../gifs/nope.gif";
     if (this.exploded != null) {
       this.playbackStrategy = 'noop'
     } else if (this.sync != null) {
@@ -37,29 +21,25 @@ var XGif = function () {
   };
 
   this.srcChanged = function () {
-    var playbackStrategy = Strategies[this.playbackStrategy].bind(this);
-    console.log("GO TIME")
+    var playbackStrategy = Strategies[this.playbackStrategy];
     var domUpdater = new DirectDomUpdater(this.$.frames);
     this.playback = new Playback(this, domUpdater, this.src, {
-      onReady: playbackStrategy,
       pingPong: this['ping-pong'] != null,
       fill: this.fill != null,
       stopped: this.stopped != null
     });
+    this.playback.ready.then(playbackStrategy.bind(this));
   };
 
   this.speedChanged = function (oldVal, newVal) {
-    console.log("SPEED CHANGED")
     if (this.playback) this.playback.speed = newVal;
   }
 
   this.stoppedChanged = function (oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
-      console.log("TIME TO STOP")
       this.playback.stop();
     } else if (this.playback && !nowStop && this.playback.stopped) {
-      console.log("TIME TO START")
       this.playback.start();
     }
   }

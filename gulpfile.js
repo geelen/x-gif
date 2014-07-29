@@ -1,14 +1,18 @@
 var gulp = require('gulp'),
+  es6ify = require('es6ify'),
   $ = require('gulp-load-plugins')();
 
 gulp.task('js', function () {
-  gulp.src(
-      ['src/x-gif.js', 'src/react/x-gif.js'],
-      {base: 'src/'}
-    )
+  gulp.src([
+    'src/x-gif.js',
+    'src/x-gif.angular.js',
+    'src/x-gif.raw.js',
+    'src/react/x-gif.js'
+  ])
     .pipe($.plumber())
     .pipe($.browserify({
-      transform: ['sweetify']
+      add: [ es6ify.runtime ],
+      transform: ['es6ify']
     }))
     .pipe(gulp.dest('dist'));
 });
@@ -27,10 +31,12 @@ gulp.task('css', function () {
 
 gulp.task('copy', function () {
   gulp.src([
-      'bower_components/platform/platform.js',
-      'bower_components/polymer/polymer*',
-    ])
+    'bower_components/platform/platform.js',
+    'bower_components/polymer/polymer*',
+    'bower_components/polymer/layout*',
+  ])
     .pipe(gulp.dest('dist'));
+});
 
 })
 
@@ -47,14 +53,16 @@ gulp.task('default', ['build', 'connect'], function () {
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
 
-  gulp.watch(['index.html', 'dist/**.*'], function (event) {
+  gulp.watch(['index.html', 'dist/**.*', 'demos/**.*'], function (event) {
     return gulp.src(event.path)
       .pipe($.connect.reload());
   });
 });
 
-gulp.task('connect', $.connect.server({
-  root: [__dirname],
-  port: 1983,
-  livereload: {port: 2983}
-}));
+gulp.task('connect', function () {
+  $.connect.server({
+    root: [__dirname],
+    port: 1983,
+    livereload: {port: 2983}
+  })
+});

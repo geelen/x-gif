@@ -1,9 +1,18 @@
 <!doctype html>
 <html>
 <head>
-  <title>Toggle Button</title>
-  <script src="../dist/platform.js"></script>
-  <link rel="import" href="../dist/x-gif.html">
+  <title>Autoplay audio</title>
+  <script>
+    if ('registerElement' in document
+      && 'createShadowRoot' in HTMLElement.prototype
+      && 'import' in document.createElement('link')
+      && 'content' in document.createElement('template')) {
+      // We're using a browser with native WC support!
+    } else {
+      document.write('<script src="https:\/\/cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js"><\/script>')
+    }
+  </script>
+  <link rel="import" href="../dist/x-gif.raw.html">
   <style>
     html, body{
       height: 100%;
@@ -14,7 +23,7 @@
     }
   </style>
 </head>
-<body unresolved>
+<body>
 <x-gif fill sync></x-gif>
 <audio loop>
   <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
@@ -33,26 +42,30 @@
     "http://i.imgur.com/m25uYzq.gif",
     "http://i.imgur.com/ifR7csn.gif"
   ];
-  window.addEventListener('polymer-ready', function (e) {
-    var xGif = document.querySelector('x-gif'),
-      audio = document.querySelector('audio'),
-      metadata,
-      gifNr = 0,
-      changeGif = function () {
-        setTimeout(changeGif, 10000);
-        xGif.src = gifs[gifNr++ % gifs.length];
-      };
-    changeGif();
+  var xGif = document.querySelector('x-gif'),
+    audio = document.querySelector('audio'),
+    metadata,
+    gifNr = 0,
+    changeGif = function () {
+      setTimeout(changeGif, 10000);
+      xGif.setAttribute('src', gifs[gifNr++ % gifs.length]);
+    };
+  changeGif();
 
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
-    xhr.onload = function () {
-      metadata = JSON.parse(this.response);
-      setupAudioSynching(audio, xGif, metadata);
-      audio.play();
-    }
-    xhr.send();
-  });
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'cc_audio/encom_part_ii.json', true);
+  xhr.onload = function () {
+    metadata = JSON.parse(this.response);
+    setupAudioSynching(audio, xGif, metadata);
+    audio.play();
+  }
+  xhr.send();
+
+  window.addEventListener('resize', function () {
+    [].forEach.call(document.querySelectorAll('x-gif'), function (elem) {
+      elem.relayout();
+    });
+  })
 </script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

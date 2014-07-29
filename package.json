@@ -17,17 +17,17 @@
     "url": "https://github.com/geelen/x-gif/issues"
   },
   "devDependencies": {
-    "gulp": "~3.5.5",
-    "gulp-sass": "~0.7.0",
-    "gulp-concat": "~2.1.5",
-    "gulp-autoprefixer": "0.0.3",
-    "gulp-util": "~2.2.9",
-    "gulp-load-plugins": "~0.3.0",
+    "gulp": "~3.6.0",
+    "gulp-sass": "~0.7.1",
+    "gulp-concat": "~2.2.0",
+    "gulp-autoprefixer": "0.0.6",
+    "gulp-load-plugins": "~0.5.0",
     "gulp-clean": "~0.2.4",
     "gulp-plumber": "~0.5.6",
-    "gulp-browserify": "~0.4.6",
-    "gulp-ruby-sass": "~0.4.0",
-    "sweetify": "~0.3.1",
-    "gulp-connect": "~1.0.9"
+    "gulp-browserify": "~0.5.0",
+    "gulp-ruby-sass": "~0.4.1",
+    "gulp-connect": "~2.0.4",
+    "es6ify": "~1.2.0",
+    "gulp-vulcanize": "~0.2.1"
   }
 }

@@ -5,20 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>&lt;x-gif&gt;</title>
-
-  <script>
-    if ('registerElement' in document
-      && 'createShadowRoot' in HTMLElement.prototype
-      && 'import' in document.createElement('link')
-      && 'content' in document.createElement('template')) {
-      // We're using a browser with native WC support!
-    } else {
-      document.write('<script src="https:\/\/cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js"><\/script>')
-    }
-  </script>
-  <script src="demos/angular.min.js"></script>
-  <link rel="import" href="dist/x-gif.raw.html">
-  <link rel="stylesheet" href="demos/foundation.min.css"/>
+  <link rel="stylesheet" href="./foundation.min.css"/>
+  <link rel="stylesheet" href="../dist/x-gif.css"/>
   <style>
     body {
       margin: 0;
@@ -106,8 +94,8 @@
     <figure>
       <div ng-show="gif.metadata">
         <audio controls preload>
-          <source src="demos/cc_audio/encom_part_ii.ogg" type="audio/ogg">
-          <source src="demos/cc_audio/encom_part_ii.mp3" type="audio/mpeg">
+          <source src="cc_audio/encom_part_ii.ogg" type="audio/ogg">
+          <source src="cc_audio/encom_part_ii.mp3" type="audio/mpeg">
         </audio>
         <p>Playback speed: {{ gif.playbackRate | number:1 }} <a href ng-click="changeSpeed(0.1)">+</a> <a href
                                                                                                           ng-click="changeSpeed(-0.1)">-</a>
@@ -125,18 +113,18 @@
           <br/>
           Beat metadata provided by <a href="http://echonest.com/">Echo Nest</a>
         </p>
-        <h5><a href="demos/audio.html">See a full screen demo</a></h5>
+        <h5><a href="audio-angular.html">See a full screen demo</a></h5>
       </figcaption>
     </figure>
 
-    <h3>Stop-start</h3>
-    <pre>&lt;x-gif src="{{ trustedUrl() }}" stopped&gt;&lt;/x-gif&gt;</pre>
-    <h5><a href="demos/stoppable.html">See demo</a></h5>
+    <!--<h3>Stop-start</h3>-->
+    <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" stopped&gt;&lt;/x-gif&gt;</pre>-->
+    <!--<h5><a href="demos/stoppable.html">See demo</a></h5>-->
 
-    <h3>Exploded</h3>
-    <pre>&lt;x-gif src="{{ trustedUrl() }}" exploded&gt;&lt;/x-gif&gt;</pre>
-    <p>Explode the gif into its component frames (handy for debugging)</p>
-    <h5><a href="demos/exploded.html">See demo</a></h5>
+    <!--<h3>Exploded</h3>-->
+    <!--<pre>&lt;x-gif src="{{ trustedUrl() }}" exploded&gt;&lt;/x-gif&gt;</pre>-->
+    <!--<p>Explode the gif into its component frames (handy for debugging)</p>-->
+    <!--<h5><a href="demos/exploded.html">See demo</a></h5>-->
 
     <hr/>
 
@@ -148,9 +136,11 @@
     </footer>
   </div>
 </div>
-<script src="demos/synched_playback.js"></script>
+<script src="synched_playback.js"></script>
+<script src="angular.min.js"></script>
+<script src="../dist/x-gif.angular.js"></script>
 <script type="text/javascript" charset="utf-8">
-  angular.module('x-gif-demo', [])
+  angular.module('x-gif-demo', ['x-gif'])
     .controller('DemoCtrl', function ($scope, $sce, $location, $http) {
       $scope.gifs = [
         "http://i.imgur.com/iKXH4E2.gif",
@@ -169,21 +159,21 @@
       $scope.changeSpeed = function (delta) {
         audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
         $scope.gif.playbackRate = audio.playbackRate;
-      }
+      };
 
-      $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
+      $http.get('cc_audio/encom_part_ii.json').then(function (response) {
         $scope.gif.metadata = response.data;
         setupAudioSynching(audio,
           document.querySelector('#synced'),
           $scope.gif.metadata)
-      })
+      });
       $scope.trustedUrl = function () {
         return $sce.trustAsResourceUrl($scope.gif.url);
-      }
+      };
       $scope.loc = $location;
       $scope.$watch('loc.path()', function (e) {
         if (e) $scope.gif.url = e.slice(1);
-      })
+      });
       $scope.$watch('gif.url', function (e) {
         if (e) $scope.loc.path(e);
       })

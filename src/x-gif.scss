@@ -2,7 +2,8 @@
   display: inline-block;
 }
 
-#frames {
+#frames,
+.x-gif__frames {
   display: inline-block;
   position: relative;
 
@@ -38,9 +39,12 @@
   }
 }
 
+x-gif {
+//  display: none;
+}
+
 // Full Screen overrides
-:host([fill]),
-.react-x-gif[fill] {
+@mixin fill-overrides {
   width: 100%;
   height: 100%;
 
@@ -53,7 +57,20 @@
     overflow: hidden;
   }
 
-  #frames {
+  #frames,
+  .x-gif__frames {
     transform-origin: 50% 50%;
   }
+}
+
+:host([fill]) {
+  @include fill-overrides;
+}
+
+x-gif[fill] {
+  @include fill-overrides;
+}
+
+.react-x-gif[fill] {
+  @include fill-overrides;
 }
