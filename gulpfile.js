@@ -38,8 +38,6 @@ gulp.task('copy', function () {
     .pipe(gulp.dest('dist'));
 });
 
-})
-
 // Clean
 gulp.task('clean', function () {
   return gulp.src(['dist/**/*'], {read: false}).pipe($.clean());

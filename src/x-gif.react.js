@@ -1,8 +1,6 @@
 "use strict";
 
-import macros from '../macros.sjs';
-
-var Playback = require('../playback.sjs');
+import Playback from './playback.js';
 
 // Meets the api for the DomUpdater that Playback expects
 // but React works totally differently.

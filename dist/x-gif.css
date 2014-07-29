@@ -621,12 +621,10 @@
     position: static;
     opacity: 1; }
 
-:host([fill]),
-.react-x-gif[fill] {
+:host([fill]) {
   width: 100%;
   height: 100%; }
-  :host([fill]) .frames-wrapper,
-  .react-x-gif[fill] .frames-wrapper {
+  :host([fill]) .frames-wrapper {
     width: 100%;
     height: 100%;
     display: -webkit-box;
@@ -643,9 +641,6 @@
     align-items: center;
     overflow: hidden; }
   :host([fill]) #frames,
-<<<<<<< HEAD
-  .react-x-gif[fill] #frames {
-=======
   :host([fill]) .x-gif__frames {
     -webkit-transform-origin: 50% 50%;
     -ms-transform-origin: 50% 50%;
@@ -672,7 +667,31 @@ x-gif[fill] {
     overflow: hidden; }
   x-gif[fill] #frames,
   x-gif[fill] .x-gif__frames {
->>>>>>> polymer-begone
+    -webkit-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    transform-origin: 50% 50%; }
+
+.react-x-gif[fill] {
+  width: 100%;
+  height: 100%; }
+  .react-x-gif[fill] .frames-wrapper {
+    width: 100%;
+    height: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    overflow: hidden; }
+  .react-x-gif[fill] #frames,
+  .react-x-gif[fill] .x-gif__frames {
     -webkit-transform-origin: 50% 50%;
     -ms-transform-origin: 50% 50%;
     transform-origin: 50% 50%; }
