@@ -1,5 +1,3 @@
-"use strict";
-
 import Playback from './playback.js';
 import Strategies from './strategies.js';
 

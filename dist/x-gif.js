@@ -1998,7 +1998,6 @@ var $__default = (function() {
 
 },{"./gif.js":5,"./stream_reader.js":8,"./utils.js":9}],4:[function(require,module,exports){
 "use strict";
-"use strict";
 var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
 var XGif = function() {
@@ -2088,7 +2087,6 @@ var $__default = (function() {
 
 
 },{}],6:[function(require,module,exports){
-"use strict";
 "use strict";
 Object.defineProperties(exports, {
   default: {get: function() {

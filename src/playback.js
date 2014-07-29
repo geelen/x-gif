@@ -1,5 +1,3 @@
-"use strict";
-
 import Exploder from './exploder.js';
 
 // Private functions for setup

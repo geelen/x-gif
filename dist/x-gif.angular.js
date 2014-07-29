@@ -2086,7 +2086,6 @@ var $__default = (function() {
 
 },{}],6:[function(require,module,exports){
 "use strict";
-"use strict";
 Object.defineProperties(exports, {
   default: {get: function() {
       return $__default;

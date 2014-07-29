@@ -1,31 +1,33 @@
-"use strict";
-
 import Playback from './playback.js';
 import Strategies from './strategies.js';
 
-(function (document, owner) {
+// Shim & native-safe ownerDocument lookup
+var owner = (document._currentScript || document.currentScript).ownerDocument;
 
-  var XGifController = function (context) {
-    // save the context to the custom element
-    this.context = context;
-
+class XGifController {
+  constructor(xgif) {
+    this.xgif = xgif;
+//    this.setupComponent();
+//  }
+//
+//  setupComponent() {
     // Create a shadow root
-    this.shadow = this.context.createShadowRoot();
+    this.shadow = this.xgif.createShadowRoot();
 
     // stamp out our template in the shadow dom
     var template = owner.querySelector("#template").content.cloneNode(true);
     this.shadow.appendChild(template);
 
-    if (context.hasAttribute('exploded')) {
+    if (xgif.hasAttribute('exploded')) {
       this.playbackStrategy = 'noop'
-    } else if (context.hasAttribute('sync')) {
+    } else if (xgif.hasAttribute('sync')) {
       this.playbackStrategy = 'noop';
-    } else if (context.getAttribute('hard-bpm')) {
+    } else if (xgif.getAttribute('hard-bpm')) {
       this.playbackStrategy = 'hardBpm';
-    } else if (context.getAttribute('bpm')) {
+    } else if (xgif.getAttribute('bpm')) {
       this.playbackStrategy = 'bpm';
     } else {
-      this.speed = parseFloat(context.getAttribute('speed')) || 1.0;
+      this.speed = parseFloat(xgif.getAttribute('speed')) || 1.0;
       this.playbackStrategy = 'speed';
     }
 
@@ -35,13 +37,13 @@ import Strategies from './strategies.js';
       var playbackStrategy = Strategies[this.playbackStrategy];
 
       this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
-        pingPong: context.hasAttribute('ping-pong'),
-        fill: context.hasAttribute('fill'),
-        stopped: context.hasAttribute('stopped')
+        pingPong: xgif.hasAttribute('ping-pong'),
+        fill: xgif.hasAttribute('fill'),
+        stopped: xgif.hasAttribute('stopped')
       });
       this.playback.ready.then(playbackStrategy.bind(this));
     }
-    this.srcChanged(context.getAttribute('src'))
+    this.srcChanged(xgif.getAttribute('src'))
 
     this.speedChanged = function (speedStr) {
       this.speed = parseFloat(speedStr) || this.speed;
@@ -59,36 +61,37 @@ import Strategies from './strategies.js';
 
 //    src speed bpm hard-bpm exploded n-times ping-pong sync fill stopped
 
-    context.togglePingPong = () => {
-      if (context.hasAttribute('ping-pong')) {
-        context.removeAttribute('ping-pong')
+    xgif.togglePingPong = () => {
+      if (xgif.hasAttribute('ping-pong')) {
+        xgif.removeAttribute('ping-pong')
       } else {
-        context.setAttribute('ping-pong', '')
+        xgif.setAttribute('ping-pong', '')
       }
-      if (this.playback) this.playback.pingPong = context.hasAttribute('ping-pong');
+      if (this.playback) this.playback.pingPong = xgif.hasAttribute('ping-pong');
     }
 
-    context.clock = (beatNr, beatDuration, beatFraction) => {
+    xgif.clock = (beatNr, beatDuration, beatFraction) => {
       if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
     };
 
-    context.relayout = () => {
-      if (context.hasAttribute('fill')) this.playback.scaleToFill();
+    xgif.relayout = () => {
+      if (xgif.hasAttribute('fill')) this.playback.scaleToFill();
     }
-  };
+  }
+}
 
-  // Register the element in the document
-  var XGif = Object.create(HTMLElement.prototype);
-  XGif.createdCallback = function () {
+// Register the element in the document
+class XGif extends HTMLElement {
+  createdCallback() {
     this.controller = new XGifController(this);
-  };
-  XGif.attributeChangedCallback = function (attribute, oldVal, newVal) {
+  }
+
+  attributeChangedCallback(attribute, oldVal, newVal) {
     if (attribute == "src") this.controller.srcChanged(newVal)
     if (attribute == "speed") this.controller.speedChanged(newVal)
     if (attribute == "stopped") this.controller.stoppedChanged(newVal)
   }
+}
 
-  // Register our todo-item tag with the document
-  document.registerElement('x-gif', {prototype: XGif});
-
-})(document, (document._currentScript || document.currentScript).ownerDocument)
+// Register our todo-item tag with the document
+document.registerElement('x-gif', XGif);

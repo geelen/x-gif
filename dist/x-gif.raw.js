@@ -1998,86 +1998,90 @@ var $__default = (function() {
 
 },{"./gif.js":5,"./stream_reader.js":8,"./utils.js":9}],4:[function(require,module,exports){
 "use strict";
-"use strict";
 var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
-(function(document, owner) {
-  var XGifController = function(context) {
-    var $__0 = this;
-    this.context = context;
-    this.shadow = this.context.createShadowRoot();
-    var template = owner.querySelector("#template").content.cloneNode(true);
-    this.shadow.appendChild(template);
-    if (context.hasAttribute('exploded')) {
-      this.playbackStrategy = 'noop';
-    } else if (context.hasAttribute('sync')) {
-      this.playbackStrategy = 'noop';
-    } else if (context.getAttribute('hard-bpm')) {
-      this.playbackStrategy = 'hardBpm';
-    } else if (context.getAttribute('bpm')) {
-      this.playbackStrategy = 'bpm';
-    } else {
-      this.speed = parseFloat(context.getAttribute('speed')) || 1.0;
-      this.playbackStrategy = 'speed';
+var owner = (document._currentScript || document.currentScript).ownerDocument;
+var XGifController = function XGifController(xgif) {
+  var $__0 = this;
+  this.xgif = xgif;
+  this.shadow = this.xgif.createShadowRoot();
+  var template = owner.querySelector("#template").content.cloneNode(true);
+  this.shadow.appendChild(template);
+  if (xgif.hasAttribute('exploded')) {
+    this.playbackStrategy = 'noop';
+  } else if (xgif.hasAttribute('sync')) {
+    this.playbackStrategy = 'noop';
+  } else if (xgif.getAttribute('hard-bpm')) {
+    this.playbackStrategy = 'hardBpm';
+  } else if (xgif.getAttribute('bpm')) {
+    this.playbackStrategy = 'bpm';
+  } else {
+    this.speed = parseFloat(xgif.getAttribute('speed')) || 1.0;
+    this.playbackStrategy = 'speed';
+  }
+  this.srcChanged = function(src) {
+    if (!src)
+      return;
+    console.log("Loading " + src);
+    var playbackStrategy = Strategies[this.playbackStrategy];
+    this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
+      pingPong: xgif.hasAttribute('ping-pong'),
+      fill: xgif.hasAttribute('fill'),
+      stopped: xgif.hasAttribute('stopped')
+    });
+    this.playback.ready.then(playbackStrategy.bind(this));
+  };
+  this.srcChanged(xgif.getAttribute('src'));
+  this.speedChanged = function(speedStr) {
+    this.speed = parseFloat(speedStr) || this.speed;
+    if (this.playback)
+      this.playback.speed = this.speed;
+  };
+  this.stoppedChanged = function(newVal) {
+    var nowStop = newVal != null;
+    if (this.playback && nowStop && !this.playback.stopped) {
+      this.playback.stop();
+    } else if (this.playback && !nowStop && this.playback.stopped) {
+      this.playback.start();
     }
-    this.srcChanged = function(src) {
-      if (!src)
-        return;
-      console.log("Loading " + src);
-      var playbackStrategy = Strategies[this.playbackStrategy];
-      this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
-        pingPong: context.hasAttribute('ping-pong'),
-        fill: context.hasAttribute('fill'),
-        stopped: context.hasAttribute('stopped')
-      });
-      this.playback.ready.then(playbackStrategy.bind(this));
-    };
-    this.srcChanged(context.getAttribute('src'));
-    this.speedChanged = function(speedStr) {
-      this.speed = parseFloat(speedStr) || this.speed;
-      if (this.playback)
-        this.playback.speed = this.speed;
-    };
-    this.stoppedChanged = function(newVal) {
-      var nowStop = newVal != null;
-      if (this.playback && nowStop && !this.playback.stopped) {
-        this.playback.stop();
-      } else if (this.playback && !nowStop && this.playback.stopped) {
-        this.playback.start();
-      }
-    };
-    context.togglePingPong = (function() {
-      if (context.hasAttribute('ping-pong')) {
-        context.removeAttribute('ping-pong');
-      } else {
-        context.setAttribute('ping-pong', '');
-      }
-      if ($__0.playback)
-        $__0.playback.pingPong = context.hasAttribute('ping-pong');
-    });
-    context.clock = (function(beatNr, beatDuration, beatFraction) {
-      if ($__0.playback && $__0.playback.gif)
-        $__0.playback.fromClock(beatNr, beatDuration, beatFraction);
-    });
-    context.relayout = (function() {
-      if (context.hasAttribute('fill'))
-        $__0.playback.scaleToFill();
-    });
   };
-  var XGif = Object.create(HTMLElement.prototype);
-  XGif.createdCallback = function() {
+  xgif.togglePingPong = (function() {
+    if (xgif.hasAttribute('ping-pong')) {
+      xgif.removeAttribute('ping-pong');
+    } else {
+      xgif.setAttribute('ping-pong', '');
+    }
+    if ($__0.playback)
+      $__0.playback.pingPong = xgif.hasAttribute('ping-pong');
+  });
+  xgif.clock = (function(beatNr, beatDuration, beatFraction) {
+    if ($__0.playback && $__0.playback.gif)
+      $__0.playback.fromClock(beatNr, beatDuration, beatFraction);
+  });
+  xgif.relayout = (function() {
+    if (xgif.hasAttribute('fill'))
+      $__0.playback.scaleToFill();
+  });
+};
+($traceurRuntime.createClass)(XGifController, {}, {});
+var XGif = function XGif() {
+  $traceurRuntime.defaultSuperCall(this, $XGif.prototype, arguments);
+};
+var $XGif = XGif;
+($traceurRuntime.createClass)(XGif, {
+  createdCallback: function() {
     this.controller = new XGifController(this);
-  };
-  XGif.attributeChangedCallback = function(attribute, oldVal, newVal) {
+  },
+  attributeChangedCallback: function(attribute, oldVal, newVal) {
     if (attribute == "src")
       this.controller.srcChanged(newVal);
     if (attribute == "speed")
       this.controller.speedChanged(newVal);
     if (attribute == "stopped")
       this.controller.stoppedChanged(newVal);
-  };
-  document.registerElement('x-gif', {prototype: XGif});
-})(document, (document._currentScript || document.currentScript).ownerDocument);
+  }
+}, {}, HTMLElement);
+document.registerElement('x-gif', XGif);
 
 
 },{"./playback.js":6,"./strategies.js":7}],5:[function(require,module,exports){
@@ -2114,7 +2118,6 @@ var $__default = (function() {
 
 
 },{}],6:[function(require,module,exports){
-"use strict";
 "use strict";
 Object.defineProperties(exports, {
   default: {get: function() {
