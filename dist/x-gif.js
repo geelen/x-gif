@@ -2000,8 +2000,9 @@ var $__default = (function() {
 "use strict";
 var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
-var XGif = function() {
-  this.ready = function() {
+var XGif = function XGif() {};
+($traceurRuntime.createClass)(XGif, {
+  ready: function() {
     if (this.exploded != null) {
       this.playbackStrategy = 'noop';
     } else if (this.sync != null) {
@@ -2014,8 +2015,8 @@ var XGif = function() {
       this.speed = this.speed || 1.0;
       this.playbackStrategy = 'speed';
     }
-  };
-  this.srcChanged = function() {
+  },
+  srcChanged: function() {
     var playbackStrategy = Strategies[this.playbackStrategy];
     this.playback = new Playback(this, this.$.frames, this.src, {
       pingPong: this['ping-pong'] != null,
@@ -2023,33 +2024,33 @@ var XGif = function() {
       stopped: this.stopped != null
     });
     this.playback.ready.then(playbackStrategy.bind(this));
-  };
-  this.speedChanged = function(oldVal, newVal) {
+  },
+  speedChanged: function(oldVal, newVal) {
     if (this.playback)
       this.playback.speed = newVal;
-  };
-  this.stoppedChanged = function(oldVal, newVal) {
+  },
+  stoppedChanged: function(oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
       this.playback.stop();
     } else if (this.playback && !nowStop && this.playback.stopped) {
       this.playback.start();
     }
-  };
-  this.togglePingPong = function() {
+  },
+  togglePingPong: function() {
     this['ping-pong'] = (this['ping-pong'] != null) ? null : true;
     if (this.playback)
       this.playback.pingPong = this['ping-pong'] != null;
-  };
-  this.clock = function(beatNr, beatDuration, beatFraction) {
+  },
+  clock: function(beatNr, beatDuration, beatFraction) {
     if (this.playback && this.playback.gif)
       this.playback.fromClock(beatNr, beatDuration, beatFraction);
-  };
-  this.relayout = function() {
+  },
+  relayout: function() {
     if (this.fill != null)
       this.playback.scaleToFill();
-  };
-};
+  }
+}, {});
 Polymer('x-gif', new XGif());
 
 

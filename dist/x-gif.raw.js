@@ -2099,7 +2099,6 @@ var $XGif = XGif;
     };
   },
   attributeChangedCallback: function(attribute, oldVal, newVal) {
-    console.log(attribute);
     if (attribute == "src") {
       this.controller.srcChanged(newVal);
     } else if (attribute == "speed") {

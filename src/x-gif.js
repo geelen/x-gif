@@ -1,8 +1,8 @@
 import Playback from './playback.js';
 import Strategies from './strategies.js';
 
-var XGif = function () {
-  this.ready = function () {
+class XGif {
+  ready() {
     if (this.exploded != null) {
       this.playbackStrategy = 'noop'
     } else if (this.sync != null) {
@@ -17,7 +17,7 @@ var XGif = function () {
     }
   };
 
-  this.srcChanged = function () {
+  srcChanged() {
     var playbackStrategy = Strategies[this.playbackStrategy];
     this.playback = new Playback(this, this.$.frames, this.src, {
       pingPong: this['ping-pong'] != null,
@@ -27,11 +27,11 @@ var XGif = function () {
     this.playback.ready.then(playbackStrategy.bind(this));
   };
 
-  this.speedChanged = function (oldVal, newVal) {
+  speedChanged(oldVal, newVal) {
     if (this.playback) this.playback.speed = newVal;
   }
 
-  this.stoppedChanged = function (oldVal, newVal) {
+  stoppedChanged(oldVal, newVal) {
     var nowStop = newVal != null;
     if (this.playback && nowStop && !this.playback.stopped) {
       this.playback.stop();
@@ -40,16 +40,16 @@ var XGif = function () {
     }
   }
 
-  this.togglePingPong = function () {
+  togglePingPong() {
     this['ping-pong'] = (this['ping-pong'] != null) ? null : true;
     if (this.playback) this.playback.pingPong = this['ping-pong'] != null;
   }
 
-  this.clock = function (beatNr, beatDuration, beatFraction) {
+  clock(beatNr, beatDuration, beatFraction) {
     if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
   };
 
-  this.relayout = function () {
+  relayout() {
     if (this.fill != null) this.playback.scaleToFill();
   }
 }
