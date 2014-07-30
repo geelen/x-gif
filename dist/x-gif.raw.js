@@ -2019,14 +2019,25 @@ var XGifController = function XGifController(xgif) {
     console.log("Loading " + src);
     this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, this.xgif.options);
     this.playback.ready.then((function() {
-      if ($__0.xgif.playbackMode === 'speed') {
+      if ($__0.xgif.playbackMode == 'speed') {
         $__0.playback.startSpeed($__0.xgif.speed);
+      } else if ($__0.xgif.playbackMode == 'bpm') {
+        $__0.playback.startBpm($__0.xgif.bpm);
       }
     }));
   },
   speedChanged: function(speed) {
     if (this.playback)
       this.playback.speed = speed;
+  },
+  bpmChanged: function(bpm) {
+    if (this.playback)
+      this.playback.changeBpm(bpm);
+  },
+  hardChanged: function(hard) {
+    console.log("TURN DOWN");
+    if (this.playback)
+      this.playback.hard = hard;
   },
   stoppedChanged: function(nowStop) {
     if (this.playback) {
@@ -2064,12 +2075,12 @@ var $XGif = XGif;
   },
   determinePlaybackMode: function() {
     if (this.hasAttribute('exploded') || this.hasAttribute('sync')) {
-      this.playbackStrategy = undefined;
+      this.playbackMode = undefined;
       return;
     }
     var maybeBPM = parseFloat(this.getAttribute('bpm'));
     if (!isNaN(maybeBPM)) {
-      this.playbackStrategy = 'bpm';
+      this.playbackMode = 'bpm';
       this.bpm = maybeBPM;
       return;
     }
@@ -2088,6 +2099,7 @@ var $XGif = XGif;
     };
   },
   attributeChangedCallback: function(attribute, oldVal, newVal) {
+    console.log(attribute);
     if (attribute == "src") {
       this.controller.srcChanged(newVal);
     } else if (attribute == "speed") {
@@ -2095,13 +2107,17 @@ var $XGif = XGif;
       this.controller.speedChanged(this.speed);
     } else if (attribute == "bpm") {
       this.determinePlaybackMode();
-      this.controller.speedChanged(this.bpm);
+      this.controller.bpmChanged(this.bpm);
     } else if (attribute == "stopped") {
       this.determinePlaybackOptions();
       this.controller.stoppedChanged(this.options.stopped);
     } else if (attribute == "ping-pong") {
       this.determinePlaybackOptions();
       this.controller.pingPongChanged(this.options.pingPong);
+    } else if (attribute == "hard") {
+      console.log("TURN DOWN");
+      this.determinePlaybackOptions();
+      this.controller.hardChanged(this.options.hard);
     }
   },
   clock: function(beatNr, beatDuration, beatFraction) {
@@ -2173,6 +2189,7 @@ var $__default = (function() {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
+    this.hard = opts.hard;
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
@@ -2232,34 +2249,23 @@ var $__default = (function() {
     },
     fromClock: function(beatNr, beatDuration, beatFraction) {
       var speedup = 1.5,
-          lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+          lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
           subBeat = beatNr % lengthInBeats,
           repeatCount = beatNr / lengthInBeats,
           subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;
       this.setFrame(subFraction, repeatCount);
     },
-    startHardBpm: function(bpm) {
-      var $__0 = this;
-      var beatLength = 60 * 1000 / bpm;
-      this.animationLoop = (function() {
-        var duration = performance.now() - $__0.startTime,
-            repeatCount = duration / beatLength,
-            fraction = repeatCount % 1;
-        $__0.setFrame(fraction, repeatCount);
-        if (!$__0.stopped)
-          requestAnimationFrame($__0.animationLoop);
-      });
-      if (!this.stopped)
-        this.start();
+    changeBpm: function(bpm) {
+      this.beatLength = 60 * 1000 / bpm;
     },
     startBpm: function(bpm) {
       var $__0 = this;
-      var beatLength = 60 * 1000 / bpm;
+      this.changeBpm(bpm);
       this.animationLoop = (function() {
         var duration = performance.now() - $__0.startTime,
-            beatNr = Math.floor(duration / beatLength),
-            beatFraction = (duration % beatLength) / beatLength;
-        $__0.fromClock(beatNr, beatLength, beatFraction);
+            beatNr = Math.floor(duration / $__0.beatLength),
+            beatFraction = (duration % $__0.beatLength) / $__0.beatLength;
+        $__0.fromClock(beatNr, $__0.beatLength, beatFraction);
         if (!$__0.stopped)
           requestAnimationFrame($__0.animationLoop);
       });

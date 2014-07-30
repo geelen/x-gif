@@ -75,7 +75,9 @@
     </label>
 
     <h3>Normal playback</h3>
-    <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an issue on GitHub</a> with the URL of the image</p>
+
+    <p class="small">Something not look right? <a href="https://github.com/geelen/x-gif/issues" target="_blank">Post an
+      issue on GitHub</a> with the URL of the image</p>
     <figure>
       <x-gif ng-src="{{ trustedUrl() }}"></x-gif>
       <figcaption>
@@ -102,6 +104,21 @@
       </figcaption>
     </figure>
 
+    <h3>BPM</h3>
+    <figure>
+      <label>
+        <input type="range" min="30" max="240" step="1" ng-model="gif.bpm"/> {{ gif.bpm }}
+      </label>
+      <x-gif ng-src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}"></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}" &gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+      <x-gif ng-src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}" hard></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}" hard&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
+
     <h3>Synced to Audio</h3>
     <figure>
       <div ng-show="gif.metadata">
@@ -114,9 +131,13 @@
         </p>
       </div>
       <div ng-hide="gif.metadata">Loading beat data...</div>
-      <x-gif id="synced" ng-src="{{ trustedUrl() }}" sync></x-gif>
+      <x-gif class="x-gif-synced-demo" ng-src="{{ trustedUrl() }}" sync></x-gif>
       <figcaption>
         <pre>&lt;x-gif src="{{ trustedUrl() }}" synced&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+      <x-gif class="x-gif-synced-demo" ng-src="{{ trustedUrl() }}" sync hard></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" synced hard&gt;&lt;/x-gif&gt;</pre>
         <p>
           Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.
           <br/>
@@ -163,6 +184,7 @@
       $scope.gif = {
         url: $scope.gifs[0],
         speed: 2,
+        bpm: 120,
         playbackRate: 1
       };
       var audio = document.querySelector('audio');
@@ -174,7 +196,7 @@
       $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
         $scope.gif.metadata = response.data;
         setupAudioSynching(audio,
-          document.querySelector('#synced'),
+          document.querySelectorAll('.x-gif-synced-demo'),
           $scope.gif.metadata)
       })
       $scope.trustedUrl = function () {
@@ -190,10 +212,17 @@
     });
 </script>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  (function (i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
   ga('create', 'UA-32408977-5', 'geelen.github.io');
   ga('send', 'pageview');

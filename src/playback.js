@@ -21,6 +21,7 @@ export default class Playback {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
+    this.hard = opts.hard;
 
     this.ready = new Promise((resolve, reject) => {
       var exploder = new Exploder(file)
@@ -88,36 +89,27 @@ export default class Playback {
   }
 
   fromClock(beatNr, beatDuration, beatFraction) {
+    // Always bias GIFs to speeding up rather than slowing down, it looks better.
     var speedup = 1.5,
-      lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+      lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
       subBeat = beatNr % lengthInBeats,
       repeatCount = beatNr / lengthInBeats,
       subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;
     this.setFrame(subFraction, repeatCount);
   }
 
-  startHardBpm(bpm) {
-    var beatLength = 60 * 1000 / bpm;
-    this.animationLoop = () => {
-      var duration = performance.now() - this.startTime,
-        repeatCount = duration / beatLength,
-        fraction = repeatCount % 1;
-      this.setFrame(fraction, repeatCount);
-
-      if (!this.stopped) requestAnimationFrame(this.animationLoop);
-    }
-
-    if (!this.stopped) this.start();
+  changeBpm(bpm) {
+    this.beatLength = 60 * 1000 / bpm;
   }
 
   startBpm(bpm) {
-    var beatLength = 60 * 1000 / bpm;
+    this.changeBpm(bpm);
     this.animationLoop = () => {
       var duration = performance.now() - this.startTime,
-        beatNr = Math.floor(duration / beatLength),
-        beatFraction = (duration % beatLength) / beatLength;
+        beatNr = Math.floor(duration / this.beatLength),
+        beatFraction = (duration % this.beatLength) / this.beatLength;
 
-      this.fromClock(beatNr, beatLength, beatFraction);
+      this.fromClock(beatNr, this.beatLength, beatFraction);
 
       if (!this.stopped) requestAnimationFrame(this.animationLoop);
     }

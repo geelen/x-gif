@@ -25,14 +25,25 @@ class XGifController {
     console.log("Loading " + src);
     this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, this.xgif.options);
     this.playback.ready.then(() => {
-      if (this.xgif.playbackMode === 'speed') {
+      if (this.xgif.playbackMode == 'speed') {
         this.playback.startSpeed(this.xgif.speed);
+      } else if (this.xgif.playbackMode == 'bpm') {
+        this.playback.startBpm(this.xgif.bpm);
       }
     });
   }
 
   speedChanged(speed) {
     if (this.playback) this.playback.speed = speed;
+  }
+
+  bpmChanged(bpm) {
+    if (this.playback) this.playback.changeBpm(bpm);
+  }
+
+  hardChanged(hard) {
+    console.log("TURN DOWN")
+    if (this.playback) this.playback.hard = hard;
   }
 
   stoppedChanged(nowStop) {
@@ -73,14 +84,14 @@ class XGif extends HTMLElement {
   determinePlaybackMode() {
     // We might not want x-gif to animate itself at all
     if (this.hasAttribute('exploded') || this.hasAttribute('sync')) {
-      this.playbackStrategy = undefined;
+      this.playbackMode = undefined;
       return;
     }
 
     // BPM Mode
     var maybeBPM = parseFloat(this.getAttribute('bpm'))
     if (!isNaN(maybeBPM)) {
-      this.playbackStrategy = 'bpm';
+      this.playbackMode = 'bpm';
       this.bpm = maybeBPM;
       return;
     }
@@ -103,6 +114,7 @@ class XGif extends HTMLElement {
   }
 
   attributeChangedCallback(attribute, oldVal, newVal) {
+    console.log(attribute)
     if (attribute == "src") {
       this.controller.srcChanged(newVal)
     } else if (attribute == "speed") {
@@ -110,13 +122,17 @@ class XGif extends HTMLElement {
       this.controller.speedChanged(this.speed);
     } else if (attribute == "bpm") {
       this.determinePlaybackMode();
-      this.controller.speedChanged(this.bpm);
+      this.controller.bpmChanged(this.bpm);
     } else if (attribute == "stopped") {
       this.determinePlaybackOptions();
       this.controller.stoppedChanged(this.options.stopped);
     } else if (attribute == "ping-pong") {
       this.determinePlaybackOptions();
       this.controller.pingPongChanged(this.options.pingPong);
+    } else if (attribute == "hard") {
+      console.log("TURN DOWN")
+      this.determinePlaybackOptions();
+      this.controller.hardChanged(this.options.hard);
     }
   }
 

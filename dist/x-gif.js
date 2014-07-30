@@ -2115,6 +2115,7 @@ var $__default = (function() {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
+    this.hard = opts.hard;
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
@@ -2174,34 +2175,23 @@ var $__default = (function() {
     },
     fromClock: function(beatNr, beatDuration, beatFraction) {
       var speedup = 1.5,
-          lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+          lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
           subBeat = beatNr % lengthInBeats,
           repeatCount = beatNr / lengthInBeats,
           subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;
       this.setFrame(subFraction, repeatCount);
     },
-    startHardBpm: function(bpm) {
-      var $__0 = this;
-      var beatLength = 60 * 1000 / bpm;
-      this.animationLoop = (function() {
-        var duration = performance.now() - $__0.startTime,
-            repeatCount = duration / beatLength,
-            fraction = repeatCount % 1;
-        $__0.setFrame(fraction, repeatCount);
-        if (!$__0.stopped)
-          requestAnimationFrame($__0.animationLoop);
-      });
-      if (!this.stopped)
-        this.start();
+    changeBpm: function(bpm) {
+      this.beatLength = 60 * 1000 / bpm;
     },
     startBpm: function(bpm) {
       var $__0 = this;
-      var beatLength = 60 * 1000 / bpm;
+      this.changeBpm(bpm);
       this.animationLoop = (function() {
         var duration = performance.now() - $__0.startTime,
-            beatNr = Math.floor(duration / beatLength),
-            beatFraction = (duration % beatLength) / beatLength;
-        $__0.fromClock(beatNr, beatLength, beatFraction);
+            beatNr = Math.floor(duration / $__0.beatLength),
+            beatFraction = (duration % $__0.beatLength) / $__0.beatLength;
+        $__0.fromClock(beatNr, $__0.beatLength, beatFraction);
         if (!$__0.stopped)
           requestAnimationFrame($__0.animationLoop);
       });
