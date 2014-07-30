@@ -213,7 +213,6 @@
         nTimesElem.removeAttribute('stopped');
       }
       $scope.nTimesIsStopped = function () {
-        console.log(nTimesElem.hasAttribute('stopped'))
         return nTimesElem.hasAttribute('stopped') ? " stopped" : ""
       }
       nTimesElem.addEventListener('x-gif-finished', function () {

@@ -72,17 +72,22 @@ export default class Playback {
   startSpeed(speed) {
     this.speed = speed;
     this.animationLoop = () => {
+      // Calculate where we are in the GIF
       var gifLength = 10 * this.gif.length / this.speed,
         duration = performance.now() - this.startTime,
         repeatCount = duration / gifLength,
         fraction = repeatCount % 1;
-      if (!this.nTimes || repeatCount < this.nTimes) {
-        this.setFrame(fraction, repeatCount);
 
-        if (!this.stopped) requestAnimationFrame(this.animationLoop);
-      } else {
+      // If it's time to stop, set ourselves to the right frame (based on nTimes)
+      // and fire an event (which adds the 'stopped' attribute)
+      if (this.nTimes && repeatCount >= this.nTimes) {
         this.setFrame(this.nTimes % 1 || 1.0, repeatCount);
         this.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
+
+      // Otherwise continue playing as normal, and request another animationFrame
+      } else {
+        this.setFrame(fraction, repeatCount);
+        if (!this.stopped) requestAnimationFrame(this.animationLoop);
       }
     }
 

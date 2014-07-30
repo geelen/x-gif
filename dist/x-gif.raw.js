@@ -2250,13 +2250,13 @@ var $__default = (function() {
             duration = performance.now() - $__0.startTime,
             repeatCount = duration / gifLength,
             fraction = repeatCount % 1;
-        if (!$__0.nTimes || repeatCount < $__0.nTimes) {
+        if ($__0.nTimes && repeatCount >= $__0.nTimes) {
+          $__0.setFrame($__0.nTimes % 1 || 1.0, repeatCount);
+          $__0.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
+        } else {
           $__0.setFrame(fraction, repeatCount);
           if (!$__0.stopped)
             requestAnimationFrame($__0.animationLoop);
-        } else {
-          $__0.setFrame($__0.nTimes % 1 || 1.0, repeatCount);
-          $__0.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
         }
       });
       if (!this.stopped)
