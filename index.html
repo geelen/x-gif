@@ -208,12 +208,12 @@
         $scope.gif.playbackRate = audio.playbackRate;
       }
 
-      var nTimesElem = document.querySelector('#nTimes')
+      var nTimesElem = document.querySelector('#nTimes');
       $scope.nTimesRestart = function () {
         nTimesElem.removeAttribute('stopped');
       }
       $scope.nTimesIsStopped = function () {
-        return nTimesElem.hasAttribute('stopped') ? " stopped" : ""
+        return nTimesElem.hasAttribute('stopped') ? " stopped" : "";
       }
       nTimesElem.addEventListener('x-gif-finished', function () {
         $scope.$apply();
