@@ -12,6 +12,7 @@ gulp.task('js', function () {
       add: [ es6ify.runtime ],
       transform: ['es6ify']
     }))
+    .pipe($.uglify())
     .pipe(gulp.dest('dist'));
 });
 
