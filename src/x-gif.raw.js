@@ -139,6 +139,10 @@ class XGif extends HTMLElement {
   clock(beatNr, beatDuration, beatFraction) {
     this.controller.clock(beatNr, beatDuration, beatFraction)
   }
+
+  relayout() {
+    this.controller.relayout();
+  }
 }
 
 // Register our todo-item tag with the document

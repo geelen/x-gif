@@ -52,6 +52,10 @@
     footer {
       margin-bottom: 30px;
     }
+
+    figcaption {
+      margin-bottom: 2em;
+    }
   </style>
 </head>
 <body ng-app="x-gif-demo" ng-controller="DemoCtrl">
@@ -184,7 +188,7 @@
       $scope.gif = {
         url: $scope.gifs[0],
         speed: 2,
-        bpm: 120,
+        bpm: 60,
         playbackRate: 1
       };
       var audio = document.querySelector('audio');

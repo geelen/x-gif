@@ -2122,6 +2122,9 @@ var $XGif = XGif;
   },
   clock: function(beatNr, beatDuration, beatFraction) {
     this.controller.clock(beatNr, beatDuration, beatFraction);
+  },
+  relayout: function() {
+    this.controller.relayout();
   }
 }, {}, HTMLElement);
 document.registerElement('x-gif', XGif);
