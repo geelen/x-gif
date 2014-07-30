@@ -7,75 +7,57 @@ var owner = (document._currentScript || document.currentScript).ownerDocument;
 class XGifController {
   constructor(xgif) {
     this.xgif = xgif;
-//    this.setupComponent();
-//  }
-//
-//  setupComponent() {
+    this.setupComponent();
+    this.srcChanged(this.xgif.getAttribute('src'))
+  }
+
+  setupComponent() {
     // Create a shadow root
     this.shadow = this.xgif.createShadowRoot();
 
     // stamp out our template in the shadow dom
     var template = owner.querySelector("#template").content.cloneNode(true);
     this.shadow.appendChild(template);
+  }
 
-    if (xgif.hasAttribute('exploded')) {
-      this.playbackStrategy = 'noop'
-    } else if (xgif.hasAttribute('sync')) {
-      this.playbackStrategy = 'noop';
-    } else if (xgif.getAttribute('hard-bpm')) {
-      this.playbackStrategy = 'hardBpm';
-    } else if (xgif.getAttribute('bpm')) {
-      this.playbackStrategy = 'bpm';
-    } else {
-      this.speed = parseFloat(xgif.getAttribute('speed')) || 1.0;
-      this.playbackStrategy = 'speed';
-    }
+  srcChanged(src) {
+    if (!src) return;
+    console.log("Loading " + src);
+    this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, this.xgif.options);
+    this.playback.ready.then(() => {
+      if (this.xgif.playbackMode === 'speed') {
+        this.playback.startSpeed(this.xgif.speed);
+      }
+    });
+  }
 
-    this.srcChanged = function (src) {
-      if (!src) return;
-      console.log("Loading " + src)
-      var playbackStrategy = Strategies[this.playbackStrategy];
+  speedChanged(speed) {
+    if (this.playback) this.playback.speed = speed;
+  }
 
-      this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
-        pingPong: xgif.hasAttribute('ping-pong'),
-        fill: xgif.hasAttribute('fill'),
-        stopped: xgif.hasAttribute('stopped')
-      });
-      this.playback.ready.then(playbackStrategy.bind(this));
-    }
-    this.srcChanged(xgif.getAttribute('src'))
-
-    this.speedChanged = function (speedStr) {
-      this.speed = parseFloat(speedStr) || this.speed;
-      if (this.playback) this.playback.speed = this.speed;
-    }
-
-    this.stoppedChanged = function (newVal) {
-      var nowStop = newVal != null;
-      if (this.playback && nowStop && !this.playback.stopped) {
+  stoppedChanged(nowStop) {
+    if (this.playback) {
+      if (nowStop && !this.playback.stopped) {
         this.playback.stop();
-      } else if (this.playback && !nowStop && this.playback.stopped) {
+      } else if (!nowStop && this.playback.stopped) {
         this.playback.start();
       }
     }
+  }
 
-//    src speed bpm hard-bpm exploded n-times ping-pong sync fill stopped
+  pingPongChanged(nowPingPong) {
+    if (this.playback) this.playback.pingPong = nowPingPong;
+  }
 
-    xgif.togglePingPong = () => {
-      if (xgif.hasAttribute('ping-pong')) {
-        xgif.removeAttribute('ping-pong')
-      } else {
-        xgif.setAttribute('ping-pong', '')
-      }
-      if (this.playback) this.playback.pingPong = xgif.hasAttribute('ping-pong');
+  clock(beatNr, beatDuration, beatFraction) {
+    if (this.playback && this.playback.gif) {
+      this.playback.fromClock(beatNr, beatDuration, beatFraction);
     }
+  }
 
-    xgif.clock = (beatNr, beatDuration, beatFraction) => {
-      if (this.playback && this.playback.gif) this.playback.fromClock(beatNr, beatDuration, beatFraction);
-    };
-
-    xgif.relayout = () => {
-      if (xgif.hasAttribute('fill')) this.playback.scaleToFill();
+  relayout() {
+    if (this.playback && this.xgif.options.fill) {
+      this.playback.scaleToFill();
     }
   }
 }
@@ -83,13 +65,63 @@ class XGifController {
 // Register the element in the document
 class XGif extends HTMLElement {
   createdCallback() {
+    this.determinePlaybackMode()
+    this.determinePlaybackOptions()
     this.controller = new XGifController(this);
   }
 
+  determinePlaybackMode() {
+    // We might not want x-gif to animate itself at all
+    if (this.hasAttribute('exploded') || this.hasAttribute('sync')) {
+      this.playbackStrategy = undefined;
+      return;
+    }
+
+    // BPM Mode
+    var maybeBPM = parseFloat(this.getAttribute('bpm'))
+    if (!isNaN(maybeBPM)) {
+      this.playbackStrategy = 'bpm';
+      this.bpm = maybeBPM;
+      return;
+    }
+
+    // Default to THE BUS THAT COULDNT SLOW DOWN mode
+    var maybeSpeed = parseFloat(this.getAttribute('speed'))
+    this.speed = isNaN(maybeSpeed) ? 1.0 : maybeSpeed;
+    this.playbackMode = 'speed';
+  }
+
+  determinePlaybackOptions() {
+    var maybeNtimes = parseFloat(this.getAttribute('n-times'))
+    this.options = {
+      stopped: this.hasAttribute('stopped'),
+      fill: this.hasAttribute('fill'),
+      nTimes: isNaN(maybeNtimes) ? null : maybeNtimes,
+      hard: this.hasAttribute('hard'),
+      pingPong: this.hasAttribute('ping-pong')
+    }
+  }
+
   attributeChangedCallback(attribute, oldVal, newVal) {
-    if (attribute == "src") this.controller.srcChanged(newVal)
-    if (attribute == "speed") this.controller.speedChanged(newVal)
-    if (attribute == "stopped") this.controller.stoppedChanged(newVal)
+    if (attribute == "src") {
+      this.controller.srcChanged(newVal)
+    } else if (attribute == "speed") {
+      this.determinePlaybackMode();
+      this.controller.speedChanged(this.speed);
+    } else if (attribute == "bpm") {
+      this.determinePlaybackMode();
+      this.controller.speedChanged(this.bpm);
+    } else if (attribute == "stopped") {
+      this.determinePlaybackOptions();
+      this.controller.stoppedChanged(this.options.stopped);
+    } else if (attribute == "ping-pong") {
+      this.determinePlaybackOptions();
+      this.controller.pingPongChanged(this.options.pingPong);
+    }
+  }
+
+  clock(beatNr, beatDuration, beatFraction) {
+    this.controller.clock(beatNr, beatDuration, beatFraction)
   }
 }
 

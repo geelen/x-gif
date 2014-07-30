@@ -2002,83 +2002,110 @@ var Playback = $traceurRuntime.assertObject(require('./playback.js')).default;
 var Strategies = $traceurRuntime.assertObject(require('./strategies.js')).default;
 var owner = (document._currentScript || document.currentScript).ownerDocument;
 var XGifController = function XGifController(xgif) {
-  var $__0 = this;
   this.xgif = xgif;
-  this.shadow = this.xgif.createShadowRoot();
-  var template = owner.querySelector("#template").content.cloneNode(true);
-  this.shadow.appendChild(template);
-  if (xgif.hasAttribute('exploded')) {
-    this.playbackStrategy = 'noop';
-  } else if (xgif.hasAttribute('sync')) {
-    this.playbackStrategy = 'noop';
-  } else if (xgif.getAttribute('hard-bpm')) {
-    this.playbackStrategy = 'hardBpm';
-  } else if (xgif.getAttribute('bpm')) {
-    this.playbackStrategy = 'bpm';
-  } else {
-    this.speed = parseFloat(xgif.getAttribute('speed')) || 1.0;
-    this.playbackStrategy = 'speed';
-  }
-  this.srcChanged = function(src) {
+  this.setupComponent();
+  this.srcChanged(this.xgif.getAttribute('src'));
+};
+($traceurRuntime.createClass)(XGifController, {
+  setupComponent: function() {
+    this.shadow = this.xgif.createShadowRoot();
+    var template = owner.querySelector("#template").content.cloneNode(true);
+    this.shadow.appendChild(template);
+  },
+  srcChanged: function(src) {
+    var $__0 = this;
     if (!src)
       return;
     console.log("Loading " + src);
-    var playbackStrategy = Strategies[this.playbackStrategy];
-    this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, {
-      pingPong: xgif.hasAttribute('ping-pong'),
-      fill: xgif.hasAttribute('fill'),
-      stopped: xgif.hasAttribute('stopped')
-    });
-    this.playback.ready.then(playbackStrategy.bind(this));
-  };
-  this.srcChanged(xgif.getAttribute('src'));
-  this.speedChanged = function(speedStr) {
-    this.speed = parseFloat(speedStr) || this.speed;
+    this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, this.xgif.options);
+    this.playback.ready.then((function() {
+      if ($__0.xgif.playbackMode === 'speed') {
+        $__0.playback.startSpeed($__0.xgif.speed);
+      }
+    }));
+  },
+  speedChanged: function(speed) {
     if (this.playback)
-      this.playback.speed = this.speed;
-  };
-  this.stoppedChanged = function(newVal) {
-    var nowStop = newVal != null;
-    if (this.playback && nowStop && !this.playback.stopped) {
-      this.playback.stop();
-    } else if (this.playback && !nowStop && this.playback.stopped) {
-      this.playback.start();
+      this.playback.speed = speed;
+  },
+  stoppedChanged: function(nowStop) {
+    if (this.playback) {
+      if (nowStop && !this.playback.stopped) {
+        this.playback.stop();
+      } else if (!nowStop && this.playback.stopped) {
+        this.playback.start();
+      }
     }
-  };
-  xgif.togglePingPong = (function() {
-    if (xgif.hasAttribute('ping-pong')) {
-      xgif.removeAttribute('ping-pong');
-    } else {
-      xgif.setAttribute('ping-pong', '');
+  },
+  pingPongChanged: function(nowPingPong) {
+    if (this.playback)
+      this.playback.pingPong = nowPingPong;
+  },
+  clock: function(beatNr, beatDuration, beatFraction) {
+    if (this.playback && this.playback.gif) {
+      this.playback.fromClock(beatNr, beatDuration, beatFraction);
     }
-    if ($__0.playback)
-      $__0.playback.pingPong = xgif.hasAttribute('ping-pong');
-  });
-  xgif.clock = (function(beatNr, beatDuration, beatFraction) {
-    if ($__0.playback && $__0.playback.gif)
-      $__0.playback.fromClock(beatNr, beatDuration, beatFraction);
-  });
-  xgif.relayout = (function() {
-    if (xgif.hasAttribute('fill'))
-      $__0.playback.scaleToFill();
-  });
-};
-($traceurRuntime.createClass)(XGifController, {}, {});
+  },
+  relayout: function() {
+    if (this.playback && this.xgif.options.fill) {
+      this.playback.scaleToFill();
+    }
+  }
+}, {});
 var XGif = function XGif() {
   $traceurRuntime.defaultSuperCall(this, $XGif.prototype, arguments);
 };
 var $XGif = XGif;
 ($traceurRuntime.createClass)(XGif, {
   createdCallback: function() {
+    this.determinePlaybackMode();
+    this.determinePlaybackOptions();
     this.controller = new XGifController(this);
   },
+  determinePlaybackMode: function() {
+    if (this.hasAttribute('exploded') || this.hasAttribute('sync')) {
+      this.playbackStrategy = undefined;
+      return;
+    }
+    var maybeBPM = parseFloat(this.getAttribute('bpm'));
+    if (!isNaN(maybeBPM)) {
+      this.playbackStrategy = 'bpm';
+      this.bpm = maybeBPM;
+      return;
+    }
+    var maybeSpeed = parseFloat(this.getAttribute('speed'));
+    this.speed = isNaN(maybeSpeed) ? 1.0 : maybeSpeed;
+    this.playbackMode = 'speed';
+  },
+  determinePlaybackOptions: function() {
+    var maybeNtimes = parseFloat(this.getAttribute('n-times'));
+    this.options = {
+      stopped: this.hasAttribute('stopped'),
+      fill: this.hasAttribute('fill'),
+      nTimes: isNaN(maybeNtimes) ? null : maybeNtimes,
+      hard: this.hasAttribute('hard'),
+      pingPong: this.hasAttribute('ping-pong')
+    };
+  },
   attributeChangedCallback: function(attribute, oldVal, newVal) {
-    if (attribute == "src")
+    if (attribute == "src") {
       this.controller.srcChanged(newVal);
-    if (attribute == "speed")
-      this.controller.speedChanged(newVal);
-    if (attribute == "stopped")
-      this.controller.stoppedChanged(newVal);
+    } else if (attribute == "speed") {
+      this.determinePlaybackMode();
+      this.controller.speedChanged(this.speed);
+    } else if (attribute == "bpm") {
+      this.determinePlaybackMode();
+      this.controller.speedChanged(this.bpm);
+    } else if (attribute == "stopped") {
+      this.determinePlaybackOptions();
+      this.controller.stoppedChanged(this.options.stopped);
+    } else if (attribute == "ping-pong") {
+      this.determinePlaybackOptions();
+      this.controller.pingPongChanged(this.options.pingPong);
+    }
+  },
+  clock: function(beatNr, beatDuration, beatFraction) {
+    this.controller.clock(beatNr, beatDuration, beatFraction);
   }
 }, {}, HTMLElement);
 document.registerElement('x-gif', XGif);
