@@ -21,7 +21,7 @@ export default class Playback {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
-    this.hard = opts.hard;
+    this.snap = opts.snap;
 
     this.ready = new Promise((resolve, reject) => {
       var exploder = new Exploder(file)
@@ -91,7 +91,7 @@ export default class Playback {
   fromClock(beatNr, beatDuration, beatFraction) {
     // Always bias GIFs to speeding up rather than slowing down, it looks better.
     var speedup = 1.5,
-      lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+      lengthInBeats = this.snap ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
       subBeat = beatNr % lengthInBeats,
       repeatCount = beatNr / lengthInBeats,
       subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;

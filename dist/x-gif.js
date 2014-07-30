@@ -2116,7 +2116,7 @@ var $__default = (function() {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
-    this.hard = opts.hard;
+    this.snap = opts.snap;
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
@@ -2176,7 +2176,7 @@ var $__default = (function() {
     },
     fromClock: function(beatNr, beatDuration, beatFraction) {
       var speedup = 1.5,
-          lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+          lengthInBeats = this.snap ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
           subBeat = beatNr % lengthInBeats,
           repeatCount = beatNr / lengthInBeats,
           subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;

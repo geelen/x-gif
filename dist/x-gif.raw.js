@@ -2034,10 +2034,9 @@ var XGifController = function XGifController(xgif) {
     if (this.playback)
       this.playback.changeBpm(bpm);
   },
-  hardChanged: function(hard) {
-    console.log("TURN DOWN");
+  snapChanged: function(snap) {
     if (this.playback)
-      this.playback.hard = hard;
+      this.playback.snap = snap;
   },
   stoppedChanged: function(nowStop) {
     if (this.playback) {
@@ -2094,7 +2093,7 @@ var $XGif = XGif;
       stopped: this.hasAttribute('stopped'),
       fill: this.hasAttribute('fill'),
       nTimes: isNaN(maybeNtimes) ? null : maybeNtimes,
-      hard: this.hasAttribute('hard'),
+      snap: this.hasAttribute('snap'),
       pingPong: this.hasAttribute('ping-pong')
     };
   },
@@ -2113,10 +2112,9 @@ var $XGif = XGif;
     } else if (attribute == "ping-pong") {
       this.determinePlaybackOptions();
       this.controller.pingPongChanged(this.options.pingPong);
-    } else if (attribute == "hard") {
-      console.log("TURN DOWN");
+    } else if (attribute == "snap") {
       this.determinePlaybackOptions();
-      this.controller.hardChanged(this.options.hard);
+      this.controller.snapChanged(this.options.snap);
     }
   },
   clock: function(beatNr, beatDuration, beatFraction) {
@@ -2191,7 +2189,7 @@ var $__default = (function() {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
-    this.hard = opts.hard;
+    this.snap = opts.snap;
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
@@ -2251,7 +2249,7 @@ var $__default = (function() {
     },
     fromClock: function(beatNr, beatDuration, beatFraction) {
       var speedup = 1.5,
-          lengthInBeats = this.hard ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+          lengthInBeats = this.snap ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
           subBeat = beatNr % lengthInBeats,
           repeatCount = beatNr / lengthInBeats,
           subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;

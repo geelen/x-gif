@@ -34,7 +34,7 @@ Causes the GIF to expand to cover its container, like if you had used `backgroun
 `n-times="3.0"` (speed mode only)
 Stops playback (by adding the attribute `stopped`) after a set number of times. Can be fractional e.g. `0.9` will play the first 90% of the GIF then stop. Removing the `stopped` attribute will restart the playback.
 
-`hard` (sync & bpm modes only)
+`snap` (sync & bpm modes only)
 Instead of allowing longer GIFs to sync to multiple beats, force them to fit into only one.
 
 `ping-pong`
@@ -75,12 +75,12 @@ Breaks the GIF across 1 or more _beats_ (depending on how long the GIF is), wher
 <x-gif src="something_dumb_from_buzzfeed.gif" bpm="120"></x-gif>
 ```
 
-### Hard-bpm
+### snap-bpm
 
 Just like `bpm` but locks all GIFs to one _beat_, regardless of how long they were originally.
 
 ```html
-<x-gif src="something_dumb_from_buzzfeed.gif" hard-bpm="120"></x-gif>
+<x-gif src="something_dumb_from_buzzfeed.gif" snap-bpm="120"></x-gif>
 ```
 
 ### Stopped

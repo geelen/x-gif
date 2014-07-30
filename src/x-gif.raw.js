@@ -41,9 +41,8 @@ class XGifController {
     if (this.playback) this.playback.changeBpm(bpm);
   }
 
-  hardChanged(hard) {
-    console.log("TURN DOWN")
-    if (this.playback) this.playback.hard = hard;
+  snapChanged(snap) {
+    if (this.playback) this.playback.snap = snap;
   }
 
   stoppedChanged(nowStop) {
@@ -108,7 +107,7 @@ class XGif extends HTMLElement {
       stopped: this.hasAttribute('stopped'),
       fill: this.hasAttribute('fill'),
       nTimes: isNaN(maybeNtimes) ? null : maybeNtimes,
-      hard: this.hasAttribute('hard'),
+      snap: this.hasAttribute('snap'),
       pingPong: this.hasAttribute('ping-pong')
     }
   }
@@ -128,10 +127,9 @@ class XGif extends HTMLElement {
     } else if (attribute == "ping-pong") {
       this.determinePlaybackOptions();
       this.controller.pingPongChanged(this.options.pingPong);
-    } else if (attribute == "hard") {
-      console.log("TURN DOWN")
+    } else if (attribute == "snap") {
       this.determinePlaybackOptions();
-      this.controller.hardChanged(this.options.hard);
+      this.controller.snapChanged(this.options.snap);
     }
   }
 
