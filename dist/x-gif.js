@@ -2117,6 +2117,7 @@ var $__default = (function() {
     this.fill = opts.fill;
     this.stopped = opts.stopped;
     this.snap = opts.snap;
+    this.nTimes = opts.nTimes;
     this.ready = new Promise((function(resolve, reject) {
       var exploder = new Exploder(file);
       exploder.load().then((function(gif) {
@@ -2154,7 +2155,7 @@ var $__default = (function() {
     stop: function() {
       this.stopped = true;
     },
-    startSpeed: function(speed, nTimes) {
+    startSpeed: function(speed) {
       var $__0 = this;
       this.speed = speed;
       this.animationLoop = (function() {
@@ -2162,12 +2163,12 @@ var $__default = (function() {
             duration = performance.now() - $__0.startTime,
             repeatCount = duration / gifLength,
             fraction = repeatCount % 1;
-        if (!nTimes || repeatCount < nTimes) {
+        if (!$__0.nTimes || repeatCount < $__0.nTimes) {
           $__0.setFrame(fraction, repeatCount);
           if (!$__0.stopped)
             requestAnimationFrame($__0.animationLoop);
         } else {
-          $__0.setFrame(nTimes % 1 || 1.0, repeatCount);
+          $__0.setFrame($__0.nTimes % 1 || 1.0, repeatCount);
           $__0.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
         }
       });

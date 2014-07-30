@@ -22,6 +22,7 @@ export default class Playback {
     this.fill = opts.fill;
     this.stopped = opts.stopped;
     this.snap = opts.snap;
+    this.nTimes = opts.nTimes;
 
     this.ready = new Promise((resolve, reject) => {
       var exploder = new Exploder(file)
@@ -68,19 +69,19 @@ export default class Playback {
     this.stopped = true;
   }
 
-  startSpeed(speed, nTimes) {
+  startSpeed(speed) {
     this.speed = speed;
     this.animationLoop = () => {
       var gifLength = 10 * this.gif.length / this.speed,
         duration = performance.now() - this.startTime,
         repeatCount = duration / gifLength,
         fraction = repeatCount % 1;
-      if (!nTimes || repeatCount < nTimes) {
+      if (!this.nTimes || repeatCount < this.nTimes) {
         this.setFrame(fraction, repeatCount);
 
         if (!this.stopped) requestAnimationFrame(this.animationLoop);
       } else {
-        this.setFrame(nTimes % 1 || 1.0, repeatCount);
+        this.setFrame(this.nTimes % 1 || 1.0, repeatCount);
         this.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
       }
     }

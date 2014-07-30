@@ -45,6 +45,10 @@ class XGifController {
     if (this.playback) this.playback.snap = snap;
   }
 
+  nTimesChanged(nTimes) {
+    if (this.playback) this.playback.nTimes = nTimes;
+  }
+
   stoppedChanged(nowStop) {
     if (this.playback) {
       if (nowStop && !this.playback.stopped) {
@@ -77,6 +81,7 @@ class XGif extends HTMLElement {
   createdCallback() {
     this.determinePlaybackMode()
     this.determinePlaybackOptions()
+    this.addStoppedOnNTimesFinishing()
     this.controller = new XGifController(this);
   }
 
@@ -130,6 +135,9 @@ class XGif extends HTMLElement {
     } else if (attribute == "snap") {
       this.determinePlaybackOptions();
       this.controller.snapChanged(this.options.snap);
+    } else if (attribute == "n-times") {
+      this.determinePlaybackOptions();
+      this.controller.nTimesChanged(this.options.nTimes);
     }
   }
 
@@ -139,6 +147,12 @@ class XGif extends HTMLElement {
 
   relayout() {
     this.controller.relayout();
+  }
+
+  addStoppedOnNTimesFinishing() {
+    this.addEventListener('x-gif-finished', () => {
+      this.setAttribute('stopped', '')
+    })
   }
 }
 

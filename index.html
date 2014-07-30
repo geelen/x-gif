@@ -97,6 +97,16 @@
       </figcaption>
     </figure>
 
+    <h3>N-times</h3>
+    <button ng-click="nTimesRestart()" type="button" class="button tiny radius" style="padding: 0.8em;">Restart</button>
+    <input type="range" min="0.1" max="3.0" step="0.1" ng-model="gif.nTimes"/> {{ gif.nTimes }}
+    <figure>
+      <x-gif id="nTimes" ng-src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"></x-gif>
+      <figcaption>
+        <pre>&lt;x-gif src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"{{ nTimesIsStopped() }}&gt;&lt;/x-gif&gt;</pre>
+      </figcaption>
+    </figure>
+
     <h3>Speed</h3>
     <figure>
       <label>
@@ -189,13 +199,26 @@
         url: $scope.gifs[0],
         speed: 2,
         bpm: 60,
-        playbackRate: 1
+        playbackRate: 1,
+        nTimes: 1.0
       };
       var audio = document.querySelector('audio');
       $scope.changeSpeed = function (delta) {
         audio.playbackRate = Math.max(0.5, audio.playbackRate + delta);
         $scope.gif.playbackRate = audio.playbackRate;
       }
+
+      var nTimesElem = document.querySelector('#nTimes')
+      $scope.nTimesRestart = function () {
+        nTimesElem.removeAttribute('stopped');
+      }
+      $scope.nTimesIsStopped = function () {
+        console.log(nTimesElem.hasAttribute('stopped'))
+        return nTimesElem.hasAttribute('stopped') ? " stopped" : ""
+      }
+      nTimesElem.addEventListener('x-gif-finished', function () {
+        $scope.$apply();
+      })
 
       $http.get('demos/cc_audio/encom_part_ii.json').then(function (response) {
         $scope.gif.metadata = response.data;
