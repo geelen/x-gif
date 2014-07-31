@@ -18,7 +18,8 @@ gulp.task('js', function () {
 });
 
 gulp.task('html', function () {
-  gulp.src('src/*.html')
+  gulp.src('src/x-gif.html')
+    .pipe($.rename('x-gif.local.html'))
     .pipe(gulp.dest('dist'));
 })
 
@@ -26,6 +27,13 @@ gulp.task('css', function () {
   gulp.src('src/x-gif.scss')
     .pipe($.rubySass())
     .pipe($.autoprefixer("last 2 versions", "> 1%"))
+    .pipe(gulp.dest('dist'));
+})
+
+gulp.task('vulcanize', function () {
+  gulp.src('dist/x-gif.local.html')
+    .pipe($.vulcanize({dest: 'dist', inline: true}))
+    .pipe($.rename('x-gif.html'))
     .pipe(gulp.dest('dist'));
 })
 
@@ -38,13 +46,14 @@ gulp.task('copy', function () {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('build', ['js', 'html', 'css', 'copy']);
+gulp.task('build', ['js', 'html', 'css', 'copy', 'vulcanize']);
 
 gulp.task('default', ['build', 'connect'], function () {
   gulp.watch(['src/*.*js'], ['js']);
   gulp.watch(['src/*.html'], ['html']);
   gulp.watch(['src/*.scss'], ['css']);
   gulp.watch(['bower_components'], ['copy']);
+  gulp.watch(['dist/x-gif.local.html', 'dist/x-gif.js', 'dist/x-gif.css'], ['vulcanize']);
 
   gulp.watch(['index.html', 'dist/**.*', 'demos/**.*'], function (event) {
     return gulp.src(event.path)
