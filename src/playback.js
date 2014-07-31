@@ -1,5 +1,3 @@
-"use strict";
-
 import Exploder from './exploder.js';
 
 // Private functions for setup
@@ -23,6 +21,8 @@ export default class Playback {
     this.pingPong = opts.pingPong;
     this.fill = opts.fill;
     this.stopped = opts.stopped;
+    this.snap = opts.snap;
+    this.nTimes = opts.nTimes;
 
     this.ready = new Promise((resolve, reject) => {
       var exploder = new Exploder(file)
@@ -69,20 +69,25 @@ export default class Playback {
     this.stopped = true;
   }
 
-  startSpeed(speed, nTimes) {
+  startSpeed(speed) {
     this.speed = speed;
     this.animationLoop = () => {
+      // Calculate where we are in the GIF
       var gifLength = 10 * this.gif.length / this.speed,
         duration = performance.now() - this.startTime,
         repeatCount = duration / gifLength,
         fraction = repeatCount % 1;
-      if (!nTimes || repeatCount < nTimes) {
-        this.setFrame(fraction, repeatCount);
 
-        if (!this.stopped) requestAnimationFrame(this.animationLoop);
+      // If it's time to stop, set ourselves to the right frame (based on nTimes)
+      // and fire an event (which adds the 'stopped' attribute)
+      if (this.nTimes && repeatCount >= this.nTimes) {
+        this.setFrame(this.nTimes % 1 || 1.0, repeatCount);
+        this.element.dispatchEvent(new CustomEvent('x-gif-finished'), true);
+
+      // Otherwise continue playing as normal, and request another animationFrame
       } else {
-        this.setFrame(nTimes % 1 || 1.0, repeatCount);
-        this.xgif.fire('x-gif-finished');
+        this.setFrame(fraction, repeatCount);
+        if (!this.stopped) requestAnimationFrame(this.animationLoop);
       }
     }
 
@@ -90,36 +95,27 @@ export default class Playback {
   }
 
   fromClock(beatNr, beatDuration, beatFraction) {
+    // Always bias GIFs to speeding up rather than slowing down, it looks better.
     var speedup = 1.5,
-      lengthInBeats = Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
+      lengthInBeats = this.snap ? 1 : Math.max(1, Math.round((1 / speedup) * 10 * this.gif.length / beatDuration)),
       subBeat = beatNr % lengthInBeats,
       repeatCount = beatNr / lengthInBeats,
       subFraction = (beatFraction / lengthInBeats) + subBeat / lengthInBeats;
     this.setFrame(subFraction, repeatCount);
   }
 
-  startHardBpm(bpm) {
-    var beatLength = 60 * 1000 / bpm;
-    this.animationLoop = () => {
-      var duration = performance.now() - this.startTime,
-        repeatCount = duration / beatLength,
-        fraction = repeatCount % 1;
-      this.setFrame(fraction, repeatCount);
-
-      if (!this.stopped) requestAnimationFrame(this.animationLoop);
-    }
-
-    if (!this.stopped) this.start();
+  changeBpm(bpm) {
+    this.beatLength = 60 * 1000 / bpm;
   }
 
   startBpm(bpm) {
-    var beatLength = 60 * 1000 / bpm;
+    this.changeBpm(bpm);
     this.animationLoop = () => {
       var duration = performance.now() - this.startTime,
-        beatNr = Math.floor(duration / beatLength),
-        beatFraction = (duration % beatLength) / beatLength;
+        beatNr = Math.floor(duration / this.beatLength),
+        beatFraction = (duration % this.beatLength) / this.beatLength;
 
-      this.fromClock(beatNr, beatLength, beatFraction);
+      this.fromClock(beatNr, this.beatLength, beatFraction);
 
       if (!this.stopped) requestAnimationFrame(this.animationLoop);
     }

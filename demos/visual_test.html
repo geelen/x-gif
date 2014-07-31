@@ -1,13 +1,22 @@
 <!doctype html>
 <html>
   <head>
-    <title>Toggle Button</title>
-    <script src="../dist/platform.js"></script>
+    <title>X-GIF MULTIBALL</title>
+    <script>
+      if ('registerElement' in document
+        && 'createShadowRoot' in HTMLElement.prototype
+        && 'import' in document.createElement('link')
+        && 'content' in document.createElement('template')) {
+        // We're using a browser with native WC support!
+      } else {
+        document.write('<script src="https:\/\/cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js"><\/script>')
+      }
+    </script>
     <link rel="import" href="../dist/x-gif.html">
     <style>
     </style>
   </head>
-  <body unresolved>
+  <body>
     <h1>Any of these dun broken?</h1>
     <x-gif src="https://s3-us-west-2.amazonaws.com/x-gif-tests/yeahnah.gif"></x-gif>
     <x-gif src="https://s3-us-west-2.amazonaws.com/x-gif-tests/explosion.gif"></x-gif>

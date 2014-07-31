@@ -1,4 +1,4 @@
-var setupAudioSynching = function (audio, xGif, metadata) {
+var setupAudioSynching = function (audio, xGifs, metadata) {
   var synchOffset = -0.1;
 
   audio.addEventListener('playing', function () {
@@ -24,7 +24,9 @@ var setupAudioSynching = function (audio, xGif, metadata) {
 
         var sinceLastBeat = currentTime - beat.start,
           beatFraction = sinceLastBeat / beat.duration;
-        xGif.clock(beatIndex, beat.duration * 1000 / audio.playbackRate, beatFraction);
+        [].forEach.call(xGifs, function (xGif) {
+          xGif.clock(beatIndex, beat.duration * 1000 / audio.playbackRate, beatFraction);
+        })
       }
     }
     animationLoop();
