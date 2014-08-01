@@ -118,35 +118,27 @@ class XGif extends HTMLElement {
   }
 
   attributeChangedCallback(attribute, oldVal, newVal) {
-    // Depending on the attribute, we have to do a certain
-    var callbacks = {
-      src: () => this.controller.srcChanged(newVal),
-      speed: () => {
-        this.determinePlaybackMode();
-        this.controller.speedChanged(this.speed);
-      },
-      bpm: () => {
-        this.determinePlaybackMode();
-        this.controller.bpmChanged(this.bpm);
-      },
-      stopped: () => {
-        this.determinePlaybackOptions();
-        this.controller.stoppedChanged(this.options.stopped);
-      },
-      "ping-pong": () => {
-        this.determinePlaybackOptions();
-        this.controller.pingPongChanged(this.options.pingPong);
-      },
-      snap: () => {
-        this.determinePlaybackOptions();
-        this.controller.snapChanged(this.options.snap);
-      },
-      "n-times": () => {
-        this.determinePlaybackOptions();
-        this.controller.nTimesChanged(this.options.nTimes);
-      }
+    if (attribute == "src") {
+      this.controller.srcChanged(newVal)
+    } else if (attribute == "speed") {
+      this.determinePlaybackMode();
+      this.controller.speedChanged(this.speed);
+    } else if (attribute == "bpm") {
+      this.determinePlaybackMode();
+      this.controller.bpmChanged(this.bpm);
+    } else if (attribute == "stopped") {
+      this.determinePlaybackOptions();
+      this.controller.stoppedChanged(this.options.stopped);
+    } else if (attribute == "ping-pong") {
+      this.determinePlaybackOptions();
+      this.controller.pingPongChanged(this.options.pingPong);
+    } else if (attribute == "snap") {
+      this.determinePlaybackOptions();
+      this.controller.snapChanged(this.options.snap);
+    } else if (attribute == "n-times") {
+      this.determinePlaybackOptions();
+      this.controller.nTimesChanged(this.options.nTimes);
     }
-    callbacks[attribute]()
   }
 
   clock(beatNr, beatDuration, beatFraction) {
