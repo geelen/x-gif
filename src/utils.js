@@ -1,11 +1,12 @@
 "use strict";
 
 export var Promises = {
-  xhrGet: (url, type) => {
+  xhrGet: (url, accept, responseType) => {
     return new Promise((resolve, reject) => {
       var loader = new XMLHttpRequest();
       loader.open('GET', url, true);
-      loader.responseType = type;
+      loader.setRequestHeader("Accept", accept);
+      loader.responseType = responseType;
       loader.onload = function() {
         // This is called even on 404 etc
         // so check the status

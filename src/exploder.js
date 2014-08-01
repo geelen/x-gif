@@ -16,7 +16,7 @@ export default class Exploder {
     var cachedGifPromise = gifCache.get(this.file)
     if (cachedGifPromise) return cachedGifPromise;
 
-    var gifPromise = Promises.xhrGet(this.file, 'arraybuffer')
+    var gifPromise = Promises.xhrGet(this.file, '*/*', 'arraybuffer')
       .then(buffer => this.explode(buffer));
 
     gifCache.set(this.file, gifPromise);
