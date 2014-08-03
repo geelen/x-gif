@@ -1,0 +1,57 @@
+!!! 5
+html
+head
+  meta(charset='utf-8')
+  meta(name='viewport', content='width=device-width, initial-scale=1.0')
+  title <x-gif>
+  script.
+    if ('registerElement' in document
+      && 'createShadowRoot' in HTMLElement.prototype
+      && 'import' in document.createElement('link')
+      && 'content' in document.createElement('template')) {
+      // We're using a browser with native WC support!
+    } else {
+      document.write('<script src="https:\\/\/cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js"><\/script>')
+    }
+  script(src='demos/angular.min.js')
+  link(rel='import', href='dist/x-gif.html')
+  link(rel='stylesheet', href='demos/foundation.min.css')
+  style.
+    body {
+      margin: 0;
+      background-color: #f9f9f9;
+      height: 100%;
+      text-align: center;
+      padding-bottom: 24px;
+    }
+
+    h3 {
+      margin-top: 2em;
+    }
+
+    body[unresolved] {
+      opacity: 0;
+    }
+
+    pre {
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .me {
+      height: 72px;
+      width: 72px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px white, 0 0 0 3px black;
+      margin: 16px;
+    }
+
+    footer {
+      margin-bottom: 30px;
+    }
+
+    figcaption {
+      margin-bottom: 2em;
+    }
+  body(ng-app='x-gif-demo', ng-controller='DemoCtrl')
+    block content

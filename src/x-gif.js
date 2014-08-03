@@ -1,5 +1,5 @@
-import Playback from './playback.js';
-import Strategies from './strategies.js';
+import Playback from './x-gif/playback.js';
+import Strategies from './x-gif/strategies.js';
 
 // Shim & native-safe ownerDocument lookup
 var owner = (document._currentScript || document.currentScript).ownerDocument;

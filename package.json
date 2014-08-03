@@ -29,6 +29,8 @@
     "es6ify": "~1.2.0",
     "gulp-uglify": "~0.3.1",
     "gulp-rename": "~1.2.0",
-    "gulp-vulcanize": "~0.2.1"
+    "gulp-vulcanize": "~0.2.1",
+    "gulp-jade": "~0.7.0",
+    "gulp-clean": "~0.3.1"
   }
 }

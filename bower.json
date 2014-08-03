@@ -4,7 +4,7 @@
   "authors": [
     "Glen Maddern <glenmaddern@gmail.com>"
   ],
-  "main": "dist/x-gif.html",
+  "main": "x-gif.html",
   "description": "The GIF element the internet deserves",
   "license": "MIT",
   "ignore": [
