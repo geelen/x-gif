@@ -42,6 +42,22 @@ x-gif {
 //  display: none;
 }
 
+/*
+    Remind IE to re-draw x-gif elements
+    following each animationFrame
+*/
+
+x-gif::after {
+    content: "";
+    display: block;
+    width: 0; height: 0;
+    animation: forceUI 2s infinite;
+}
+
+@keyframes forceUI {
+    to { transform: rotate(180deg) }
+}
+
 // Full Screen overrides
 @mixin fill-overrides {
   width: 100%;

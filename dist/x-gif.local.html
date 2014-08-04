@@ -622,6 +622,28 @@
     position: static;
     opacity: 1; }
 
+/*
+    Remind IE to re-draw x-gif elements
+    following each animationFrame
+*/
+x-gif::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  -webkit-animation: forceUI 2s infinite;
+  animation: forceUI 2s infinite; }
+
+@-webkit-keyframes forceUI {
+  to {
+    -webkit-transform: rotate(180deg);
+    transform: rotate(180deg); } }
+
+@keyframes forceUI {
+  to {
+    -webkit-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    transform: rotate(180deg); } }
 :host([fill]) {
   width: 100%;
   height: 100%; }
