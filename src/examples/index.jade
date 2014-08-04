@@ -20,20 +20,17 @@ block body
         p.small
           | Something not look right?
           a(href='https://github.com/geelen/x-gif/issues' target='_blank')
-            | Post an
-            | issue on GitHub
-          | with the URL of the image
+            |  Post an issue on GitHub
+          |  with the URL of the image
         figure
           x-gif(ng-src='{{ trustedUrl() }}')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}"></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}"></x-gif>'
         h3 Ping-pong
         figure
           x-gif(ng-src='{{ trustedUrl() }}' ping-pong='ping-pong')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" ping-pong></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" ping-pong></x-gif>'
         h3 N-times
         button.button.tiny.radius(ng-click='nTimesRestart()' type='button' style='padding: 0.8em;') Restart
         input(type='range' min='0.1' max='3.0' step='0.1' ng-model='gif.nTimes')
@@ -41,8 +38,7 @@ block body
         figure
           x-gif#nTimes(ng-src='{{ trustedUrl() }}' n-times='{{ gif.nTimes }}')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"{{ nTimesIsStopped() }}></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"{{ nTimesIsStopped() }}></x-gif>'
         h3 Speed
         figure
           label
@@ -50,8 +46,7 @@ block body
             | {{ gif.speed }}
           x-gif(ng-src='{{ trustedUrl() }}' speed='{{ gif.speed }}')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>'
         h3 BPM
         figure
           label
@@ -59,8 +54,7 @@ block body
             | {{ gif.bpm }}
           x-gif(ng-src='{{ trustedUrl() }}' bpm='{{ gif.bpm }}')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}"></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}"></x-gif>'
           x-gif(ng-src='{{ trustedUrl() }}' bpm='{{ gif.bpm }}' snap='snap')
           figcaption
             pre= '<x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}" snap></x-gif>'
@@ -77,41 +71,36 @@ block body
           div(ng-hide='gif.metadata') Loading beat data...
           x-gif.x-gif-synced-demo(ng-src='{{ trustedUrl() }}' sync='sync')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" synced></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" synced></x-gif>'
           x-gif.x-gif-synced-demo(ng-src='{{ trustedUrl() }}' sync='sync' snap='snap')
           figcaption
-            pre.
-              \n<x-gif src="{{ trustedUrl() }}" synced snap></x-gif>
+            pre= '<x-gif src="{{ trustedUrl() }}" synced snap></x-gif>'
             p
               | Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.
               br
-              | Source:
+              = "Source: "
               a(href='https://archive.org/details/DaftPunkTronLegacyEncomPartIi' target='_blank') Archive.org
               br
-              | Beat metadata provided by
+              = "Beat metadata provided by "
               a(href='http://echonest.com/') Echo Nest
             h5
               a(href='demos/audio.html') See a full screen demo
         h3 Stop-start
-        pre.
-          \n<x-gif src="{{ trustedUrl() }}" stopped></x-gif>
+        pre= '<x-gif src="{{ trustedUrl() }}" stopped></x-gif>'
         h5
           a(href='demos/stoppable.html') See demo
         h3 Exploded
-        pre.
-          \n<x-gif src="{{ trustedUrl() }}" exploded></x-gif>
+        pre= '<x-gif src="{{ trustedUrl() }}" exploded></x-gif>'
         p Explode the gif into its component frames (handy for debugging)
         h5
           a(href='demos/exploded.html') See demo
         hr
         footer
-          h5
-            | Made with
-            3(by='by')
-          img.me(src='http://i.imgur.com/x577Tga.jpg' alt='')
-          br
-          a(target='_blank' href='https://twitter.com/glenmaddern') @glenmaddern
+          h5 Made with &lt;3 by
+          a(target='_blank' href='https://twitter.com/glenmaddern')
+            img.me(src='http://i.imgur.com/x577Tga.jpg' alt='')
+            br
+            | @glenmaddern
     script(src="assets/synched_playback.js")
     script(type='text/javascript' charset='utf-8').
       angular.module('x-gif-demo', []).controller('DemoCtrl', function ($scope, $sce, $location, $http) {

@@ -72,20 +72,18 @@
           <input type="text" ng-model="gif.url">
         </label>
         <h3>Normal playback</h3>
-        <p class="small">Something not look right?<a href="https://github.com/geelen/x-gif/issues" target="_blank">
-            Post an
-            issue on GitHub</a>with the URL of the image</p>
+        <p class="small">Something not look right?<a href="https://github.com/geelen/x-gif/issues" target="_blank"> Post an issue on GitHub</a> with the URL of the image</p>
         <figure>
           <x-gif ng-src="{{ trustedUrl() }}"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}"></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot;&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
         </figure>
         <h3>Ping-pong</h3>
         <figure>
           <x-gif ng-src="{{ trustedUrl() }}" ping-pong="ping-pong"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" ping-pong></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; ping-pong&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
         </figure>
         <h3>N-times</h3>
@@ -94,7 +92,7 @@
         <figure>
           <x-gif id="nTimes" ng-src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" n-times="{{ gif.nTimes }}"{{ nTimesIsStopped() }}></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; n-times=&quot;{{ gif.nTimes }}&quot;{{ nTimesIsStopped() }}&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
         </figure>
         <h3>Speed</h3>
@@ -104,7 +102,7 @@
           </label>
           <x-gif ng-src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" speed="{{ gif.speed }}"></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; speed=&quot;{{ gif.speed }}&quot;&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
         </figure>
         <h3>BPM</h3>
@@ -114,7 +112,7 @@
           </label>
           <x-gif ng-src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}"></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; bpm=&quot;{{ gif.bpm }}&quot;&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
           <x-gif ng-src="{{ trustedUrl() }}" bpm="{{ gif.bpm }}" snap="snap"></x-gif>
           <figcaption>
@@ -133,27 +131,26 @@
           <div ng-hide="gif.metadata">Loading beat data...</div>
           <x-gif ng-src="{{ trustedUrl() }}" sync="sync" class="x-gif-synced-demo"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" synced></x-gif></pre>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; synced&gt;&lt;/x-gif&gt;</pre>
           </figcaption>
           <x-gif ng-src="{{ trustedUrl() }}" sync="sync" snap="snap" class="x-gif-synced-demo"></x-gif>
           <figcaption>
-            <pre>\n<x-gif src="{{ trustedUrl() }}" synced snap></x-gif></pre>
-            <p>Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.<br>Source:<a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a><br>Beat metadata provided by<a href="http://echonest.com/">Echo Nest</a></p>
+            <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; synced snap&gt;&lt;/x-gif&gt;</pre>
+            <p>Audio: Encom Part II by Daft Punk. CC0 1.0 Universal.<br>Source: <a href="https://archive.org/details/DaftPunkTronLegacyEncomPartIi" target="_blank">Archive.org</a><br>Beat metadata provided by <a href="http://echonest.com/">Echo Nest</a>
+            </p>
             <h5><a href="demos/audio.html">See a full screen demo</a></h5>
           </figcaption>
         </figure>
         <h3>Stop-start</h3>
-        <pre>\n<x-gif src="{{ trustedUrl() }}" stopped></x-gif></pre>
+        <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; stopped&gt;&lt;/x-gif&gt;</pre>
         <h5><a href="demos/stoppable.html">See demo</a></h5>
         <h3>Exploded</h3>
-        <pre>\n<x-gif src="{{ trustedUrl() }}" exploded></x-gif></pre>
+        <pre>&lt;x-gif src=&quot;{{ trustedUrl() }}&quot; exploded&gt;&lt;/x-gif&gt;</pre>
         <p>Explode the gif into its component frames (handy for debugging)</p>
         <h5><a href="demos/exploded.html">See demo</a></h5>
         <hr>
         <footer>
-          <h5>Made with
-            <3 by="by"></3>
-          </h5><img src="http://i.imgur.com/x577Tga.jpg" alt="" class="me"><br><a target="_blank" href="https://twitter.com/glenmaddern">@glenmaddern</a>
+          <h5>Made with &lt;3 by</h5><a target="_blank" href="https://twitter.com/glenmaddern"><img src="http://i.imgur.com/x577Tga.jpg" alt="" class="me"><br>@glenmaddern</a>
         </footer>
       </div>
     </div>
