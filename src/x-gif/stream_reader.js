@@ -1,8 +1,9 @@
 "use strict";
 
 export default class StreamReader {
-  constructor(arrayBuffer) {
-    this.data = new Uint8Array(arrayBuffer);
+  constructor(data) {
+    console.log(data)
+    this.data = data;
     this.index = 0;
     this.log("TOTAL LENGTH: " + this.data.length);
   }

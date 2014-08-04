@@ -22,7 +22,6 @@ class XGifController {
 
   srcChanged(src) {
     if (!src) return;
-    console.log("Loading " + src);
     this.playback = new Playback(this, this.shadow.querySelector('#frames'), src, this.xgif.options);
     this.playback.ready.then(() => {
       if (this.xgif.playbackMode == 'speed') {

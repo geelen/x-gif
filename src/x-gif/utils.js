@@ -27,5 +27,10 @@ export var Promises = {
       };
       loader.send();
     })
+  },
+  when: (object) => {
+    return new Promise((resolve, reject) => {
+      resolve(object);
+    })
   }
 }

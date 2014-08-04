@@ -60,7 +60,7 @@ gulp.task('default', ['build', 'connect'], function () {
 gulp.task('connect', function () {
   $.connect.server({
     root: ['dist'],
-    port: 1983,
-    livereload: {port: 2983}
+    port: 1989,
+    livereload: {port: 2989}
   })
 });

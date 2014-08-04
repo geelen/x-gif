@@ -7,7 +7,8 @@ import { Promises } from './utils.js';
 var url = (URL && URL.createObjectURL) ? URL : webkitURL;
 
 var gifCache = new Map();
-export default class Exploder {
+export default
+class Exploder {
   constructor(file) {
     this.file = file;
   }
@@ -16,15 +17,32 @@ export default class Exploder {
     var cachedGifPromise = gifCache.get(this.file)
     if (cachedGifPromise) return cachedGifPromise;
 
-    var gifPromise = Promises.xhrGet(this.file, '*/*', 'arraybuffer')
-      .then(buffer => this.explode(buffer));
+    var arrayPromise;
+    if (this.file.startsWith('data:')) {
+      var BASE64_MARKER = ';base64,';
 
+      var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+      var base64 = dataURI.substring(base64Index);
+      var raw = window.atob(base64);
+      var rawLength = raw.length;
+      var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+      for (i = 0; i < rawLength; i++) {
+        array[i] = raw.charCodeAt(i);
+      }
+      console.log("UM")
+      arrayPromise = Promise.when(array);
+    } else {
+      arrayPromise = Promises.xhrGet(this.file, '*/*', 'arraybuffer')
+        .then(buffer => new Uint8Array(buffer));
+    }
+    var gifPromise = arrayPromise.then(array => this.explode(array));
     gifCache.set(this.file, gifPromise);
     return gifPromise;
   }
 
   explode(buffer) {
-    console.debug("EXPLODING " + this.file)
+    console.debug("EXPLODING " + this.file.substr(0, 12))
     return new Promise((resolve, reject) => {
       var frames = [],
         streamReader = new StreamReader(buffer);
