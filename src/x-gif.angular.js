@@ -8,7 +8,7 @@ angular.module('x-gif', [])
   .directive('gif', function () {
     return {
       restrict: 'E',
-      template: '<div class="frames-wrapper"><div class="x-gif__frames"></div></div>',
+      template: '<div class="frames-wrapper" role="presentation"><div class="x-gif__frames"></div></div>',
       link: function (scope, element, attrs) {
         var xGif = Object.create(attrs, {
           fire: {
