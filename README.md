@@ -1,4 +1,5 @@
 # &lt;x-gif&gt;
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/geelen/x-gif?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 _The GIF tag the internet deserves_
 
