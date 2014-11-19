@@ -7,7 +7,7 @@
   display: inline-block;
   position: relative;
 
-  @for $i from 0 to 100 {
+  @for $i from 0 to 1000 {
     &[data-frame="#{$i}"] {
       .frame:nth-child(n + #{2 + $i}) {
         opacity: 0;
