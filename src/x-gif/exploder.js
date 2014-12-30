@@ -1,8 +1,8 @@
 "use strict";
 
-import Gif from './gif.js';
-import StreamReader from './stream_reader.js';
-import { Promises } from './utils.js';
+import Gif from './gif';
+import StreamReader from './stream_reader';
+import { Promises } from './utils';
 
 var url = (URL && URL.createObjectURL) ? URL : webkitURL;
 

@@ -1,4 +1,4 @@
-import Exploder from './exploder.js';
+import Exploder from './exploder';
 
 // Private functions for setup
 function addClasses(element, frame) {

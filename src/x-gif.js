@@ -1,8 +1,7 @@
-import Playback from './x-gif/playback.js';
-import Strategies from './x-gif/strategies.js';
+/* @flow weak */
 
-// Shim & native-safe ownerDocument lookup
-var owner = (document._currentScript || document.currentScript).ownerDocument;
+import Playback from './x-gif/playback';
+import Strategies from './x-gif/strategies';
 
 class XGifController {
   constructor(xgif) {
@@ -16,8 +15,7 @@ class XGifController {
     this.shadow = this.xgif.createShadowRoot();
 
     // stamp out our template in the shadow dom
-    var template = owner.querySelector("#template").content.cloneNode(true);
-    this.shadow.appendChild(template);
+    this.shadow.innerHTML = '<link rel="stylesheet" href="x-gif.css"/> <div class="frames-wrapper"> <div id="frames"></div> </div>';
   }
 
   srcChanged(src) {
