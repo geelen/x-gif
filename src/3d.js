@@ -2,12 +2,13 @@ import PIXI from 'pixi.js'
 import Exploder from './x-gif/exploder'
 
 // create an new instance of a pixi stage
-var stage = new PIXI.Stage(0x66FF99),
+let stage = new PIXI.Stage(0x66FF99),
   exploder = new Exploder("explosion.gif"),
   renderer = new PIXI.WebGLRenderer(1280, 720),
   dotScreenFilter = new PIXI.DotScreenFilter(),
   pixelateFilter = new PIXI.PixelateFilter(),
-  rgbSplitterFilter = new PIXI.RGBSplitFilter()
+  rgbSplitterFilter = new PIXI.RGBSplitFilter(),
+  colorStepFilter = new PIXI.ColorStepFilter()
 
 stage.filters = [pixelateFilter]
 
@@ -47,9 +48,8 @@ exploder.load().then((gif) => {
 })
 
 document.addEventListener('mousemove', (e) => {
-  console.log(e.clientY, e.clientY / innerHeight, Math.round(32 * e.clientY / innerHeight))
   let [x,y] = [Math.round(32 * e.clientX / innerWidth), Math.round(32 * e.clientY / innerHeight)]
-  rgbSplitterFilter.angle = e.clientY
-  dotScreenFilter.scale = e.clientY / 10
+  dotScreenFilter.angle = y
+  dotScreenFilter.scale = x
   pixelateFilter.size = {x,y}
 })
