@@ -4,7 +4,12 @@ import Exploder from './x-gif/exploder'
 // create an new instance of a pixi stage
 var stage = new PIXI.Stage(0x66FF99),
   exploder = new Exploder("explosion.gif"),
-  renderer = new PIXI.WebGLRenderer(1280, 720);
+  renderer = new PIXI.WebGLRenderer(1280, 720),
+  dotScreenFilter = new PIXI.DotScreenFilter(),
+  pixelateFilter = new PIXI.PixelateFilter(),
+  rgbSplitterFilter = new PIXI.RGBSplitFilter()
+
+stage.filters = [pixelateFilter]
 
 // add the renderer view element to the DOM
 document.body.appendChild(renderer.view);
@@ -39,4 +44,12 @@ exploder.load().then((gif) => {
     renderer.render(stage)
   }
 
+})
+
+document.addEventListener('mousemove', (e) => {
+  console.log(e.clientY, e.clientY / innerHeight, Math.round(32 * e.clientY / innerHeight))
+  let [x,y] = [Math.round(32 * e.clientX / innerWidth), Math.round(32 * e.clientY / innerHeight)]
+  rgbSplitterFilter.angle = e.clientY
+  dotScreenFilter.scale = e.clientY / 10
+  pixelateFilter.size = {x,y}
 })
