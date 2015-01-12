@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>3D GIFs</title>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        overflow: hidden;
+        justify-content: center;
+      }
+      body > canvas {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="jspm_packages/system.js"></script>
+    <script src="config.js"></script>
+    <script>
+      System.import('src/3d')
+    </script>
+  </body>
+</html>

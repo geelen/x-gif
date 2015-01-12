@@ -32,5 +32,10 @@
     "gulp-vulcanize": "~0.2.1",
     "gulp-jade": "~0.7.0",
     "gulp-clean": "~0.3.1"
+  },
+  "jspm": {
+    "dependencies": {
+      "pixi.js": "github:GoodBoyDigital/pixi.js@^2.2.3"
+    }
   }
 }

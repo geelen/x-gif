@@ -4,3 +4,4 @@ demos/audio
 dist/images
 /*.gif
 build
+jspm_packages
