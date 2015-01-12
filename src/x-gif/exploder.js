@@ -31,7 +31,8 @@ export default class Exploder {
 
       // Ensure this is an animated GIF
       if (streamReader.readAscii(6) != "GIF89a") {
-        reject(Error("Not a GIF!"));
+        console.error("NOT A GIF")
+        resolve(new Gif([]));
         return;
       }
 
