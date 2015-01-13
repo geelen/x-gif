@@ -39,7 +39,7 @@ exploder.load().then((gif) => {
   function animate() {
     requestAnimFrame(animate)
     bunnies.forEach(bunny => bunny.alpha = 0)
-    let bunny = bunnies[currentBunny++ % bunnies.length]
+    let bunny = bunnies[Math.floor(currentBunny++ / 2) % bunnies.length]
     bunny.alpha = 1
 
     renderer.render(stage)
@@ -48,7 +48,7 @@ exploder.load().then((gif) => {
 })
 
 document.addEventListener('mousemove', (e) => {
-  let [x,y] = [Math.round(32 * e.clientX / innerWidth), Math.round(32 * e.clientY / innerHeight)]
+  let [x,y] = [Math.round(64 * e.clientX / innerWidth), Math.round(64 * e.clientY / innerHeight)]
   dotScreenFilter.angle = y
   dotScreenFilter.scale = x
   pixelateFilter.size = {x,y}
