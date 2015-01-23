@@ -1,5 +1,6 @@
 bower_components
 node_modules
+.sass_cache
 demos/audio
 dist/images
 /*.gif
