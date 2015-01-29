@@ -9,7 +9,8 @@ System.config({
 
 System.config({
   "map": {
-    "pixi": "npm:pixi@0.2.1"
+    "pixi": "npm:pixi@0.2.1",
+    "text": "github:systemjs/plugin-text@0.0.2"
   }
 });
 

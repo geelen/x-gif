@@ -35,7 +35,8 @@
   },
   "jspm": {
     "dependencies": {
-      "pixi": "npm:pixi@^0.2.1"
+      "pixi": "npm:pixi@^0.2.1",
+      "text": "^0.0.2"
     }
   }
 }
