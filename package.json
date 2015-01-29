@@ -35,7 +35,7 @@
   },
   "jspm": {
     "dependencies": {
-      "pixi.js": "github:GoodBoyDigital/pixi.js@^2.2.3"
+      "pixi": "npm:pixi@^0.2.1"
     }
   }
 }

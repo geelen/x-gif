@@ -1,5 +1,3 @@
-/* @flow weak */
-
 import Playback from './x-gif/playback';
 import Strategies from './x-gif/strategies';
 

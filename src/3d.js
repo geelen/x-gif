@@ -1,4 +1,4 @@
-import PIXI from 'pixi.js'
+import PIXI from 'pixi'
 import Exploder from './x-gif/exploder'
 
 // create an new instance of a pixi stage
