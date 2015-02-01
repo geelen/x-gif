@@ -23,6 +23,7 @@ export default class Playback {
     this.stopped = opts.stopped;
     this.snap = opts.snap;
     this.nTimes = opts.nTimes;
+    this.newIndex = false;
 
     this.ready = new Promise((resolve, reject) => {
       var exploder = new Exploder(file)
@@ -59,6 +60,11 @@ export default class Playback {
     this.element.dataset['frame'] = frameNr;
   }
 
+  jumpToIndex(index) {
+    this.index = index
+    this.newIndex = true
+  }
+
   start() {
     this.stopped = false;
     this.startTime = performance.now();
@@ -70,13 +76,25 @@ export default class Playback {
   }
 
   startSpeed(speed) {
+    var self = this;
     this.speed = speed;
     this.animationLoop = () => {
       // Calculate where we are in the GIF
       var gifLength = 10 * this.gif.length / this.speed,
         duration = performance.now() - this.startTime,
-        repeatCount = duration / gifLength,
-        fraction = repeatCount % 1;
+        repeatCount = duration / gifLength
+        self.fraction = repeatCount % 1;
+
+        if (this.newIndex) {
+          this.offset = this.index - this.fraction;
+          this.newIndex = false;
+        }
+
+        if (typeof self.offset !== 'undefined') {
+          if (self.fraction + self.offset < 0) self.fraction += (self.offset + 1);
+          else if (self.fraction + self.offset > 1) self.fraction += (self.offset - 1);
+          else self.fraction += self.offset;
+        }
 
       // If it's time to stop, set ourselves to the right frame (based on nTimes)
       // and fire an event (which adds the 'stopped' attribute)
@@ -86,7 +104,7 @@ export default class Playback {
 
       // Otherwise continue playing as normal, and request another animationFrame
       } else {
-        this.setFrame(fraction, repeatCount);
+        this.setFrame(self.fraction, repeatCount);
         if (!this.stopped) requestAnimationFrame(this.animationLoop);
       }
     }

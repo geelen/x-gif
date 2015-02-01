@@ -33,6 +33,10 @@ class XGifController {
     });
   }
 
+  changeIndex(index) {
+    if (this.playback) this.playback.jumpToIndex(index)
+  }
+
   speedChanged(speed) {
     if (this.playback) this.playback.speed = speed;
   }
@@ -83,6 +87,10 @@ class XGif extends HTMLElement {
     this.determinePlaybackOptions()
     this.addStoppedOnNTimesFinishing()
     this.controller = new XGifController(this);
+    this.addEventListener('x-gif-index-change', (e) => {
+      this.determinePlaybackOptions();
+      this.controller.changeIndex(e.detail.index);
+    })
   }
 
   determinePlaybackMode() {
