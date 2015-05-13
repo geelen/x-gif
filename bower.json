@@ -7,6 +7,9 @@
   "main": "dist/x-gif.html",
   "description": "The GIF element the internet deserves",
   "license": "MIT",
+  "keywords": [
+    "web-components"  
+  ],
   "ignore": [
     "**/.*",
     "node_modules",
