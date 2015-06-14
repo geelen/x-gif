@@ -50,7 +50,7 @@ export default class Playback {
       var xScale = this.element.parentElement.offsetWidth / this.element.offsetWidth,
         yScale = this.element.parentElement.offsetHeight / this.element.offsetHeight;
 
-      this.element.style.webkitTransform = "scale(" + 1.1 * Math.max(xScale, yScale) + ")";
+      this.element.style.transform = "scale(" + 1.1 * Math.max(xScale, yScale) + ")";
     }
   }
 
