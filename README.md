@@ -15,7 +15,7 @@
 
 #Options
 [x-gif.html](https://cdn.rawgit.com/jeno5980515/x-gif/gh-pages/dist/x-gif.html)  
-  `reverse`
+ * `reverse`
   
 #jQuery Mobile
 replace
