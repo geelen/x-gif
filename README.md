@@ -69,7 +69,7 @@ For visual inspection of the frames. Stops playback, and renders each frame out 
     && 'content' in document.createElement('template')) {
     // We're using a browser with native WC support!
   } else {
-    document.write('<script src="https:\/\/cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js"><\/script>')
+    document.write('<script src="https:\/\/cdn.rawgit.com/webcomponents/webcomponentsjs/master/webcomponents.js"><\/script>')
   }
 </script>
 <link rel="import" href="x-gif.html">
