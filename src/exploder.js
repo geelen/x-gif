@@ -30,7 +30,8 @@ export default class Exploder {
         streamReader = new StreamReader(buffer);
 
       // Ensure this is an animated GIF
-      if (streamReader.readAscii(6) != "GIF89a") {
+      var type = streamReader.readAscii(6);
+      if (!(type == "GIF89a" || type == 'GIF87a')) {
         reject(Error("Not a GIF!"));
         return;
       }
