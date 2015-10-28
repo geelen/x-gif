@@ -116,6 +116,10 @@ export default class Exploder {
           var disposalMethod = streamReader.readByte() >> 2;
           streamReader.log("DISPOSAL " + disposalMethod);
           var delay = streamReader.readByte() + streamReader.readByte() * 256;
+
+          // default delay of 0.1s, delays shouldn't be 0
+          delay = delay ? delay : 10;
+
           frames.push({ index: index, delay: delay, disposal: disposalMethod });
           streamReader.log("FRAME DELAY " + delay);
           streamReader.skipBytes(2);
