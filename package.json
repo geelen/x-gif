@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/geelen/x-gif.git"
+    "url": "git://github.com/polyclick/x-gif.git"
   },
   "author": "Glen Maddern",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/geelen/x-gif/issues"
+    "url": "https://github.com/polyclick/x-gif/issues"
   },
   "devDependencies": {
     "gulp": "~3.6.0",

@@ -30,7 +30,8 @@ export default class Exploder {
         streamReader = new StreamReader(buffer);
 
       // Ensure this is an animated GIF
-      if (streamReader.readAscii(6) != "GIF89a") {
+      var type = streamReader.readAscii(6);
+      if (!(type == "GIF89a" || type == 'GIF87a')) {
         reject(Error("Not a GIF!"));
         return;
       }
@@ -115,6 +116,10 @@ export default class Exploder {
           var disposalMethod = streamReader.readByte() >> 2;
           streamReader.log("DISPOSAL " + disposalMethod);
           var delay = streamReader.readByte() + streamReader.readByte() * 256;
+
+          // default delay of 0.1s, delays shouldn't be 0
+          delay = delay ? delay : 10;
+
           frames.push({ index: index, delay: delay, disposal: disposalMethod });
           streamReader.log("FRAME DELAY " + delay);
           streamReader.skipBytes(2);
