@@ -10,7 +10,7 @@ _The GIF tag the internet deserves_
 <x-gif src="probably_cats.gif"></x-gif>
 ```
 
-###Playback modes:
+### Playback modes:
 
 Mutually exclusive. Can't be changed once initialised (create a new x-gif if you want a new mode)
 
@@ -23,7 +23,7 @@ Defers playback to an external object. The DOM element will then expose a `clock
 `bpm="120"`
 Syncs GIFs to a given beats-per-minute. If multiple x-gifs are on the page, they will all be synced together. By default, will spread long GIFs over multiple beats, unless the `snap` option is also included. Uses `sync` and `clock` under the hood. Can be changed and will take immediate effect.
 
-###Options:
+### Options:
 
 `stopped`
 Regardless of playback mode, this will prevent the GIF from animating. Removing this attribute resumes playback. In `speed` mode, the GIF will always resume playback from the beginning.
@@ -40,7 +40,7 @@ Instead of allowing longer GIFs to sync to multiple beats, force them to fit int
 `ping-pong`
 Boolean attribute. Plays the GIF front-to-back then back-to-front, which looks more awesome for some GIFs. Works with all playback modes. Can be removed/added at any time.
 
-###Debugging:
+### Debugging:
 
 `debug`
 Turns on debug output from the Gif Exploder, which can help track down errors with some GIFs being parsed incorrectly.
@@ -48,7 +48,7 @@ Turns on debug output from the Gif Exploder, which can help track down errors wi
 `exploded`
 For visual inspection of the frames. Stops playback, and renders each frame out side-by-side. Many frames will appear semi-transparent, because that's how GIFs work. But this might come in handy.
 
-##What does it do?
+## What does it do?
 
 * AJAX fetches the GIF as a binary stream
 * Slices the GIF into frames like a total boss
